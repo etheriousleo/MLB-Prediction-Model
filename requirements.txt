@@ -1,1 +1,4 @@
-MLB-StatsAPI streamlit plotly numpy
+MLB-StatsAPI
+streamlit
+plotly
+numpy

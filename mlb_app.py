@@ -465,22 +465,80 @@ def fetch_standings() -> dict:
     try:
         for _, div_info in statsapi.standings_data().items():
             for team in div_info.get("teams", []):
-                name  = STATSAPI_NAME_MAP.get(team.get("name", ""), team.get("name", ""))
-                w     = int(team.get("w", 0))
-                l     = int(team.get("l", 0))
-                gp    = w + l
-                rd    = int(team.get("runDifferential", 0) or 0)
-                rd_pg = round(rd / gp, 3) if gp > 0 else 0.0
+                name = STATSAPI_NAME_MAP.get(team.get("name", ""), team.get("name", ""))
+                w    = int(team.get("w", 0))
+                l    = int(team.get("l", 0))
+                gp   = w + l
                 records[name] = {
                     "W":     w,
                     "L":     l,
                     "W_PCT": w / gp if gp > 0 else 0.5,
-                    "RD":    rd,
-                    "RD_PG": rd_pg,
+                    "RD":    0,     # enriched later by enrich_standings_with_rd()
+                    "RD_PG": 0.0,
                 }
     except Exception:
         pass
     return records
+
+
+def enrich_standings_with_rd(standings: dict, batting: dict) -> dict:
+    """
+    Compute run differential per game using runs scored (from batting stats)
+    and runs allowed (from pitching stats), then inject into standings dict.
+    Called after both batting and pitching data are available.
+    """
+    # Build a runs-scored lookup: full_name -> runs_per_game
+    for abb, b in batting.items():
+        full_name = ABB_TO_FULL.get(abb, abb)
+        if full_name not in standings:
+            continue
+        gp = max(float(b.get("G", 1) or 1), 1)
+        rs = float(b.get("R", 0) or 0)   # runs scored
+        # We don't have runs allowed directly, but we can approximate:
+        # runs_allowed ≈ ERA * IP / 9, but simpler: use W/L record to estimate
+        # Best available: store runs scored per game and derive RD from schedule
+        # For now store RS/G — we'll compute RD via schedule separately
+        standings[full_name]["RS_PG"] = round(rs / gp, 2)
+    return standings
+
+
+@st.cache_data(show_spinner=False, ttl=3600)
+def fetch_run_differential(season: int) -> dict:
+    """
+    Compute each team's run differential by summing all completed game scores.
+    Returns {full_name: {"rd": int, "rd_pg": float, "gp": int}}
+    """
+    result = {}
+    from collections import defaultdict
+    team_runs = defaultdict(lambda: {"rs": 0, "ra": 0, "gp": 0})
+    try:
+        start = datetime.datetime(season, 3, 20).strftime("%m/%d/%Y")
+        end   = datetime.datetime.today().strftime("%m/%d/%Y")
+        games = statsapi.schedule(start_date=start, end_date=end, sportId=1)
+        completed = [g for g in games
+                     if g.get("status") == "Final" and g.get("game_type") == "R"]
+        for g in completed:
+            hs = int(g.get("home_score", 0) or 0)
+            as_ = int(g.get("away_score", 0) or 0)
+            hn  = STATSAPI_NAME_MAP.get(g.get("home_name",""), g.get("home_name",""))
+            an  = STATSAPI_NAME_MAP.get(g.get("away_name",""), g.get("away_name",""))
+            team_runs[hn]["rs"] += hs
+            team_runs[hn]["ra"] += as_
+            team_runs[hn]["gp"] += 1
+            team_runs[an]["rs"] += as_
+            team_runs[an]["ra"] += hs
+            team_runs[an]["gp"] += 1
+    except Exception:
+        pass
+    for name, r in team_runs.items():
+        gp = max(r["gp"], 1)
+        rd = r["rs"] - r["ra"]
+        result[name] = {
+            "rd":    rd,
+            "rd_pg": round(rd / gp, 3),
+            "gp":    r["gp"],
+        }
+    return result
 
 
 @st.cache_data(show_spinner=False, ttl=1800)
@@ -891,6 +949,12 @@ with st.sidebar:
     with st.spinner("Loading MLB stats..."):
         batting_data, pitching_data = fetch_team_stats(SEASON)
         standings_data = fetch_standings()
+        # Enrich standings with real run differential computed from game scores
+        rd_data = fetch_run_differential(SEASON)
+        for full_name, rd_info in rd_data.items():
+            if full_name in standings_data:
+                standings_data[full_name]["RD"]    = rd_info["rd"]
+                standings_data[full_name]["RD_PG"] = rd_info["rd_pg"]
 
     with st.spinner(f"Loading last {ng}-day form..."):
         batting_recent, pitching_recent = fetch_team_stats_recent(SEASON, ng)

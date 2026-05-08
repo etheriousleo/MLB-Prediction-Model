@@ -333,7 +333,7 @@ def fetch_team_stats(season: int) -> tuple[dict, dict]:
                         "HR":     float(s.get("homeRuns", 0) or 0),
                         "BB_pct": round(bb / pa, 3),       # walk rate
                         "K_pct":  round(so / pa, 3),       # strikeout rate (lower = better for hitters)
-                        "RD":     float(s.get("runDifferential", 0) or 0),  # run differential
+                        "RD":     0.0,  # populated from standings in score_team
                     }
                 else:
                     bb9  = float(s.get("walksPer9Inn",       "0") or 0)
@@ -465,10 +465,19 @@ def fetch_standings() -> dict:
     try:
         for _, div_info in statsapi.standings_data().items():
             for team in div_info.get("teams", []):
-                name = STATSAPI_NAME_MAP.get(team.get("name", ""), team.get("name", ""))
-                w = int(team.get("w", 0))
-                l = int(team.get("l", 0))
-                records[name] = {"W": w, "L": l, "W_PCT": w / (w + l) if (w + l) > 0 else 0.5}
+                name  = STATSAPI_NAME_MAP.get(team.get("name", ""), team.get("name", ""))
+                w     = int(team.get("w", 0))
+                l     = int(team.get("l", 0))
+                gp    = w + l
+                rd    = int(team.get("runDifferential", 0) or 0)
+                rd_pg = round(rd / gp, 3) if gp > 0 else 0.0
+                records[name] = {
+                    "W":     w,
+                    "L":     l,
+                    "W_PCT": w / gp if gp > 0 else 0.5,
+                    "RD":    rd,
+                    "RD_PG": rd_pg,
+                }
     except Exception:
         pass
     return records
@@ -585,8 +594,8 @@ def score_team(abb: str, batting: dict, pitching: dict, standings: dict) -> dict
     w         = rec.get("W", 0)
     l         = rec.get("L", 0)
     wpct      = rec.get("W_PCT", 0.5)
-    rd        = sf(b, "RD")
-    rd_pg     = round(rd / games_b, 3)
+    # RD comes from standings — the hitting API does not return this field
+    rd_pg     = rec.get("RD_PG", 0.0)
     return {
         "name":    full_name,
         "abb":     abb,

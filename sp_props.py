@@ -122,6 +122,19 @@ def api_name_to_abb(name: str):
     return FULL_TO_ABB.get(STATSAPI_NAME_MAP.get(name, name))
 
 
+def ip_to_decimal(ip_val) -> float:
+    """
+    Convert MLB innings-pitched baseball notation to decimal innings.
+    The API returns values like 6.1 (meaning 6⅓ innings) and 6.2 (6⅔),
+    NOT true decimals. Outs are base-3, so .1 = 1/3 and .2 = 2/3.
+    """
+    ip_str = str(ip_val)
+    parts  = ip_str.split(".")
+    whole  = int(parts[0])
+    outs   = int(parts[1]) if len(parts) > 1 else 0
+    return whole + outs / 3
+
+
 # ── Data fetching ──────────────────────────────────────────────────────────────
 @st.cache_data(show_spinner=False, ttl=1800)
 def fetch_todays_games() -> tuple[list, str]:
@@ -152,11 +165,16 @@ def fetch_pitcher_season_stats(player_id: int, season: int) -> dict:
         bb9  = float(s.get("walksPer9Inn",      "0") or 0)
         era  = float(s.get("era",               "0") or 0)
         whip = float(s.get("whip",              "0") or 0)
-        ip   = float(s.get("inningsPitched",    "0") or 0)
+        # API returns innings in baseball notation (6.1 = 6⅓), not true decimal
+        ip   = ip_to_decimal(s.get("inningsPitched", "0") or 0)
         gs   = int(s.get("gamesStarted", 0))
-        hr9  = float(s.get("homeRunsPer9",      "0") or 0)
         so   = int(s.get("strikeOuts", 0))
-        fip  = round((13 * hr9 + 3 * bb9 - 2 * k9) + 3.2, 2) if k9 else era
+        bb   = int(s.get("baseOnBalls", 0))
+        hr   = int(s.get("homeRuns",   0))
+        hr9  = float(s.get("homeRunsPer9", "0") or 0)
+        # FIP uses counting stats per inning, not per-9 rates.
+        # Formula: FIP = (13*HR + 3*BB - 2*SO) / IP + FIP_constant (~3.10)
+        fip  = round((13 * hr + 3 * bb - 2 * so) / ip + 3.10, 2) if ip > 0 else era
         ip_per_start = round(ip / gs, 2) if gs > 0 else 0
         k_per_start  = round(so / gs, 1) if gs > 0 else 0
         return {
@@ -169,6 +187,8 @@ def fetch_pitcher_season_stats(player_id: int, season: int) -> dict:
             "ip":          ip,
             "gs":          gs,
             "so":          so,
+            "bb":          bb,
+            "hr":          hr,
             "ip_per_start": ip_per_start,
             "k_per_start":  k_per_start,
             "wins":        int(s.get("wins",   0)),
@@ -203,7 +223,8 @@ def fetch_pitcher_last_n_starts(player_id: int, season: int, n: int = 5) -> list
             result.append({
                 "date":     sp.get("date", "")[:10],
                 "opponent": sp.get("opponent", {}).get("name", "?"),
-                "ip":       float(s.get("inningsPitched", 0) or 0),
+                # Convert baseball IP notation (6.1 = 6⅓) to true decimal innings
+                "ip":       ip_to_decimal(s.get("inningsPitched", 0) or 0),
                 "k":        int(s.get("strikeOuts", 0)),
                 "er":       int(s.get("earnedRuns", 0)),
                 "h":        int(s.get("hits", 0)),
@@ -295,7 +316,7 @@ def project_strikeouts(pitcher: dict, recent_starts: list, opp_batting: dict,
     else:
         recent_k9     = season_k9
         recent_ip_avg = season_ip_start
-        recent_er_avg = None
+        recent_er_avg = 0.0  # no recent starts; safe default for any downstream rendering
         recent_k_avg  = season_k_per_start
 
     # Blend season and recent K/9
@@ -403,7 +424,8 @@ with st.sidebar:
 
 
 # ── Main panel ─────────────────────────────────────────────────────────────────
-today_label = datetime.datetime.today().strftime("%A, %B %d").replace(" 0", " ")
+_today = datetime.datetime.today()
+today_label = _today.strftime("%A, %B ") + str(_today.day)  # str(day) never has leading zero
 st.markdown(f"## ⚾ SP Props — {today_label}")
 st.caption(
     "Projected strikeouts, runs allowed, and innings pitched for every "
@@ -440,7 +462,7 @@ for i, game in enumerate(todays_games):
     away_sp_name = game.get("away_probable_pitcher", "TBD")
     home_sp_pid  = game.get("home_pitcher_id")
     away_sp_pid  = game.get("away_pitcher_id")
-    venue_abb    = h_abb or "LAD"
+    venue_abb    = h_abb  # None if home team unknown; PARK_RUN_FACTOR.get() defaults to 1.00
     venue_name   = game.get("venue_name", "")
 
     # Fetch team batting for each side (opposing lineup)
@@ -706,7 +728,7 @@ for p in all_pitchers:
             best_line, best_rec, best_col, best_reason = line, "OVER", col, reason
             break
     if not best_line:
-        for line in COMMON_K_LINES:        # check from lowest line up for UNDER
+        for line in reversed(COMMON_K_LINES):  # highest line down — most actionable UNDER
             rec, col, reason = proj["k_props"][line]
             if rec == "UNDER":
                 best_line, best_rec, best_col, best_reason = line, "UNDER", col, reason

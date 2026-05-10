@@ -358,8 +358,8 @@ def project_hit_probability(
     pitcher_hand:  str,
     lineup_pos:    int,
     park_abb:      str,
-    w_season:      float = 0.5,
-    w_recent:      float = 0.5,
+    w_season:      float = 0.6,   # matches sidebar default of 40% recent weight
+    w_recent:      float = 0.4,
     recent_games:  int   = 15,
 ) -> dict:
     """
@@ -383,6 +383,8 @@ def project_hit_probability(
     recent_avg = recent_stats.get("avg", season_avg)    or season_avg
     recent_hit_game_rate = recent_stats.get("hit_game_rate", 0)
     recent_g   = recent_stats.get("games", 0)
+    # Cap to the requested window in case the API returned more games than asked
+    recent_g   = min(recent_g, recent_games)
 
     # ── Step 1: Base hit rate — blend season and recent BA ────────────────────
     if recent_g >= 5:
@@ -408,8 +410,8 @@ def project_hit_probability(
     matchup_adj = 0.0
 
     if matchup_ab >= 10:
-        # Meaningful sample — weight by AB (more AB = more trust)
-        matchup_weight = min(0.25, matchup_ab / 100)
+        # Scale from ~10% at 10 AB to 25% at 50+ AB so career data is meaningful
+        matchup_weight = min(0.25, 0.10 + (matchup_ab - 10) / 160)
         matchup_adj = (matchup_avg - base_avg) * matchup_weight
 
     # ── Step 4: Opposing SP quality adjustment ────────────────────────────────
@@ -487,7 +489,7 @@ def project_hit_probability(
         "p_hit":           p_hit,
         "adjusted_avg":    round(adjusted_avg, 3),
         "base_avg":        round(base_avg, 3),
-        "exp_pa":          round(exp_pa, 1),
+        "exp_pa":          round(exp_pa, 2),
         "platoon_adj":     round(platoon_adj, 3),
         "matchup_adj":     round(matchup_adj, 3),
         "sp_adj":          round(sp_adj, 3),
@@ -625,8 +627,8 @@ for gi, game in enumerate(games):
         # Home batters face away SP
         *[(b, True,  home_abb, away_sp_id, away_sp_stats, away_sp_hand, away_sp_name, away_name)
           for b in home_lineup],
-        # Away batters face home SP
-        *[(b, False, away_abb, home_sp_id, home_sp_stats, home_sp_hand, home_sp_name, home_name)
+        # Away batters face home SP, but play in home team's park
+        *[(b, False, home_abb, home_sp_id, home_sp_stats, home_sp_hand, home_sp_name, home_name)
           for b in away_lineup],
     ]:
         pid     = batter["id"]
@@ -761,7 +763,7 @@ for b in filtered:
                 f'{conf_emoji[conf]} {conf} confidence</div>'
                 f'<div style="font-size:11px;color:#888;margin-top:4px;">'
                 f'Adj avg: .{int(proj["adjusted_avg"]*1000):03d} · '
-                f'{proj["exp_pa"]} exp PA</div>'
+                f'{round(proj["exp_pa"], 1)} exp PA</div>'
                 f'</div>',
                 unsafe_allow_html=True,
             )
@@ -781,22 +783,26 @@ for b in filtered:
             else:
                 st.metric("Recent form", "< 5G data")
         with s4:
-            adj_delta = round((proj["adjusted_avg"] - proj["base_avg"]) * 1000)
+            adj_delta = round((proj["adjusted_avg"] - b["season_avg"]) * 1000)
             st.metric("Adj AVG", f".{int(proj['adjusted_avg']*1000):03d}",
-                      delta=f"{'+' if adj_delta >= 0 else ''}{adj_delta} pts",
-                      help="After platoon, matchup, SP, and park adjustments")
+                      delta=f"{'+' if adj_delta >= 0 else ''}{adj_delta} pts vs season avg",
+                      help="After recent form, platoon, matchup, SP, and park adjustments vs season AVG")
         with s5:
             pf = proj["park_factor"]
             pf_str = f"{'+' if pf >= 1 else ''}{round((pf-1)*100, 0):.0f}%"
             st.metric("Park factor", pf_str, b["park_abb"])
 
         # Adjustment breakdown mini chart
+        # Park is multiplicative in the model (adjusted_avg * park_factor),
+        # so its contribution is the delta it adds to the pre-park adjusted avg.
+        pre_park_avg = proj["base_avg"] + proj["platoon_adj"] + proj["matchup_adj"] + proj["sp_adj"]
+        park_contribution = round(pre_park_avg * (proj["park_factor"] - 1), 3)
         adjs = {
             "Base avg":       proj["base_avg"],
             "Platoon":        proj["platoon_adj"],
             "vs SP history":  proj["matchup_adj"],
             "SP quality":     proj["sp_adj"],
-            "Park":           round((proj["park_factor"] - 1) * proj["base_avg"], 3),
+            "Park":           park_contribution,
         }
         non_base = {k: v for k, v in adjs.items() if k != "Base avg" and v != 0}
         if non_base:
@@ -807,7 +813,7 @@ for b in filtered:
                 y=list(non_base.keys()),
                 orientation="h",
                 marker_color=colors_bar,
-                text=[f"{'+' if v>=0 else ''}{round(v*1000):+d} pts" for v in non_base.values()],
+                text=[f"{round(v*1000):+d} pts" for v in non_base.values()],
                 textposition="outside",
                 textfont=dict(color="#ccc", size=10),
             ))
@@ -863,7 +869,7 @@ for b in filtered:
         f"{'LHP' if b['opp_sp_hand']=='L' else 'RHP'} {b['opp_sp']}</td>"
         f"<td style='padding:8px 10px;color:#ccc;'>.{int(b['season_avg']*1000):03d}</td>"
         f"<td style='padding:8px 10px;color:#ccc;'>.{int(proj['adjusted_avg']*1000):03d}</td>"
-        f"<td style='padding:8px 10px;color:#aaa;'>{proj['exp_pa']}</td>"
+        f"<td style='padding:8px 10px;color:#aaa;'>{round(proj['exp_pa'], 1)}</td>"
         f"<td style='padding:8px 10px;font-weight:800;font-size:16px;color:{p_color};'>{p}%</td>"
         f"<td style='padding:8px 10px;font-weight:700;color:{color};'>"
         f"{conf_emoji[conf]} {conf}</td>"

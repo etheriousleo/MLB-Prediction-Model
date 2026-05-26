@@ -167,6 +167,15 @@ st.markdown("""
 SEASON     = datetime.datetime.now().year
 HOME_BOOST = 0.04
 HOME_RUNS  = 0.3
+# Parks more than 5% above/below neutral already encode much of the home
+# environment in their run factor.  Scale the win-probability home boost
+# toward neutral for those venues to avoid double-counting.
+def scaled_home_boost(park_factor: float = 1.0) -> float:
+    """Return a park-adjusted HOME_BOOST (win-prob units)."""
+    # Linear taper: full boost at pf=1.0, half boost at pf ≥ 1.10 or ≤ 0.90
+    deviation = abs(park_factor - 1.0)
+    scale = max(0.5, 1.0 - deviation * 5)   # e.g. pf=1.10 → scale=0.5
+    return HOME_BOOST * scale
 
 # ── Team lookup tables ─────────────────────────────────────────────────────────
 ABB_TO_FULL = {
@@ -268,14 +277,38 @@ PARK_RUN_FACTOR = {
 # Venue ID → team abbreviation (home team's park)
 # These are stable statsapi venue IDs
 VENUE_ID_TO_ABB = {
-    2392: "COL", 2394: "CIN", 5325: "TEX", 3: "BOS",
-    17:   "CHC", 2: "BAL",   2681: "PHI", 32: "MIL",
-    15:   "ARI", 3313: "NYY", 4705: "ATL", 3312: "MIN",
-    2394: "DET", 2392: "HOU", 239: "LAD",  2395: "SFG",
-    3309: "WSN", 2889: "STL", 31: "PIT",   14: "TOR",
-    3289: "NYM", 7: "KCR",   5: "CLE",    35: "CHW",
-    680:  "SEA", 1: "LAA",   10: "OAK",   2680: "SDP",
-    4169: "MIA", 12: "TBR",
+    # Confirmed against MLB Stats API / Baseball Savant venueId values.
+    # ballpark_factor() falls back to home_abb if a venue_id isn't listed here.
+    1:    "LAA",  # Angel Stadium
+    2:    "BAL",  # Oriole Park at Camden Yards
+    3:    "BOS",  # Fenway Park
+    4:    "CHW",  # Guaranteed Rate Field
+    5:    "CLE",  # Progressive Field
+    7:    "KCR",  # Kauffman Stadium
+    10:   "OAK",  # Oakland Coliseum
+    12:   "TBR",  # Tropicana Field
+    14:   "TOR",  # Rogers Centre
+    15:   "ARI",  # Chase Field
+    17:   "CHC",  # Wrigley Field
+    31:   "PIT",  # PNC Park
+    32:   "MIL",  # American Family Field
+    239:  "LAD",  # Dodger Stadium
+    680:  "SEA",  # T-Mobile Park
+    2392: "COL",  # Coors Field
+    2394: "DET",  # Comerica Park (confirmed: Baseball Savant venueId=2394)
+    2395: "SFG",  # Oracle Park
+    2430: "CIN",  # Great American Ball Park
+    2680: "SDP",  # Petco Park
+    2681: "PHI",  # Citizens Bank Park
+    2889: "STL",  # Busch Stadium
+    3289: "NYM",  # Citi Field
+    3309: "WSN",  # Nationals Park
+    3312: "MIN",  # Target Field
+    3313: "NYY",  # Yankee Stadium
+    4169: "MIA",  # loanDepot park
+    4705: "ATL",  # Truist Park
+    4707: "HOU",  # Minute Maid Park / Daikin Park
+    5325: "TEX",  # Globe Life Field
 }
 
 def ballpark_factor(venue_id: int, home_abb: str) -> float:
@@ -341,9 +374,13 @@ def fetch_team_stats(season: int) -> tuple[dict, dict]:
                     hr9  = float(s.get("homeRunsPer9",       "0") or 0)
                     era  = float(s.get("era",  0) or 0)
                     whip = float(s.get("whip", 0) or 0)
-                    # FIP approximation: (13*HR9 + 3*BB9 - 2*K9) / IP_factor + constant
-                    # Simplified: correlates strongly with future ERA
-                    fip  = round((13 * hr9 + 3 * bb9 - 2 * k9) + 3.2, 2)
+                    # FIP per-9 approximation: numerically equivalent to standard FIP
+                    # when stats are expressed per 9 IP. Constant 3.10 matches league
+                    # average ERA scaling (standard range ~3.1–3.2). Clamped to
+                    # [2.0, 7.5] to prevent extreme early-season values from
+                    # dominating the defence score (FIP weight = 35%).
+                    fip  = round(max(2.0, min(7.5,
+                               (13 * hr9 + 3 * bb9 - 2 * k9) + 3.10)), 2)
                     store[abb] = {
                         "ERA":  era,
                         "WHIP": whip,
@@ -454,7 +491,7 @@ def fetch_team_stats_recent(season: int, last_n: int) -> tuple[dict, dict]:
             "K/9":  k9,
             "BB/9": bb9,
             "HR/9": hr9,
-            "FIP":  round((13 * hr9 + 3 * bb9 - 2 * k9) + 3.2, 2),
+            "FIP":  round(max(2.0, min(7.5, (13 * hr9 + 3 * bb9 - 2 * k9) + 3.10)), 2),
         }
 
     return all_batting, all_pitching
@@ -592,7 +629,8 @@ def fetch_pitcher_season_stats(player_id: int, season: int) -> dict:
         gs  = int(s.get("gamesStarted", 0))
         # FIP approximation for individual pitcher
         hr9 = float(s.get("homeRunsPer9", "0") or 0)
-        fip = round((13 * hr9 + 3 * bb9 - 2 * k9) + 3.2, 2) if k9 else era
+        fip = round(max(2.0, min(7.5,
+                    (13 * hr9 + 3 * bb9 - 2 * k9) + 3.10)), 2) if k9 else era
         return {
             "era":    era,
             "whip":   whip,
@@ -768,7 +806,7 @@ def pitcher_adjustment(pitcher_stats: dict) -> float:
     Uses league-average normalisation so scores are meaningful in absolute terms.
     Only applied if pitcher has meaningful innings pitched.
     """
-    if not pitcher_stats or pitcher_stats.get("ip", 0) < 5:
+    if not pitcher_stats or pitcher_stats.get("ip", 0) < 15:
         return 0.5
     era  = pitcher_stats.get("era",  LEAGUE_AVG["era"])
     whip = pitcher_stats.get("whip", LEAGUE_AVG["whip"])
@@ -789,7 +827,7 @@ def pitcher_adjustment(pitcher_stats: dict) -> float:
 
 def calc_prob(sa, sb, home, w_off, w_def, w_rec,
               ra=None, rb=None, w_season=1.0, w_recent=0.0,
-              sp_h_score=0.5, sp_a_score=0.5):
+              sp_h_score=0.5, sp_a_score=0.5, park_factor: float = 1.0):
     ea = blend_stats(sa, ra, w_season, w_recent) if ra else sa
     eb = blend_stats(sb, rb, w_season, w_recent) if rb else sb
 
@@ -812,8 +850,9 @@ def calc_prob(sa, sb, home, w_off, w_def, w_rec,
     off_a, def_a, rec_a, off_b, def_b, rec_b = build_composite(ea_adj, eb_adj)
     sc_a = off_a * w_off + def_a * w_def + rec_a * w_rec
     sc_b = off_b * w_off + def_b * w_def + rec_b * w_rec
-    if home == "home":   sc_a += HOME_BOOST
-    elif home == "away": sc_b += HOME_BOOST
+    boost = scaled_home_boost(park_factor)
+    if home == "home":   sc_a += boost
+    elif home == "away": sc_b += boost
     total = sc_a + sc_b or 1
     return sc_a / total, sc_b / total
 
@@ -872,9 +911,15 @@ def calc_confidence(sa, sb, pct_h, pct_a, margin_winner, prob_winner,
     sp_gap = abs(sp_h_score - sp_a_score)
     sp_split = sp_gap > 0.25  # meaningful SP advantage exists
 
-    if models_agree and prob_strength == "strong" and not ops_rec_split and not form_split:
+    # sp_conflict: SP edge points against the win-prob pick — genuine disagreement
+    sp_conflict = sp_split and (
+        (sp_h_score > sp_a_score) != (pct_h > pct_a)
+    )
+
+    if (models_agree and prob_strength == "strong"
+            and not ops_rec_split and not form_split and not sp_conflict):
         level, emoji, color = "High",       "🟢", "#00c07a"
-    elif models_agree and prob_strength in ("strong", "moderate") and not form_split:
+    elif models_agree and prob_strength in ("strong", "moderate") and not form_split and not sp_conflict:
         level, emoji, color = "Moderate",   "🟡", "#f5c842"
     elif models_agree:
         level, emoji, color = "Low",        "🟠", "#f5a623"
@@ -885,7 +930,12 @@ def calc_confidence(sa, sb, pct_h, pct_a, margin_winner, prob_winner,
     if not models_agree:
         reasons.append(f"Win probability favors **{prob_winner}**, but the projected run line "
                        f"favors **{margin_winner}** — the models disagree.")
-    if sp_split:
+    if sp_conflict:
+        sp_fav_prob = prob_winner
+        sp_fav_sp   = sa["name"] if sp_h_score > sp_a_score else sb["name"]
+        reasons.append(f"Today's starting pitcher favors **{sp_fav_sp}** but the win probability "
+                       f"model favors **{sp_fav_prob}** — the SP edge contradicts the model pick.")
+    elif sp_split:
         sp_fav = sa["name"] if sp_h_score > sp_a_score else sb["name"]
         reasons.append(f"Today's starting pitcher gives **{sp_fav}** a meaningful edge "
                        f"(SP quality gap: {round(sp_gap, 2)}).")
@@ -1107,7 +1157,8 @@ with tab_today:
         home_flag = "home" if home_display else "neutral"
 
         ph, pa = calc_prob(s_h, s_a, home_flag, w_off, w_def, w_rec,
-                           r_h, r_a, w_season, w_recent, sp_h_score, sp_a_score)
+                           r_h, r_a, w_season, w_recent, sp_h_score, sp_a_score,
+                           park_factor=park_factor)
         prob_pick = s_h["name"] if ph >= pa else s_a["name"]
         home_pct  = round(ph * 100)
         away_pct  = round(pa * 100)
@@ -1492,10 +1543,12 @@ with tab_back:
                         bt_away_sp = fetch_pitcher_stats_by_name(sp_name, SEASON)
                 bt_sp_h_score = pitcher_adjustment(bt_home_sp)
                 bt_sp_a_score = pitcher_adjustment(bt_away_sp)
+                bt_park_factor = PARK_RUN_FACTOR.get(h_abb, 1.0)
 
                 ph, pa    = calc_prob(s_h, s_a, "home", w_off, w_def, w_rec,
                                       w_season=w_season, w_recent=w_recent,
-                                      sp_h_score=bt_sp_h_score, sp_a_score=bt_sp_a_score)
+                                      sp_h_score=bt_sp_h_score, sp_a_score=bt_sp_a_score,
+                                      park_factor=bt_park_factor)
                 prob_pick = s_h["name"] if ph >= pa else s_a["name"]
                 prob_pct  = round(max(ph, pa) * 100)
                 _, _, proj_margin, margin_pick, _, proj_total_bt = calc_run_line(

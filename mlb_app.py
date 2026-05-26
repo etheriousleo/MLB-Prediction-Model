@@ -380,7 +380,7 @@ def fetch_team_stats(season: int) -> tuple[dict, dict]:
                     # [2.0, 7.5] to prevent extreme early-season values from
                     # dominating the defence score (FIP weight = 35%).
                     fip  = round(max(2.0, min(7.5,
-                               (13 * hr9 + 3 * bb9 - 2 * k9) + 3.10)), 2)
+                               (13 * hr9 + 3 * bb9 - 2 * k9) / 9 + 3.10)), 2)
                     store[abb] = {
                         "ERA":  era,
                         "WHIP": whip,
@@ -491,7 +491,7 @@ def fetch_team_stats_recent(season: int, last_n: int) -> tuple[dict, dict]:
             "K/9":  k9,
             "BB/9": bb9,
             "HR/9": hr9,
-            "FIP":  round(max(2.0, min(7.5, (13 * hr9 + 3 * bb9 - 2 * k9) + 3.10)), 2),
+            "FIP":  round(max(2.0, min(7.5, (13 * hr9 + 3 * bb9 - 2 * k9) / 9 + 3.10)), 2),
         }
 
     return all_batting, all_pitching
@@ -630,7 +630,7 @@ def fetch_pitcher_season_stats(player_id: int, season: int) -> dict:
         # FIP approximation for individual pitcher
         hr9 = float(s.get("homeRunsPer9", "0") or 0)
         fip = round(max(2.0, min(7.5,
-                    (13 * hr9 + 3 * bb9 - 2 * k9) + 3.10)), 2) if k9 else era
+                    (13 * hr9 + 3 * bb9 - 2 * k9) / 9 + 3.10)), 2) if k9 else era
         return {
             "era":    era,
             "whip":   whip,

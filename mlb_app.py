@@ -831,25 +831,22 @@ def calc_prob(sa, sb, home, w_off, w_def, w_rec,
     ea = blend_stats(sa, ra, w_season, w_recent) if ra else sa
     eb = blend_stats(sb, rb, w_season, w_recent) if rb else sb
 
-    # Temporarily override team pitching scores with SP quality if available
-    # Blend team pitching 50/50 with today's SP — SP matters a lot but team
-    # bullpen still contributes
-    SP_WEIGHT = 0.5
-    ea_adj = dict(ea)
-    eb_adj = dict(eb)
-    # Adjust ERA/WHIP/K9 toward SP quality
-    if sp_h_score != 0.5:
-        ea_adj["era"]  = ea["era"]  * (1 - SP_WEIGHT) + (4.5 - (sp_h_score - 0.5) * 6) * SP_WEIGHT
-        ea_adj["whip"] = ea["whip"] * (1 - SP_WEIGHT) + (1.3 - (sp_h_score - 0.5) * 1.5) * SP_WEIGHT
-        ea_adj["k9"]   = ea["k9"]   * (1 - SP_WEIGHT) + (8.5 + (sp_h_score - 0.5) * 12) * SP_WEIGHT
-    if sp_a_score != 0.5:
-        eb_adj["era"]  = eb["era"]  * (1 - SP_WEIGHT) + (4.5 - (sp_a_score - 0.5) * 6) * SP_WEIGHT
-        eb_adj["whip"] = eb["whip"] * (1 - SP_WEIGHT) + (1.3 - (sp_a_score - 0.5) * 1.5) * SP_WEIGHT
-        eb_adj["k9"]   = eb["k9"]   * (1 - SP_WEIGHT) + (8.5 + (sp_a_score - 0.5) * 12) * SP_WEIGHT
-
-    off_a, def_a, rec_a, off_b, def_b, rec_b = build_composite(ea_adj, eb_adj)
+    off_a, def_a, rec_a, off_b, def_b, rec_b = build_composite(ea, eb)
     sc_a = off_a * w_off + def_a * w_def + rec_a * w_rec
     sc_b = off_b * w_off + def_b * w_def + rec_b * w_rec
+
+    # SP adjustment: apply directly as an additive shift on the composite score.
+    # sp_score is 0–1 (0.5 = league average). We convert the deviation from 0.5
+    # into a bonus/penalty capped at ±0.04 (same order as HOME_BOOST).
+    # Home SP boosts home team; away SP boosts away team.
+    # This avoids the previous circular approach of re-deriving fake ERA/WHIP/K9
+    # values from the SP score and feeding them back through normalization.
+    SP_MAX = 0.04
+    sp_h_adj = (sp_h_score - 0.5) * 2 * SP_MAX   # positive = home SP is above avg
+    sp_a_adj = (sp_a_score - 0.5) * 2 * SP_MAX   # positive = away SP is above avg
+    sc_a += sp_h_adj   # better home SP helps home team
+    sc_b += sp_a_adj   # better away SP helps away team
+
     boost = scaled_home_boost(park_factor)
     if home == "home":   sc_a += boost
     elif home == "away": sc_b += boost
@@ -905,7 +902,7 @@ def calc_confidence(sa, sb, pct_h, pct_a, margin_winner, prob_winner,
     form_split = False
     if ra and rb:
         season_leader = sa["name"] if sa["ops"] > sb["ops"] else sb["name"]
-        recent_leader = ra["name"] if (ra.get("ops") or 0) > (rb.get("ops") or 0) else rb["name"]
+        recent_leader = sa["name"] if (ra.get("ops") or 0) > (rb.get("ops") or 0) else sb["name"]
         form_split = season_leader != recent_leader
 
     sp_gap = abs(sp_h_score - sp_a_score)
@@ -917,9 +914,9 @@ def calc_confidence(sa, sb, pct_h, pct_a, margin_winner, prob_winner,
     )
 
     if (models_agree and prob_strength == "strong"
-            and not ops_rec_split and not form_split and not sp_conflict):
+            and not form_split and not sp_conflict):
         level, emoji, color = "High",       "🟢", "#00c07a"
-    elif models_agree and prob_strength in ("strong", "moderate") and not form_split and not sp_conflict:
+    elif models_agree and prob_strength in ("strong", "moderate") and not sp_conflict:
         level, emoji, color = "Moderate",   "🟡", "#f5c842"
     elif models_agree:
         level, emoji, color = "Low",        "🟠", "#f5a623"
@@ -941,7 +938,7 @@ def calc_confidence(sa, sb, pct_h, pct_a, margin_winner, prob_winner,
                        f"(SP quality gap: {round(sp_gap, 2)}).")
     if form_split and ra and rb:
         season_leader = sa["name"] if sa["ops"] > sb["ops"] else sb["name"]
-        recent_leader = ra["name"] if (ra.get("ops") or 0) > (rb.get("ops") or 0) else rb["name"]
+        recent_leader = sa["name"] if (ra.get("ops") or 0) > (rb.get("ops") or 0) else sb["name"]
         reasons.append(f"Recent form and season form diverge: **{recent_leader}** looks "
                        f"better recently but **{season_leader}** has the stronger season OPS.")
     if ops_rec_split:

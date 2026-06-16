@@ -1023,17 +1023,25 @@ with tabs[4]:
             pw1, pd, pw2 = match_probs(t1, t2, group_stage=True)
             xg1, xg2 = expected_goals(t1, t2)
 
-            # Predicted outcome = highest-prob bucket
-            if pw1 >= pd and pw1 >= pw2:
-                pred_outcome = "team1"
-            elif pw2 >= pd and pw2 >= pw1:
-                pred_outcome = "team2"
-            else:
+            # Predicted outcome — "close game" rule: if the two teams' win
+            # probabilities are within 10 percentage points of each other,
+            # the model is treated as predicting a draw, regardless of which
+            # side is nominally higher or what the raw draw probability is.
+            CLOSE_GAME_THRESHOLD = 0.10
+            if abs(pw1 - pw2) < CLOSE_GAME_THRESHOLD:
                 pred_outcome = "draw"
+            elif pw1 > pw2:
+                pred_outcome = "team1"
+            else:
+                pred_outcome = "team2"
 
             correct = pred_outcome == actual_outcome
+            gap_pts = abs(pw1 - pw2)
+            is_close_call = gap_pts < CLOSE_GAME_THRESHOLD
 
-            # Predicted winner probability
+            # Predicted winner probability — for close-call draws, show the
+            # higher of the two win probs alongside the gap, since that's
+            # the actual basis for calling it a draw (not the raw draw %)
             if pred_outcome == "team1":
                 pred_conf = pw1
             elif pred_outcome == "team2":
@@ -1060,6 +1068,8 @@ with tabs[4]:
                 "pd":             pd,
                 "pw2":            pw2,
                 "pred_conf":      pred_conf,
+                "is_close_call":  is_close_call,
+                "gap_pts":        gap_pts,
                 "xg1":            xg1,
                 "xg2":            xg2,
                 "brier":          brier,
@@ -1072,12 +1082,21 @@ with tabs[4]:
         avg_brier = sum(r["brier"] for r in records) / n_total if n_total else 0
         avg_conf  = sum(r["pred_conf"] for r in records) / n_total * 100 if n_total else 0
 
+        close_recs = [r for r in records if r["is_close_call"]]
+        n_close = len(close_recs)
+        n_close_correct = sum(1 for r in close_recs if r["correct"])
+        close_accuracy = n_close_correct / n_close * 100 if n_close else 0
+
         # ── Summary scorecards ──
         sc1, sc2, sc3, sc4 = st.columns(4)
         sc1.metric("Matches Evaluated", n_total)
         sc2.metric("Correct Picks", f"{n_correct}/{n_total}", f"{accuracy:.1f}%")
         sc3.metric("Avg Brier Score", f"{avg_brier:.3f}", help="Lower is better. Perfect = 0, Random = 0.667")
         sc4.metric("Avg Predicted Confidence", f"{avg_conf:.1f}%")
+
+        if n_close:
+            st.caption(f"⚖️ **{n_close}** of {n_total} matches were \"close games\" (win probs within 10pp → predicted draw): "
+                       f"**{n_close_correct}/{n_close}** correct ({close_accuracy:.1f}%)")
 
         st.markdown("---")
 
@@ -1137,18 +1156,24 @@ with tabs[4]:
         st.markdown("##### Match-by-Match Prediction Log")
 
         # Filter controls
-        fc1, fc2 = st.columns(2)
+        fc1, fc2, fc3 = st.columns([2, 2, 1])
         with fc1:
             outcome_filter = st.radio("Show", ["All", "Correct ✅", "Wrong ❌"], horizontal=True, key="bt_outcome_filter")
         with fc2:
             grps_bt = sorted(set(r["group"] for r in records))
             grp_filter = st.selectbox("Group", ["All"] + grps_bt, key="bt_grp_filter")
+        with fc3:
+            st.markdown("<br>", unsafe_allow_html=True)
+            close_only = st.checkbox("Close games only", key="bt_close_only",
+                help="Matches where win probabilities were within 10pp — predicted as a draw")
 
         filtered = records_sorted
         if outcome_filter == "Correct ✅":
             filtered = [r for r in filtered if r["correct"]]
         elif outcome_filter == "Wrong ❌":
             filtered = [r for r in filtered if not r["correct"]]
+        if close_only:
+            filtered = [r for r in filtered if r["is_close_call"]]
         if grp_filter != "All":
             filtered = [r for r in filtered if r["group"] == grp_filter]
 
@@ -1169,6 +1194,19 @@ with tabs[4]:
             pred_label   = outcome_label(r["pred"],   r["team1"], r["team2"])
             actual_label = outcome_label(r["actual"], r["team1"], r["team2"])
 
+            # For close-call draw predictions, show the gap (the actual basis
+            # for the call) rather than the raw draw probability
+            if r["pred"] == "draw" and r["is_close_call"]:
+                conf_str = f"gap {r['gap_pts']*100:.1f}pp"
+            else:
+                conf_str = f"{r['pred_conf']*100:.0f}%"
+
+            close_tag = (
+                "<span style='background:#f0b42922;color:#f0b429;border:1px solid #f0b42955;"
+                "border-radius:4px;padding:1px 6px;font-size:0.65rem;margin-left:4px'>CLOSE GAME</span>"
+                if r["is_close_call"] else ""
+            )
+
             st.markdown(f"""
             <div style='background:{bg};border:1px solid {border};border-radius:10px;
                         padding:0.75rem 1rem;margin-bottom:0.5rem'>
@@ -1180,7 +1218,7 @@ with tabs[4]:
                     <span style='font-weight:700;min-width:8rem'>{r['flag2']} {r['team2']}</span>
                     <span style='flex:1'></span>
                     <span style='font-size:0.75rem;color:#aaa'>
-                        Pred: <b style='color:#4fc3f7'>{pred_label}</b> ({r['pred_conf']*100:.0f}%)
+                        Pred: <b style='color:#4fc3f7'>{pred_label}</b> ({conf_str}){close_tag}
                         &nbsp;|&nbsp;
                         Actual: <b style='color:#f0b429'>{actual_label}</b>
                     </span>
@@ -1215,6 +1253,10 @@ with tabs[4]:
 
             **Backtest Metrics:**
             - **Accuracy**: % of matches where predicted outcome (win/draw/win) matched actual result
+            - **Close game rule**: if the two teams' win probabilities are within 10 percentage points
+              of each other, the model's prediction is counted as a **draw** — regardless of which side
+              is nominally higher or what the raw draw probability says. E.g. 44% / 30% draw / 36% counts
+              as a predicted draw, since 44% and 36% are only 8pp apart.
             - **Brier Score**: (1 - P(actual outcome))² — lower is better; random = 0.667, perfect = 0
             - Predictions use pre-tournament ratings only (no in-tournament form updates)
 

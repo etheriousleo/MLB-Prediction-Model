@@ -1393,7 +1393,9 @@ with tab_today:
             f'{home_name} <span style="color:#f5c842;">{proj_home}</span><br>'
             f'{away_name} <span style="color:#f5c842;">{proj_away}</span><br>'
             f'<span style="font-size:11px;color:#888;font-weight:400;">O/U: '
-            f'<span style="color:#f5c842;">{game["proj_total"]}</span></span></div></div>'
+            f'<span style="color:#f5c842;">{game["proj_total"]}</span></span><br>'
+            f'<span style="font-size:11px;color:#888;font-weight:400;">F5 O/U: '
+            f'<span style="color:#f5c842;">{round((game["proj_home"] + game["proj_away"]) * (5/9) * 2) / 2:.1f}</span></span></div></div>'
 
             f'<div><div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;'
             f'color:#666;margin-bottom:4px;">Run line (-1.5)</div>'

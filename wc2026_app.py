@@ -124,7 +124,6 @@ TEAMS = {
     "Curaçao":          {"fifa_rank":82, "elo":1382, "attack":5.3,"defense":5.1,"wc_wins":0,"group":"E","flag":"🇨🇼","conf":"CONCACAF"},
     "Haiti":            {"fifa_rank":83, "elo":1380, "attack":5.2,"defense":5.0,"wc_wins":0,"group":"C","flag":"🇭🇹","conf":"CONCACAF"},
     "New Zealand":      {"fifa_rank":85, "elo":1374, "attack":5.1,"defense":5.2,"wc_wins":0,"group":"G","flag":"🇳🇿","conf":"OFC"},
-    "Senegal":          {"fifa_rank":14, "elo":1689, "attack":7.3,"defense":7.5,"wc_wins":0,"group":"I","flag":"🇸🇳","conf":"CAF"},
     "Iran":             {"fifa_rank":20, "elo":1618, "attack":6.5,"defense":6.9,"wc_wins":0,"group":"G","flag":"🇮🇷","conf":"AFC"},
     "Iraq":             {"fifa_rank":65, "elo":1420, "attack":5.7,"defense":5.5,"wc_wins":0,"group":"I","flag":"🇮🇶","conf":"AFC"},
     "DR Congo":         {"fifa_rank":55, "elo":1440, "attack":5.9,"defense":5.7,"wc_wins":0,"group":"K","flag":"🇨🇩","conf":"CAF"},
@@ -252,14 +251,16 @@ def fetch_wc_matches():
             team1_raw = m.get("team1", "")
             team2_raw = m.get("team2", "")
 
-            # Skip placeholder knockout entries (W101, L102 etc.)
             if not team1_raw or not team2_raw:
-                continue
-            if len(team1_raw) <= 5 and (team1_raw[0] in "WL" or team1_raw.startswith(("1st", "2nd", "3rd"))):
                 continue
 
             team1 = normalize_team(team1_raw)
             team2 = normalize_team(team2_raw)
+
+            # A match has known teams iff both sides resolve to real entries. This
+            # robustly excludes openfootball bracket placeholders ("1A", "2B",
+            # "3A/B/C/D/F", "W73", "L101") regardless of their exact format.
+            teams_known = (team1 in TEAMS) and (team2 in TEAMS)
 
             if match_date:
                 if ft:
@@ -287,6 +288,7 @@ def fetch_wc_matches():
                 "score_ht": ht,
                 "venue": m.get("ground", ""),
                 "status": status,
+                "teams_known": teams_known,
                 "goals1": m.get("goals1", []),
                 "goals2": m.get("goals2", []),
             })
@@ -295,6 +297,28 @@ def fetch_wc_matches():
         return []
 
 # ── Core Model ───────────────────────────────────────────────────────────────
+
+def completed_group_results(matches):
+    """Map group letter -> {(team1, team2): (g1, g2)} for finished group-stage games.
+
+    Lets the group/tournament simulators lock in matches that have already happened
+    instead of re-simulating the entire group from scratch. Group letters from the
+    feed ("Group A") map straight onto our GROUPS keys ("A"); teams are already
+    normalized to TEAMS keys by fetch_wc_matches().
+    """
+    out = {}
+    for m in matches:
+        grp = m.get("group", "")
+        if not grp.startswith("Group"):
+            continue
+        if m["status"] != "final" or not m["score_ft"]:
+            continue
+        if m["team1"] not in TEAMS or m["team2"] not in TEAMS:
+            continue
+        letter = grp.replace("Group", "").strip()
+        g1, g2 = m["score_ft"][0], m["score_ft"][1]
+        out.setdefault(letter, {})[(m["team1"], m["team2"])] = (g1, g2)
+    return out
 
 def elo_win_prob(elo_a, elo_b, home_advantage=0):
     """Standard Elo win probability with optional home advantage."""
@@ -335,17 +359,54 @@ def expected_goals(team_a, team_b):
     xg_b = base_xg * (t_b["attack"] / 7.0) * (7.0 / t_a["defense"])
     return round(xg_a, 2), round(xg_b, 2)
 
-def score_distribution(xg_a, xg_b, n_sim=100_000):
-    """Monte Carlo score simulation returning most likely scorelines."""
-    scores = {}
-    for _ in range(n_sim):
-        ga = np.random.poisson(xg_a)
-        gb = np.random.poisson(xg_b)
-        key = f"{ga}-{gb}"
-        scores[key] = scores.get(key, 0) + 1
-    total = sum(scores.values())
-    top = sorted(scores.items(), key=lambda x: x[1], reverse=True)[:8]
-    return [(s, round(c / total * 100, 1)) for s, c in top]
+def _poisson_pmf(k, lam):
+    """Exact Poisson probability mass for k goals at rate lam."""
+    return math.exp(-lam) * lam ** k / math.factorial(k)
+
+def score_distribution(xg_a, xg_b, max_goals=8):
+    """Exact scoreline probabilities from independent Poisson marginals.
+
+    Replaces a 100k-draw Monte Carlo: the joint of two independent Poissons is
+    just the product of their PMFs, so this is exact, deterministic, and instant.
+    """
+    pmf_a = [_poisson_pmf(k, xg_a) for k in range(max_goals + 1)]
+    pmf_b = [_poisson_pmf(k, xg_b) for k in range(max_goals + 1)]
+    grid = [
+        (f"{a}-{b}", pmf_a[a] * pmf_b[b])
+        for a in range(max_goals + 1)
+        for b in range(max_goals + 1)
+    ]
+    grid.sort(key=lambda x: x[1], reverse=True)
+    return [(s, round(p * 100, 1)) for s, p in grid[:8]]
+
+# ── Shared result helpers (used by group + tournament simulators) ─────────────
+
+def _apply_result(pts, gd, gf, a, b, ga, gb):
+    """Accumulate one match result into points / goal-diff / goals-for dicts."""
+    gd[a] += ga - gb
+    gd[b] += gb - ga
+    gf[a] += ga
+    gf[b] += gb
+    if ga > gb:
+        pts[a] += 3
+    elif ga == gb:
+        pts[a] += 1
+        pts[b] += 1
+    else:
+        pts[b] += 3
+
+def _played_score(played, a, b):
+    """Return (a_goals, b_goals) for the a-vs-b matchup if it has been played, else None.
+
+    `played` is keyed by the (team1, team2) order as it appeared in the feed, so we
+    check both orientations and normalize the result back to (a_goals, b_goals).
+    """
+    if (a, b) in played:
+        return played[(a, b)]
+    if (b, a) in played:
+        b_goals, a_goals = played[(b, a)]
+        return (a_goals, b_goals)
+    return None
 
 def confidence_tier(p_win):
     if p_win >= 0.68:
@@ -359,36 +420,53 @@ def confidence_tier(p_win):
 
 # ── Group stage simulation ───────────────────────────────────────────────────
 
-def simulate_group(group_name, n=50_000):
-    """Monte Carlo group stage simulation. Returns advancement probabilities."""
+def simulate_group(group_name, played=None, n=50_000):
+    """Monte Carlo group stage simulation conditioned on results already played.
+
+    Matches found in `played` are fixed to their real scorelines; only the remaining
+    fixtures are simulated. Expected goals for the remaining fixtures are computed once
+    up front rather than every iteration.
+    """
     teams = GROUPS[group_name]
+    played = played or {}
+    matchups = [(teams[i], teams[j]) for i in range(4) for j in range(i + 1, 4)]
+
+    fixed = []      # (a, b, ga, gb) — already played
+    remaining = []  # (a, b, xga, xgb) — to be simulated
+    for (a, b) in matchups:
+        ps = _played_score(played, a, b)
+        if ps is not None:
+            fixed.append((a, b, ps[0], ps[1]))
+        else:
+            xga, xgb = expected_goals(a, b)
+            remaining.append((a, b, xga, xgb))
+
+    # If the group is already decided, the standings are deterministic.
+    if not remaining:
+        pts = {t: 0 for t in teams}
+        gd = {t: 0 for t in teams}
+        gf = {t: 0 for t in teams}
+        for (a, b, ga, gb) in fixed:
+            _apply_result(pts, gd, gf, a, b, ga, gb)
+        ranked = sorted(teams, key=lambda t: (pts[t], gd[t], gf[t], TEAMS[t]["elo"]), reverse=True)
+        adv = {t: (100.0 if t in ranked[:2] else 0.0) for t in teams}
+        win = {t: (100.0 if t == ranked[0] else 0.0) for t in teams}
+        return adv, win
+
     advance_counts = {t: 0 for t in teams}
     group_wins = {t: 0 for t in teams}
-
-    # All 6 matchups in the group
-    matchups = [(teams[i], teams[j]) for i in range(4) for j in range(i+1, 4)]
 
     for _ in range(n):
         pts = {t: 0 for t in teams}
         gd = {t: 0 for t in teams}
         gf_total = {t: 0 for t in teams}
 
-        for (a, b) in matchups:
-            xga, xgb = expected_goals(a, b)
+        for (a, b, ga, gb) in fixed:
+            _apply_result(pts, gd, gf_total, a, b, ga, gb)
+        for (a, b, xga, xgb) in remaining:
             ga = np.random.poisson(xga)
             gb = np.random.poisson(xgb)
-            diff = ga - gb
-            gd[a] += diff
-            gd[b] -= diff
-            gf_total[a] += ga
-            gf_total[b] += gb
-            if ga > gb:
-                pts[a] += 3
-            elif ga == gb:
-                pts[a] += 1
-                pts[b] += 1
-            else:
-                pts[b] += 3
+            _apply_result(pts, gd, gf_total, a, b, ga, gb)
 
         # Sort: points → goal diff → goals for → Elo (tiebreaker)
         ranked = sorted(teams,
@@ -406,36 +484,47 @@ def simulate_group(group_name, n=50_000):
 
 # ── Full tournament simulator ─────────────────────────────────────────────────
 
-def simulate_tournament(n=20_000):
-    """Full Monte Carlo tournament simulation. Returns champion probability per team."""
+def simulate_tournament(played=None, n=20_000):
+    """Full Monte Carlo tournament simulation. Returns champion probability per team.
+
+    The group phase is conditioned on results already played (`played`); only remaining
+    group fixtures are simulated. Per-group fixed/remaining splits and expected goals are
+    computed once before the iteration loop. The knockout bracket remains a simplified
+    re-drawn knockout (see Model Notes).
+    """
+    played = played or {}
     champ_counts = {t: 0 for t in TEAMS}
 
+    # Precompute each group's locked results + remaining-fixture xG a single time.
+    group_plan = {}
+    for gname, gteams in GROUPS.items():
+        matchups = [(gteams[i], gteams[j]) for i in range(4) for j in range(i + 1, 4)]
+        gp = played.get(gname, {})
+        fixed, remaining = [], []
+        for (a, b) in matchups:
+            ps = _played_score(gp, a, b)
+            if ps is not None:
+                fixed.append((a, b, ps[0], ps[1]))
+            else:
+                xga, xgb = expected_goals(a, b)
+                remaining.append((a, b, xga, xgb))
+        group_plan[gname] = (gteams, fixed, remaining)
+
     for _ in range(n):
-        # Group stage — get top 2 per group + best 8 third-place
         standings = {}
         third_placers = []
 
-        for gname, gteams in GROUPS.items():
-            matchups = [(gteams[i], gteams[j]) for i in range(4) for j in range(i+1, 4)]
+        for gname, (gteams, fixed, remaining) in group_plan.items():
             pts = {t: 0 for t in gteams}
             gd = {t: 0 for t in gteams}
             gfs = {t: 0 for t in gteams}
 
-            for (a, b) in matchups:
-                xga, xgb = expected_goals(a, b)
+            for (a, b, ga, gb) in fixed:
+                _apply_result(pts, gd, gfs, a, b, ga, gb)
+            for (a, b, xga, xgb) in remaining:
                 ga = np.random.poisson(xga)
                 gb = np.random.poisson(xgb)
-                if ga > gb:
-                    pts[a] += 3
-                elif ga == gb:
-                    pts[a] += 1
-                    pts[b] += 1
-                else:
-                    pts[b] += 3
-                gd[a] += ga - gb
-                gd[b] += gb - ga
-                gfs[a] += ga
-                gfs[b] += gb
+                _apply_result(pts, gd, gfs, a, b, ga, gb)
 
             ranked = sorted(gteams,
                 key=lambda t: (pts[t], gd[t], gfs[t], TEAMS[t]["elo"]),
@@ -443,45 +532,28 @@ def simulate_tournament(n=20_000):
             standings[gname] = ranked
             third_placers.append((ranked[2], pts[ranked[2]], gd[ranked[2]], gfs[ranked[2]]))
 
-        # Best 8 third-place teams
+        # Best 8 third-place teams advance under the 48-team format.
         third_placers.sort(key=lambda x: (x[1], x[2], x[3], TEAMS[x[0]]["elo"]), reverse=True)
-        wild_cards = [t[0] for t in third_placers[:8]]
+        best_thirds = [t[0] for t in third_placers[:8]]
 
-        # Build Round of 32 bracket
-        r32 = []
-        for gname, ranked in standings.items():
-            r32.append((ranked[0], ranked[1]))  # 1st vs 2nd from adjacent group (simplified)
-
-        # Merge wildcards — simplified: pair remaining 8 wildcards as extra R32 matches
-        remaining_thirds = [t[0] for t in third_placers[:8]]
-        # Build 32-team bracket pool
+        # 32 qualifiers: 12 winners + 12 runners-up + 8 best thirds (all disjoint).
         qualifiers = []
         for gname in sorted(GROUPS):
             qualifiers.append(standings[gname][0])
             qualifiers.append(standings[gname][1])
-        for wc in remaining_thirds:
-            qualifiers.append(wc)
-        # Deduplicate preserving order
-        seen_q = set()
-        unique_q = []
-        for q in qualifiers:
-            if q not in seen_q:
-                unique_q.append(q)
-                seen_q.add(q)
-        qualifiers = unique_q[:32]
+        qualifiers.extend(best_thirds)
 
-        # Knockout rounds: R32 → R16 → QF → SF → Final
+        # Knockout rounds: 32 → 16 → 8 → 4 → 2 → 1 (re-drawn each round).
         bracket = qualifiers[:]
-        for _ in range(5):  # 5 knockout rounds for 32→1
+        for _ in range(5):
             if len(bracket) < 2:
                 break
-            next_round = []
             random.shuffle(bracket)
+            next_round = []
             for i in range(0, len(bracket) - 1, 2):
-                a, b = bracket[i], bracket[i+1]
+                a, b = bracket[i], bracket[i + 1]
                 p_a, _, _ = match_probs(a, b, neutral=True, group_stage=False)
-                winner = a if random.random() < p_a else b
-                next_round.append(winner)
+                next_round.append(a if random.random() < p_a else b)
             if len(bracket) % 2 == 1:
                 next_round.append(bracket[-1])
             bracket = next_round
@@ -664,9 +736,18 @@ with tabs[1]:
     gkey = group_choice.replace("Group ", "")
     gteams = GROUPS[gkey]
 
+    played_all = completed_group_results(fetch_wc_matches())
+    played_grp = played_all.get(gkey, {})
+    n_played = len(played_grp)
+    if n_played:
+        st.caption(f"🔒 {n_played} of 6 matches in Group {gkey} already played — locked into the simulation; "
+                   f"the remaining {6 - n_played} are simulated.")
+
     if st.button("🔄 Run Group Simulation", key="run_group"):
-        with st.spinner("Simulating 50,000 group stage scenarios…"):
-            adv_pcts, win_pcts = simulate_group(gkey)
+        spin = ("Group already decided…" if n_played == 6
+                else f"Simulating {6 - n_played} remaining matches × 50,000 scenarios…")
+        with st.spinner(spin):
+            adv_pcts, win_pcts = simulate_group(gkey, played=played_grp)
         st.success("Done!")
         st.session_state[f"group_result_{gkey}"] = (adv_pcts, win_pcts)
 
@@ -774,7 +855,6 @@ with tabs[1]:
     st.markdown("---")
     st.markdown("##### All Groups Overview")
     for g in sorted(GROUPS.keys()):
-        cols = st.columns(4)
         st.markdown(f"**Group {g}**")
         row = st.columns(4)
         for i, t in enumerate(GROUPS[g]):
@@ -800,9 +880,15 @@ with tabs[2]:
 
     n_sims = st.slider("Simulation iterations", 5_000, 30_000, 20_000, step=5_000)
 
+    played_all = completed_group_results(fetch_wc_matches())
+    n_locked = sum(len(v) for v in played_all.values())
+    if n_locked:
+        st.caption(f"🔒 {n_locked} of 72 group matches already played are locked in; "
+                   f"remaining group fixtures and the full knockout bracket are simulated.")
+
     if st.button("🔄 Run Full Tournament Simulation", key="run_tourn"):
         with st.spinner(f"Simulating {n_sims:,} World Cup tournaments… this takes ~15-30 seconds"):
-            champ_probs = simulate_tournament(n=n_sims)
+            champ_probs = simulate_tournament(played=played_all, n=n_sims)
         st.session_state["champ_probs"] = champ_probs
         st.success("Done!")
 
@@ -978,9 +1064,13 @@ with tabs[3]:
                 st.markdown("---")
 
         # ── UPCOMING ──
-        if upcoming:
-            with st.expander(f"📅 Upcoming fixtures ({len(upcoming)} remaining)"):
-                upcoming_sorted = sorted(upcoming, key=lambda x: x["date"])
+        upcoming_known = [m for m in upcoming if m["teams_known"]]
+        n_tbd = len(upcoming) - len(upcoming_known)
+        if upcoming_known:
+            with st.expander(f"📅 Upcoming fixtures ({len(upcoming_known)} with confirmed teams)"):
+                if n_tbd:
+                    st.caption(f"{n_tbd} later knockout fixture(s) hidden until both teams are determined.")
+                upcoming_sorted = sorted(upcoming_known, key=lambda x: x["date"])
                 cur_date = None
                 for m in upcoming_sorted[:30]:
                     if m["date"] != cur_date:
@@ -1023,25 +1113,17 @@ with tabs[4]:
             pw1, pd, pw2 = match_probs(t1, t2, group_stage=True)
             xg1, xg2 = expected_goals(t1, t2)
 
-            # Predicted outcome — "close game" rule: if the two teams' win
-            # probabilities are within 10 percentage points of each other,
-            # the model is treated as predicting a draw, regardless of which
-            # side is nominally higher or what the raw draw probability is.
-            CLOSE_GAME_THRESHOLD = 0.10
-            if abs(pw1 - pw2) < CLOSE_GAME_THRESHOLD:
-                pred_outcome = "draw"
-            elif pw1 > pw2:
+            # Predicted outcome = highest-prob bucket
+            if pw1 >= pd and pw1 >= pw2:
                 pred_outcome = "team1"
-            else:
+            elif pw2 >= pd and pw2 >= pw1:
                 pred_outcome = "team2"
+            else:
+                pred_outcome = "draw"
 
             correct = pred_outcome == actual_outcome
-            gap_pts = abs(pw1 - pw2)
-            is_close_call = gap_pts < CLOSE_GAME_THRESHOLD
 
-            # Predicted winner probability — for close-call draws, show the
-            # higher of the two win probs alongside the gap, since that's
-            # the actual basis for calling it a draw (not the raw draw %)
+            # Predicted winner probability
             if pred_outcome == "team1":
                 pred_conf = pw1
             elif pred_outcome == "team2":
@@ -1068,8 +1150,6 @@ with tabs[4]:
                 "pd":             pd,
                 "pw2":            pw2,
                 "pred_conf":      pred_conf,
-                "is_close_call":  is_close_call,
-                "gap_pts":        gap_pts,
                 "xg1":            xg1,
                 "xg2":            xg2,
                 "brier":          brier,
@@ -1082,21 +1162,20 @@ with tabs[4]:
         avg_brier = sum(r["brier"] for r in records) / n_total if n_total else 0
         avg_conf  = sum(r["pred_conf"] for r in records) / n_total * 100 if n_total else 0
 
-        close_recs = [r for r in records if r["is_close_call"]]
-        n_close = len(close_recs)
-        n_close_correct = sum(1 for r in close_recs if r["correct"])
-        close_accuracy = n_close_correct / n_close * 100 if n_close else 0
-
         # ── Summary scorecards ──
+        # Brier (a proper score) is the primary signal. Top-1 accuracy is shown but
+        # de-emphasized: a draw is almost never any match's single most-likely outcome,
+        # so an argmax classifier structurally rarely predicts draws — accuracy alone
+        # understates a calibrated probabilistic model.
         sc1, sc2, sc3, sc4 = st.columns(4)
-        sc1.metric("Matches Evaluated", n_total)
-        sc2.metric("Correct Picks", f"{n_correct}/{n_total}", f"{accuracy:.1f}%")
-        sc3.metric("Avg Brier Score", f"{avg_brier:.3f}", help="Lower is better. Perfect = 0, Random = 0.667")
+        sc1.metric("Avg Brier Score", f"{avg_brier:.3f}",
+                   help="Primary metric. (1 − P(actual))². Lower is better. Perfect = 0, random = 0.667.")
+        sc2.metric("Matches Evaluated", n_total)
+        sc3.metric("Top-1 Accuracy", f"{accuracy:.1f}%", f"{n_correct}/{n_total}",
+                   help="Share of matches where the single most-likely outcome was correct. "
+                        "Draws are rarely any match's modal outcome, so this caps below 100% by design — "
+                        "read it alongside the calibration plot, not on its own.")
         sc4.metric("Avg Predicted Confidence", f"{avg_conf:.1f}%")
-
-        if n_close:
-            st.caption(f"⚖️ **{n_close}** of {n_total} matches were \"close games\" (win probs within 10pp → predicted draw): "
-                       f"**{n_close_correct}/{n_close}** correct ({close_accuracy:.1f}%)")
 
         st.markdown("---")
 
@@ -1129,6 +1208,57 @@ with tabs[4]:
             )
             st.plotly_chart(fig_acc, use_container_width=True)
 
+        # ── Calibration / reliability diagram (pooled one-vs-rest) ──
+        # Every match contributes three (predicted prob, did-it-happen) points: one for
+        # team1-win, one for draw, one for team2-win. Pooling and binning these shows
+        # whether stated probabilities match observed frequencies — the right test for a
+        # probabilistic model, and one accuracy can't provide.
+        cal_points = []
+        for r in records:
+            cal_points.append((r["pw1"], 1.0 if r["actual"] == "team1" else 0.0))
+            cal_points.append((r["pd"],  1.0 if r["actual"] == "draw"  else 0.0))
+            cal_points.append((r["pw2"], 1.0 if r["actual"] == "team2" else 0.0))
+
+        edges = np.linspace(0, 1, 11)
+        cal_x, cal_y, cal_n = [], [], []
+        for i in range(10):
+            lo, hi = edges[i], edges[i + 1]
+            in_bin = [(p, y) for (p, y) in cal_points
+                      if (lo <= p < hi) or (i == 9 and p == hi)]
+            if in_bin:
+                cal_x.append(sum(p for p, _ in in_bin) / len(in_bin) * 100)
+                cal_y.append(sum(y for _, y in in_bin) / len(in_bin) * 100)
+                cal_n.append(len(in_bin))
+
+        if len(cal_x) >= 2:
+            fig_cal = go.Figure()
+            fig_cal.add_scatter(
+                x=[0, 100], y=[0, 100], mode="lines",
+                line=dict(color="#555", dash="dash"), name="Perfect calibration",
+                hoverinfo="skip",
+            )
+            fig_cal.add_scatter(
+                x=cal_x, y=cal_y, mode="markers+lines",
+                marker=dict(size=[8 + c for c in cal_n], color="#4fc3f7", opacity=0.85,
+                            line=dict(color="#0e1a1e", width=1)),
+                line=dict(color="#4fc3f7", width=1.5),
+                text=[f"{n} predictions in bin" for n in cal_n],
+                hovertemplate="Mean predicted: %{x:.1f}%<br>Observed: %{y:.1f}%<br>%{text}<extra></extra>",
+                name="Model",
+            )
+            fig_cal.update_layout(
+                title="Calibration / Reliability — pooled one-vs-rest (marker size = sample count)",
+                height=300, margin=dict(t=40, b=20, l=10, r=10),
+                paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+                font=dict(color="#ccc"), showlegend=True,
+                legend=dict(orientation="h", y=-0.2),
+                xaxis=dict(range=[0, 100], gridcolor="#222", title="Mean predicted probability %"),
+                yaxis=dict(range=[0, 100], gridcolor="#222", title="Observed frequency %"),
+            )
+            st.plotly_chart(fig_cal, use_container_width=True)
+            st.caption("Points on the diagonal are well-calibrated. Below the line = overconfident "
+                       "(predicted too high); above = underconfident. Needs a fair sample per bin to read.")
+
         # ── Confidence vs outcome scatter ──
         if len(records) >= 3:
             fig_conf = go.Figure()
@@ -1156,24 +1286,18 @@ with tabs[4]:
         st.markdown("##### Match-by-Match Prediction Log")
 
         # Filter controls
-        fc1, fc2, fc3 = st.columns([2, 2, 1])
+        fc1, fc2 = st.columns(2)
         with fc1:
             outcome_filter = st.radio("Show", ["All", "Correct ✅", "Wrong ❌"], horizontal=True, key="bt_outcome_filter")
         with fc2:
             grps_bt = sorted(set(r["group"] for r in records))
             grp_filter = st.selectbox("Group", ["All"] + grps_bt, key="bt_grp_filter")
-        with fc3:
-            st.markdown("<br>", unsafe_allow_html=True)
-            close_only = st.checkbox("Close games only", key="bt_close_only",
-                help="Matches where win probabilities were within 10pp — predicted as a draw")
 
         filtered = records_sorted
         if outcome_filter == "Correct ✅":
             filtered = [r for r in filtered if r["correct"]]
         elif outcome_filter == "Wrong ❌":
             filtered = [r for r in filtered if not r["correct"]]
-        if close_only:
-            filtered = [r for r in filtered if r["is_close_call"]]
         if grp_filter != "All":
             filtered = [r for r in filtered if r["group"] == grp_filter]
 
@@ -1194,19 +1318,6 @@ with tabs[4]:
             pred_label   = outcome_label(r["pred"],   r["team1"], r["team2"])
             actual_label = outcome_label(r["actual"], r["team1"], r["team2"])
 
-            # For close-call draw predictions, show the gap (the actual basis
-            # for the call) rather than the raw draw probability
-            if r["pred"] == "draw" and r["is_close_call"]:
-                conf_str = f"gap {r['gap_pts']*100:.1f}pp"
-            else:
-                conf_str = f"{r['pred_conf']*100:.0f}%"
-
-            close_tag = (
-                "<span style='background:#f0b42922;color:#f0b429;border:1px solid #f0b42955;"
-                "border-radius:4px;padding:1px 6px;font-size:0.65rem;margin-left:4px'>CLOSE GAME</span>"
-                if r["is_close_call"] else ""
-            )
-
             st.markdown(f"""
             <div style='background:{bg};border:1px solid {border};border-radius:10px;
                         padding:0.75rem 1rem;margin-bottom:0.5rem'>
@@ -1218,7 +1329,7 @@ with tabs[4]:
                     <span style='font-weight:700;min-width:8rem'>{r['flag2']} {r['team2']}</span>
                     <span style='flex:1'></span>
                     <span style='font-size:0.75rem;color:#aaa'>
-                        Pred: <b style='color:#4fc3f7'>{pred_label}</b> ({conf_str}){close_tag}
+                        Pred: <b style='color:#4fc3f7'>{pred_label}</b> ({r['pred_conf']*100:.0f}%)
                         &nbsp;|&nbsp;
                         Actual: <b style='color:#f0b429'>{actual_label}</b>
                     </span>
@@ -1246,22 +1357,24 @@ with tabs[4]:
 
             **Model Method:**
             - Win probability: Elo-based formula (400-point logistic scale) + attack/defense modifier
-            - Draw inflation: Group stage adds ~24% draw probability, scaled down for large Elo gaps
+            - Draw inflation: Group stage adds ~26% draw probability, scaled down for large Elo gaps
             - Expected goals: Poisson model parameterized by normalized attack vs. opponent defense
-            - Group simulation: Monte Carlo (50k iterations) with GD/GF tiebreakers
-            - Tournament simulation: 20k full tournament runs through knockout bracket
+            - Scoreline probabilities: exact (product of Poisson marginals), not Monte Carlo
+            - Group & tournament sims: matches already played are **locked to their real scores**;
+              only remaining fixtures are simulated (50k group / 20k tournament iterations)
+            - Knockout bracket: simplified re-drawn knockout (opponents re-drawn each round),
+              not a fixed seeded bracket — champion odds are approximate
 
             **Backtest Metrics:**
-            - **Accuracy**: % of matches where predicted outcome (win/draw/win) matched actual result
-            - **Close game rule**: if the two teams' win probabilities are within 10 percentage points
-              of each other, the model's prediction is counted as a **draw** — regardless of which side
-              is nominally higher or what the raw draw probability says. E.g. 44% / 30% draw / 36% counts
-              as a predicted draw, since 44% and 36% are only 8pp apart.
-            - **Brier Score**: (1 - P(actual outcome))² — lower is better; random = 0.667, perfect = 0
+            - **Avg Brier** (primary): (1 − P(actual outcome))² — proper score; lower is better; random = 0.667, perfect = 0
+            - **Calibration plot** (primary): pooled one-vs-rest predicted prob vs observed frequency
+            - **Top-1 accuracy** (secondary): a draw is rarely any match's single most-likely outcome,
+              so an argmax classifier predicts draws only in genuine toss-ups — accuracy alone
+              understates a well-calibrated model and should be read with the calibration plot
             - Predictions use pre-tournament ratings only (no in-tournament form updates)
 
             **Limitations:**
             - Injury/suspension impact not modeled
-            - In-tournament form not incorporated
-            - Knockout bracket seeding simplified
+            - In-tournament form / rating updates not incorporated
+            - Knockout bracket seeding simplified (re-drawn each round)
             """)

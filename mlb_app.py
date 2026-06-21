@@ -27,11 +27,18 @@ def snapshot_path(date_str: str) -> str:
     return os.path.join(SNAPSHOT_DIR, f"stats_{date_str}.json")
 
 def save_snapshot(batting: dict, pitching: dict, standings: dict,
-                  pitchers: dict = None, date_str: str = None):
+                  pitchers: dict = None, date_str: str = None,
+                  batting_recent: dict = None, pitching_recent: dict = None,
+                  recent_window: int = None):
     """
     Save today's team stats and SP stats to a JSON snapshot file.
     Called once per day automatically when the app loads.
     pitchers: {player_id: {era, whip, k9, ...}} for today's probable starters.
+    batting_recent / pitching_recent: recent-form team stats as computed today.
+    Storing these lets the backtest blend recent form WITHOUT look-ahead bias —
+    a snapshot taken on day D holds recent form over [D-window, D], all of which
+    predates any game played on D+1 or later.
+    recent_window: the day-window (e.g. 14) used to compute the recent stats.
     """
     ensure_snapshot_dir()
     if date_str is None:
@@ -43,8 +50,18 @@ def save_snapshot(batting: dict, pitching: dict, standings: dict,
         try:
             with open(path, "r") as f:
                 existing = json.load(f)
+            # Backfill recent form if this run has it and the file doesn't yet
+            updated = False
+            if batting_recent and not existing.get("batting_recent"):
+                existing["batting_recent"]  = batting_recent
+                existing["pitching_recent"] = pitching_recent or {}
+                existing["recent_window"]   = recent_window
+                updated = True
             if existing.get("pitchers") or not pitchers:
-                return  # Already complete — don't overwrite
+                if updated:
+                    with open(path, "w") as f:
+                        json.dump(existing, f)
+                return  # Already complete (or nothing new to add)
             # Has team stats but no pitchers yet — add them
             existing["pitchers"] = {str(k): v for k, v in (pitchers or {}).items()}
             with open(path, "w") as f:
@@ -59,6 +76,9 @@ def save_snapshot(batting: dict, pitching: dict, standings: dict,
         "pitching": pitching,
         "standings": standings,
         "pitchers": {str(k): v for k, v in (pitchers or {}).items()},
+        "batting_recent":  batting_recent or {},
+        "pitching_recent": pitching_recent or {},
+        "recent_window":   recent_window,
     }
     try:
         with open(path, "w") as f:
@@ -81,6 +101,24 @@ def load_sp_snapshot(date_str: str) -> dict:
         return payload.get("pitchers", {})
     except Exception:
         return {}
+
+def load_recent_snapshot(date_str: str) -> tuple[dict, dict]:
+    """
+    Load snapshotted recent-form team stats for a given date.
+    Returns (batting_recent, pitching_recent) or ({}, {}) if not present.
+    Older snapshots saved before recent-form snapshotting existed simply
+    return ({}, {}), in which case the backtest falls back to season-only
+    for that game — no look-ahead, just no recent signal.
+    """
+    path = snapshot_path(date_str)
+    if not os.path.exists(path):
+        return {}, {}
+    try:
+        with open(path, "r") as f:
+            payload = json.load(f)
+        return payload.get("batting_recent", {}), payload.get("pitching_recent", {})
+    except Exception:
+        return {}, {}
 
 def load_snapshot(date_str: str) -> tuple[dict, dict, dict]:
     """
@@ -420,7 +458,7 @@ def fetch_team_stats_recent(season: int, last_n: int) -> tuple[dict, dict]:
     if not completed:
         return all_batting, all_pitching
 
-    team_h = defaultdict(lambda: {"G":0,"R":0,"H":0,"AB":0,"BB":0,"SO":0,"HR":0})
+    team_h = defaultdict(lambda: {"G":0,"R":0,"H":0,"AB":0,"BB":0,"SO":0,"HR":0,"2B":0,"3B":0})
     team_p = defaultdict(lambda: {"G":0,"ER":0,"IP":0.0,"H":0,"BB":0,"SO":0,"HR":0})
 
     for game in completed:
@@ -444,6 +482,8 @@ def fetch_team_stats_recent(season: int, last_n: int) -> tuple[dict, dict]:
                 team_h[abb]["BB"] += int(bs.get("baseOnBalls", 0) or 0)
                 team_h[abb]["SO"] += int(bs.get("strikeOuts",  0) or 0)
                 team_h[abb]["HR"] += int(bs.get("homeRuns",    0) or 0)
+                team_h[abb]["2B"] += int(bs.get("doubles",     0) or 0)
+                team_h[abb]["3B"] += int(bs.get("triples",     0) or 0)
                 ps = tb.get("teamStats",{}).get("pitching",{})
                 try:
                     ip = float(str(ps.get("inningsPitched","0") or "0"))
@@ -465,7 +505,13 @@ def fetch_team_stats_recent(season: int, last_n: int) -> tuple[dict, dict]:
         pa  = max(ab + th["BB"], 1)
         ba  = round(th["H"] / ab, 3)
         obp = round((th["H"] + th["BB"]) / pa, 3)
-        slg = round(ba * 1.45, 3)
+        # Real SLG from total bases. Singles = hits minus extra-base hits.
+        # If the boxscore omits doubles/triples, they read as 0, so total bases
+        # degrade gracefully to H + 3*HR (all non-HR hits treated as singles) —
+        # still grounded in actual outcomes, unlike a flat BA multiplier.
+        singles = max(th["H"] - th["2B"] - th["3B"] - th["HR"], 0)
+        tb      = singles + 2 * th["2B"] + 3 * th["3B"] + 4 * th["HR"]
+        slg = round(tb / ab, 3)
         ops = round(obp + slg, 3)
         all_batting[abb] = {
             "G":      g,
@@ -885,8 +931,13 @@ def calc_run_line(sa, sb, home, w_off, w_def, w_rec,
     proj_h     = snap(proj_h)
     proj_a     = snap(proj_a)
     proj_total = snap(proj_h + proj_a)
-    # Run line is always -1.5 in MLB sportsbooks — favorite must win by 2+
-    return proj_h, proj_a, 1.5, winner, raw_margin, proj_total
+    # Projected margin = how many runs the favorite is projected to win by,
+    # derived from the SNAPPED scores so it's consistent with the projected
+    # score shown on the card. (Previously this slot returned the constant 1.5 —
+    # the sportsbook run line — so every card displayed "1.5" and the backtest's
+    # run-line error measured distance from 1.5 instead of from the projection.)
+    proj_margin = round(abs(proj_h - proj_a), 1)
+    return proj_h, proj_a, proj_margin, winner, raw_margin, proj_total
 
 
 def calc_confidence(sa, sb, pct_h, pct_a, margin_winner, prob_winner,
@@ -976,11 +1027,17 @@ with st.sidebar:
 
     st.markdown("---")
     st.markdown("##### Form vs. Season balance")
-    w_season_pct = st.slider("Full season weight", 0, 100, 50, step=5)
-    w_recent_pct = st.slider("Recent form weight", 0, 100, 50, step=5)
-    form_total   = (w_season_pct + w_recent_pct) or 1
-    w_season = w_season_pct / form_total
-    w_recent = w_recent_pct / form_total
+    # Single source of truth: choose the recent-form weight; season is the remainder.
+    # Previously two independent 0-100 sliders were normalized after the fact, so
+    # setting season=65 while recent sat at its default 50 silently produced
+    # 56.5/43.5 — not 65/35. One slider makes the ratio exact.
+    w_recent_pct = st.slider(
+        "Recent-form weight (%)", 0, 100, 35, step=5,
+        help="Season weight is the remainder. 35 → 65% season / 35% recent.")
+    w_season_pct = 100 - w_recent_pct
+    w_season = w_season_pct / 100
+    w_recent = w_recent_pct / 100
+    st.caption(f"Blend: **{w_season_pct}% season / {w_recent_pct}% recent**")
 
     st.markdown("---")
     st.markdown("##### Model weights")
@@ -1048,7 +1105,9 @@ with st.sidebar:
         todays_pitcher_stats = {}
 
     save_snapshot(batting_data, pitching_data, standings_data,
-                  pitchers=todays_pitcher_stats)
+                  pitchers=todays_pitcher_stats,
+                  batting_recent=batting_recent, pitching_recent=pitching_recent,
+                  recent_window=ng)
 
     games_played = [v.get("G", 0) for v in batting_data.values()]
     avg_games    = sum(games_played) / len(games_played) if games_played else 0
@@ -1393,9 +1452,7 @@ with tab_today:
             f'{home_name} <span style="color:#f5c842;">{proj_home}</span><br>'
             f'{away_name} <span style="color:#f5c842;">{proj_away}</span><br>'
             f'<span style="font-size:11px;color:#888;font-weight:400;">O/U: '
-            f'<span style="color:#f5c842;">{game["proj_total"]}</span></span><br>'
-            f'<span style="font-size:11px;color:#888;font-weight:400;">F5 O/U: '
-            f'<span style="color:#f5c842;">{round((game["proj_home"] + game["proj_away"]) * (5/9) * 2) / 2:.1f}</span></span></div></div>'
+            f'<span style="color:#f5c842;">{game["proj_total"]}</span></span></div></div>'
 
             f'<div><div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;'
             f'color:#666;margin-bottom:4px;">Run line (-1.5)</div>'
@@ -1474,9 +1531,11 @@ with tab_back:
         margin_errors = []
 
         snap_hits = snap_misses = 0
+        recent_used = 0   # games whose matched snapshot carried recent form (true 65/35)
         # Pre-load all snapshots into memory once — avoids repeated disk reads per game
         snap_cache = {}
         snap_cache_pitchers = {}   # {snap_date: {pid_str: stats}}
+        snap_cache_recent = {}     # {snap_date: (batting_recent, pitching_recent)}
         for snap_date in list_snapshots():
             b, p, s = load_snapshot(snap_date)
             if b and p:
@@ -1484,6 +1543,9 @@ with tab_back:
             sp_data = load_sp_snapshot(snap_date)
             if sp_data:
                 snap_cache_pitchers[snap_date] = sp_data
+            rb, rp = load_recent_snapshot(snap_date)
+            if rb:
+                snap_cache_recent[snap_date] = (rb, rp)
 
         def get_snapshot_from_cache(game_date_str: str):
             """Find the most recent snapshot before game_date using the in-memory cache."""
@@ -1525,6 +1587,18 @@ with tab_back:
                 s_h = score_team(h_abb, bt_batting, bt_pitching, bt_standings)
                 s_a = score_team(a_abb, bt_batting, bt_pitching, bt_standings)
 
+                # Recent form, as snapshotted BEFORE this game (no look-ahead).
+                # Only available when the matched snapshot carried recent form;
+                # older snapshots leave this empty and the game runs season-only.
+                bt_rec = snap_cache_recent.get(used_snapshot, (None, None)) if used_snapshot else (None, None)
+                bt_bat_recent, bt_pit_recent = bt_rec
+                bt_r_h = (score_team(h_abb, bt_bat_recent, bt_pit_recent, bt_standings)
+                          if bt_bat_recent else None)
+                bt_r_a = (score_team(a_abb, bt_bat_recent, bt_pit_recent, bt_standings)
+                          if bt_bat_recent else None)
+                if bt_r_h and bt_r_a:
+                    recent_used += 1
+
                 # Get SP stats from snapshot if available, fall back to live lookup
                 bt_sp_pitchers = snap_cache_pitchers.get(used_snapshot, {}) if used_snapshot else {}
                 bt_home_sp_id  = game.get("home_pitcher_id")
@@ -1545,18 +1619,18 @@ with tab_back:
                 bt_park_factor = PARK_RUN_FACTOR.get(h_abb, 1.0)
 
                 ph, pa    = calc_prob(s_h, s_a, "home", w_off, w_def, w_rec,
-                                      w_season=w_season, w_recent=w_recent,
+                                      bt_r_h, bt_r_a, w_season, w_recent,
                                       sp_h_score=bt_sp_h_score, sp_a_score=bt_sp_a_score,
                                       park_factor=bt_park_factor)
                 prob_pick = s_h["name"] if ph >= pa else s_a["name"]
                 prob_pct  = round(max(ph, pa) * 100)
                 _, _, proj_margin, margin_pick, _, proj_total_bt = calc_run_line(
                     s_h, s_a, "home", w_off, w_def, w_rec,
-                    w_season=w_season, w_recent=w_recent,
+                    bt_r_h, bt_r_a, w_season, w_recent,
                     sp_h_score=bt_sp_h_score, sp_a_score=bt_sp_a_score)
                 conf_l, conf_e, _, _ = calc_confidence(
                     s_h, s_a, round(ph*100), round(pa*100), margin_pick, prob_pick,
-                    sp_h_score=bt_sp_h_score, sp_a_score=bt_sp_a_score)
+                    bt_r_h, bt_r_a, sp_h_score=bt_sp_h_score, sp_a_score=bt_sp_a_score)
                 actual_winner = s_h["name"] if hs > as_ else s_a["name"]
                 actual_margin = round(abs(hs - as_), 1)
                 if margin_pick == actual_winner:
@@ -1626,6 +1700,31 @@ with tab_back:
                             "⚠️ No snapshots saved yet — all games evaluated using current stats. "
                             "The app saves a snapshot each day it runs."
                         )
+
+            # Show how many games actually exercised the recent-form blend.
+            # Snapshots saved before recent-form snapshotting was added carry no
+            # recent stats, so those games run season-only even at w_recent > 0.
+            if w_recent > 0 and total > 0:
+                rec_pct = round(recent_used / total * 100)
+                if recent_used == 0:
+                    st.warning(
+                        f"⚠️ Recent-form weight is {round(w_recent*100)}%, but **0 of {total}** "
+                        f"backtested games carried snapshotted recent form — they all ran "
+                        f"season-only. Your existing snapshots predate recent-form capture, so "
+                        f"this backtest does NOT yet reflect the {round(w_season*100)}/{round(w_recent*100)} "
+                        f"blend. New snapshots (saved each day going forward) will include it."
+                    )
+                elif rec_pct < 100:
+                    st.info(
+                        f"📊 {recent_used}/{total} games ({rec_pct}%) used the "
+                        f"{round(w_season*100)}/{round(w_recent*100)} season/recent blend; the rest ran "
+                        f"season-only (their snapshots predate recent-form capture)."
+                    )
+                else:
+                    st.success(
+                        f"✅ All {total} games evaluated with the "
+                        f"{round(w_season*100)}/{round(w_recent*100)} season/recent blend you run live."
+                    )
 
             m1, m2, m3, m4 = st.columns(4)
             m1.metric("Games evaluated", total)

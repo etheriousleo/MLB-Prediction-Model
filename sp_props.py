@@ -9,6 +9,8 @@ Run:
 """
 
 import datetime
+import json
+import os
 import numpy as np
 import plotly.graph_objects as go
 import statsapi
@@ -283,6 +285,183 @@ def fetch_pitcher_id_by_name(name: str) -> int | None:
         return None
 
 
+# ── Snapshot system (opponent K% as-of-date, for look-ahead-clean backtesting) ──
+# A pitcher's season-to-date line, recent form, AND the actual result of each start
+# are all reconstructed from the immutable game log at backtest time — so they need
+# NO snapshot and have full historical coverage from day one. The one input that
+# can't come from a pitcher's own log is the OPPONENT lineup's K% as it stood before
+# the game (team K% drifts over a season). We snapshot team batting daily so the
+# backtest can read the opponent's pre-game K%; until snapshots accumulate it falls
+# back to current-season K% (a small, stable bias, reported as coverage). Same
+# snapshot idea as mlb_app, scoped to the one quantity that actually needs it.
+SNAPSHOT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "snapshots_spprops")
+
+def ensure_snapshot_dir():
+    os.makedirs(SNAPSHOT_DIR, exist_ok=True)
+
+def team_snapshot_path(date_str: str) -> str:
+    return os.path.join(SNAPSHOT_DIR, f"teambat_{date_str}.json")
+
+def save_team_batting_snapshot(team_batting: dict, date_str: str = None):
+    """Persist {abb: batting_dict} for today so backtests can read pre-game opp K%."""
+    ensure_snapshot_dir()
+    if date_str is None:
+        date_str = datetime.datetime.today().strftime("%Y-%m-%d")
+    clean = {k: v for k, v in (team_batting or {}).items() if k and v}
+    if not clean:
+        return
+    path = team_snapshot_path(date_str)
+    if os.path.exists(path):
+        try:
+            with open(path, "r") as f:
+                existing = json.load(f)
+            existing.update(clean)   # merge — never overwrite a fuller snapshot with a sparse one
+            clean = existing
+        except Exception:
+            pass
+    try:
+        with open(path, "w") as f:
+            json.dump(clean, f)
+    except Exception:
+        pass  # best-effort
+
+def list_team_snapshots() -> list[str]:
+    ensure_snapshot_dir()
+    return sorted(
+        f.replace("teambat_", "").replace(".json", "")
+        for f in os.listdir(SNAPSHOT_DIR)
+        if f.startswith("teambat_") and f.endswith(".json")
+    )
+
+def load_all_team_snapshots() -> dict:
+    """Return {date_str: {abb: batting}} for every saved team-batting snapshot."""
+    out = {}
+    for d in list_team_snapshots():
+        try:
+            with open(team_snapshot_path(d), "r") as f:
+                out[d] = json.load(f)
+        except Exception:
+            continue
+    return out
+
+def opp_batting_before(date_str: str, opp_abb: str, snaps: dict, current: dict):
+    """
+    Opponent team batting as of just before date_str. Uses the most recent team
+    snapshot strictly before the game date; falls back to current-season batting if
+    none exists. Returns (batting_dict, used_snapshot_bool).
+    """
+    try:
+        game_dt = datetime.datetime.strptime(date_str, "%Y-%m-%d")
+    except (ValueError, TypeError):
+        return current.get(opp_abb, {}), False
+    for snap_date in sorted(snaps.keys(), reverse=True):
+        try:
+            if datetime.datetime.strptime(snap_date, "%Y-%m-%d") < game_dt:
+                bat = snaps[snap_date].get(opp_abb)
+                if bat:
+                    return bat, True
+        except ValueError:
+            continue
+    return current.get(opp_abb, {}), False
+
+
+@st.cache_data(show_spinner=False, ttl=3600)
+def fetch_pitcher_game_log_full(player_id: int, season: int) -> list[dict]:
+    """
+    Full season game log (all appearances), ascending by date. Each entry carries the
+    per-game counting stats needed to rebuild season-to-date lines and to score the
+    actual outcome of each start.
+    """
+    try:
+        raw = statsapi.get("people", {
+            "personIds": player_id,
+            "hydrate": f"stats(group=pitching,type=gameLog,season={season})",
+        })
+        people = raw.get("people", [])
+        if not people:
+            return []
+        splits = people[0].get("stats", [{}])[0].get("splits", [])
+        log = []
+        for sp in splits:
+            s = sp.get("stat", {})
+            log.append({
+                "date":     sp.get("date", "")[:10],
+                "opp_name": sp.get("opponent", {}).get("name", ""),
+                "is_home":  sp.get("isHome", None),   # used only for park (→ proj_er); absent is fine
+                "gs":       int(s.get("gamesStarted", 0) or 0),
+                "so":       int(s.get("strikeOuts", 0) or 0),
+                "bb":       int(s.get("baseOnBalls", 0) or 0),
+                "hr":       int(s.get("homeRuns", 0) or 0),
+                "er":       int(s.get("earnedRuns", 0) or 0),
+                "h":        int(s.get("hits", 0) or 0),
+                "ip":       ip_to_decimal(s.get("inningsPitched", 0) or 0),
+            })
+        log.sort(key=lambda x: x["date"])
+        return log
+    except Exception:
+        return []
+
+
+def reconstruct_state_before(log: list[dict], cutoff_date: str):
+    """
+    Rebuild a pitcher's season-to-date stat line and last-5 starts using ONLY
+    appearances strictly before cutoff_date. Returns (season_stats, recent_starts) or
+    (None, None) if there isn't enough prior data. No look-ahead: every input predates
+    the game being projected. Keys mirror fetch_pitcher_season_stats so the same
+    project_strikeouts() runs unchanged.
+    """
+    prior = [g for g in log if g["date"] and g["date"] < cutoff_date]
+    if not prior:
+        return None, None
+    so = sum(g["so"] for g in prior); bb = sum(g["bb"] for g in prior)
+    hr = sum(g["hr"] for g in prior); er = sum(g["er"] for g in prior)
+    h  = sum(g["h"]  for g in prior); ip = sum(g["ip"] for g in prior)
+    gs = sum(g["gs"] for g in prior)
+    if ip <= 0:
+        return None, None
+    fip = round((13 * hr + 3 * bb - 2 * so) / ip + 3.10, 2)
+    season_stats = {
+        "k9":   round(so * 9 / ip, 2),
+        "bb9":  round(bb * 9 / ip, 2),
+        "era":  round(er * 9 / ip, 2),
+        "whip": round((h + bb) / ip, 3),
+        "fip":  fip,
+        "hr9":  round(hr * 9 / ip, 2),
+        "ip":   round(ip, 1),
+        "gs":   gs,
+        "so":   so, "bb": bb, "hr": hr,
+        "ip_per_start": round(ip / gs, 2) if gs > 0 else 0,
+        "k_per_start":  round(so / gs, 1) if gs > 0 else 0,
+    }
+    prior_starts  = [g for g in prior if g["gs"] == 1]
+    recent_starts = [
+        {"ip": g["ip"], "k": g["so"], "er": g["er"],
+         "date": g["date"], "opponent": g["opp_name"]}
+        for g in prior_starts[-5:]
+    ]
+    return season_stats, recent_starts
+
+
+@st.cache_data(show_spinner=False, ttl=3600)
+def fetch_all_team_batting(season: int) -> dict:
+    """Current-season batting for all 30 teams, keyed by abbreviation (backtest fallback)."""
+    out = {}
+    try:
+        teams_resp = statsapi.get("teams", {"sportId": 1, "season": season})
+        for t in teams_resp.get("teams", []):
+            if t.get("sport", {}).get("id") != 1:
+                continue
+            abb = api_name_to_abb(t.get("name", ""))
+            if not abb:
+                continue
+            bat = fetch_team_batting(t["id"], season)
+            if bat:
+                out[abb] = bat
+    except Exception:
+        pass
+    return out
+
+
 # ── Model ──────────────────────────────────────────────────────────────────────
 def project_strikeouts(pitcher: dict, recent_starts: list, opp_batting: dict,
                        park_abb: str, n_recent_weight: float = 0.4) -> dict:
@@ -344,10 +523,17 @@ def project_strikeouts(pitcher: dict, recent_starts: list, opp_batting: dict,
     opp_runs_pg  = opp_batting.get("runs_pg", 4.5)
     park_factor  = PARK_RUN_FACTOR.get(park_abb, 1.00)
 
-    # ERA-based expected ER per 9 innings, adjusted for park and opponent
+    # Expected ER per 9 innings, adjusted for park and opponent.
+    # Baseline blends FIP and ERA: FIP strips out defense/sequencing luck and is
+    # more predictive of future runs (which is why the card flags it as the more
+    # predictive stat), while ERA still carries real run-prevention signal.
+    # 50/50 by default — change FIP_WEIGHT to lean either way.
     pitcher_era = pitcher.get("era", LEAGUE_ERA)
+    pitcher_fip = pitcher.get("fip", pitcher_era)
+    FIP_WEIGHT  = 0.5
+    run_rate    = pitcher_fip * FIP_WEIGHT + pitcher_era * (1 - FIP_WEIGHT)
     opp_ops_adj = (opp_ops - 0.720) * 3.0           # ops deviation → run adjustment
-    era_adj     = pitcher_era * park_factor + opp_ops_adj
+    era_adj     = run_rate * park_factor + opp_ops_adj
     proj_er_raw = era_adj * (exp_ip / 9)
     proj_er     = round(round(proj_er_raw * 2) / 2, 1)
 
@@ -445,6 +631,7 @@ if not todays_games:
 
 # ── Build projections for every SP ────────────────────────────────────────────
 all_pitchers = []
+todays_team_batting = {}   # {abb: batting} collected across today's games → snapshotted
 
 progress = st.progress(0, text="Loading pitcher data...")
 total_games = len(todays_games)
@@ -470,6 +657,8 @@ for i, game in enumerate(todays_games):
     a_team_id = game.get("away_id")
     h_batting = fetch_team_batting(h_team_id, SEASON) if h_team_id else {}
     a_batting = fetch_team_batting(a_team_id, SEASON) if a_team_id else {}
+    if h_abb and h_batting: todays_team_batting[h_abb] = h_batting
+    if a_abb and a_batting: todays_team_batting[a_abb] = a_batting
 
     # Process each SP in this game
     for sp_name, sp_pid, is_home, opp_batting, opp_name, opp_abb in [
@@ -503,6 +692,7 @@ for i, game in enumerate(todays_games):
         tier_label, tier_color = quality_tier(season_stats.get("k9", 0))
 
         all_pitchers.append({
+            "pid":           pid,
             "name":          sp_name,
             "team":          h_name if is_home else a_name,
             "team_abb":      h_abb  if is_home else a_abb,
@@ -520,6 +710,9 @@ for i, game in enumerate(todays_games):
         })
 
 progress.empty()
+
+# Save today's team batting so future backtests can read pre-game opponent K%.
+save_team_batting_snapshot(todays_team_batting)
 
 if not all_pitchers:
     st.info("No starting pitcher data available for today's games yet. "
@@ -793,3 +986,208 @@ st.caption(
     "opposing lineup K%, and ballpark factors. Always cross-reference with "
     "actual sportsbook lines before placing any bets. For entertainment purposes only."
 )
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BACKTEST / VALIDATION  (snapshot + replay pattern, mirroring mlb_app)
+# ═══════════════════════════════════════════════════════════════════════════════
+st.markdown("---")
+st.markdown("## 🔬 Model Validation — Backtest")
+st.caption(
+    "Replays every prior start this season for the pitchers on today's slate using ONLY "
+    "data available before each start. Season line and last-5 form are rebuilt from the "
+    "immutable game log (no look-ahead, full coverage); opponent K% comes from a pre-game "
+    "team snapshot when one exists, else current-season K%. Measures projection error and "
+    "the hit rate of the model's OVER/UNDER calls at the fixed reference lines — not "
+    "against live sportsbook lines, which aren't stored. Park (and thus Proj ER) uses "
+    "home/away when the log provides it."
+)
+
+bt_min_prior = st.slider(
+    "Min prior starts required to evaluate a start", 1, 10, 3,
+    help="Skip a start if the pitcher had fewer than this many starts before it — "
+         "early-season projections off 1–2 starts are noise.")
+run_bt = st.button("▶ Run backtest on today's starters")
+
+if run_bt:
+    with st.spinner("Loading current team batting (opponent-K% fallback)..."):
+        current_team_bat = fetch_all_team_batting(SEASON)
+    team_snaps = load_all_team_snapshots()
+
+    k_errs, er_errs, ip_errs = [], [], []
+    line_stats = {ln: {"bets": 0, "hits": 0} for ln in COMMON_K_LINES}
+    tier_stats = {t: {"bets": 0, "hits": 0} for t in ["High", "Moderate", "Low"]}
+    opp_clean = 0
+    eval_rows = []
+    pitchers_evaluated = 0
+
+    prog = st.progress(0.0, text="Backtesting...")
+    pool = [p for p in all_pitchers if p.get("pid")]
+    for idx, p in enumerate(pool):
+        prog.progress((idx + 1) / max(len(pool), 1), text=f"Backtesting {p['name']}...")
+        try:
+            log = fetch_pitcher_game_log_full(p["pid"], SEASON)
+        except Exception:
+            continue
+        if not log:
+            continue
+        evaluated_any = False
+        for g in [x for x in log if x["gs"] == 1]:
+            cutoff = g["date"]
+            if not cutoff:
+                continue
+            prior_starts = [x for x in log if x["gs"] == 1 and x["date"] and x["date"] < cutoff]
+            if len(prior_starts) < bt_min_prior:
+                continue
+            season_stats, recent_starts = reconstruct_state_before(log, cutoff)
+            if not season_stats:
+                continue
+
+            opp_abb = api_name_to_abb(g.get("opp_name", "")) or ""
+            opp_bat, used_snap = opp_batting_before(cutoff, opp_abb, team_snaps, current_team_bat)
+            opp_clean += 1 if used_snap else 0
+
+            is_home = g.get("is_home")
+            if is_home is True:
+                park_abb = p.get("team_abb")
+            elif is_home is False:
+                park_abb = opp_abb
+            else:
+                park_abb = None   # unknown → neutral park (affects Proj ER only, not Proj K)
+
+            proj = project_strikeouts(season_stats, recent_starts, opp_bat, park_abb, recent_weight)
+            if not proj:
+                continue
+
+            actual_k  = g["so"]
+            actual_er = g["er"]
+            actual_ip = round(g["ip"], 1)
+            k_errs.append(abs(proj["proj_k"]  - actual_k))
+            er_errs.append(abs(proj["proj_er"] - actual_er))
+            ip_errs.append(abs(proj["exp_ip"]  - actual_ip))
+
+            conf = proj.get("confidence", "")
+            tkey = "High" if "High" in conf else ("Moderate" if "Moderate" in conf else "Low")
+
+            for ln in COMMON_K_LINES:
+                rec = proj["k_props"][ln][0]
+                if rec == "OVER":
+                    hit = actual_k > ln
+                elif rec == "UNDER":
+                    hit = actual_k < ln
+                else:
+                    continue   # PUSH → model made no call
+                line_stats[ln]["bets"] += 1
+                line_stats[ln]["hits"] += 1 if hit else 0
+                tier_stats[tkey]["bets"] += 1
+                tier_stats[tkey]["hits"] += 1 if hit else 0
+
+            eval_rows.append({
+                "date": cutoff, "pitcher": p["name"], "opp": g.get("opp_name", ""),
+                "proj_k": proj["proj_k"], "actual_k": actual_k, "tier": tkey,
+            })
+            evaluated_any = True
+        if evaluated_any:
+            pitchers_evaluated += 1
+    prog.empty()
+
+    n_eval = len(eval_rows)
+    if n_eval == 0:
+        st.info(f"No startable history to evaluate yet — pitchers need at least "
+                f"{bt_min_prior} prior starts this season.")
+    else:
+        if opp_clean == 0:
+            st.warning(
+                f"📊 Opponent K% used current-season values for all {n_eval} starts — no "
+                "pre-game team snapshots exist yet. The pitcher season line and recent form "
+                "are still rebuilt cleanly from the game log; only the opponent-K% adjustment "
+                "carries a small, stable look-ahead until daily snapshots accumulate."
+            )
+        else:
+            pct = round(opp_clean / n_eval * 100)
+            st.info(f"📸 {opp_clean}/{n_eval} starts ({pct}%) used a pre-game opponent-K% "
+                    "snapshot; the rest fell back to current-season K%.")
+
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("Starts evaluated", n_eval, f"{pitchers_evaluated} pitchers")
+        c2.metric("Proj K — avg error", f"{round(sum(k_errs)/len(k_errs), 2)}")
+        c3.metric("Proj ER — avg error", f"{round(sum(er_errs)/len(er_errs), 2)}")
+        c4.metric("Proj IP — avg error", f"{round(sum(ip_errs)/len(ip_errs), 2)}")
+
+        total_bets = sum(v["bets"] for v in line_stats.values())
+        total_hits = sum(v["hits"] for v in line_stats.values())
+        if total_bets:
+            overall = round(total_hits / total_bets * 100, 1)
+            st.markdown('<p class="section-head">Directional accuracy of O/U calls</p>',
+                        unsafe_allow_html=True)
+            st.caption(f"Across all reference lines: {total_hits}/{total_bets} calls correct "
+                       f"({overall}%). Break-even at standard −110 juice is ~52.4%.")
+
+            active = [ln for ln in COMMON_K_LINES if line_stats[ln]["bets"] > 0]
+            if active:
+                accs   = [round(line_stats[ln]["hits"]/line_stats[ln]["bets"]*100, 1) for ln in active]
+                counts = [line_stats[ln]["bets"] for ln in active]
+                figb = go.Figure()
+                figb.add_trace(go.Bar(
+                    x=[f"O/U {ln} ({c})" for ln, c in zip(active, counts)], y=accs,
+                    marker_color=["#00c07a" if a >= 52.4 else "#ff5252" for a in accs],
+                    text=[f"{a}%" for a in accs], textposition="outside",
+                    textfont=dict(color="#ccc", size=11)))
+                figb.add_hline(y=52.4, line_dash="dot", line_color="rgba(255,255,255,0.35)",
+                               annotation_text="break-even ~52.4%",
+                               annotation_font_color="rgba(255,255,255,0.4)",
+                               annotation_position="right")
+                figb.update_layout(
+                    paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+                    height=260, margin=dict(l=10, r=60, t=20, b=10), showlegend=False,
+                    yaxis=dict(range=[0, 110], ticksuffix="%", tickfont=dict(color="#888", size=10),
+                               showgrid=True, gridcolor="rgba(255,255,255,0.05)", zeroline=False),
+                    xaxis=dict(tickfont=dict(color="#ccc", size=11)))
+                st.plotly_chart(figb, use_container_width=True)
+
+            st.markdown('<p class="section-head">Directional accuracy by confidence tier</p>',
+                        unsafe_allow_html=True)
+            tcols  = st.columns(3)
+            tcolor = {"High": "#00c07a", "Moderate": "#f5c842", "Low": "#f5a623"}
+            for i, t in enumerate(["High", "Moderate", "Low"]):
+                b = tier_stats[t]["bets"]; h = tier_stats[t]["hits"]
+                acc = round(h / b * 100, 1) if b else 0
+                with tcols[i]:
+                    st.markdown(
+                        f'<div style="background:rgba(255,255,255,0.04);border-left:4px solid {tcolor[t]};'
+                        f'border-radius:8px;padding:12px 14px;">'
+                        f'<div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;'
+                        f'color:{tcolor[t]};">{t}</div>'
+                        f'<div style="font-size:22px;font-weight:800;color:'
+                        f'{"#00c07a" if (acc>=52.4 and b) else "#ff5252"};">{acc if b else "—"}%</div>'
+                        f'<div style="font-size:11px;color:#888;">{h}/{b} calls</div></div>',
+                        unsafe_allow_html=True)
+        else:
+            st.caption("No actionable O/U calls were generated — every projection landed "
+                       "within 1 K of the reference lines.")
+
+        st.markdown('<p class="section-head">Recent evaluated starts</p>', unsafe_allow_html=True)
+        eval_rows.sort(key=lambda r: r["date"], reverse=True)
+        body = ""
+        for r in eval_rows[:25]:
+            diff = round(r["proj_k"] - r["actual_k"], 1)
+            dcol = "#00c07a" if abs(diff) <= 1 else ("#f5c842" if abs(diff) <= 2 else "#ff5252")
+            body += (
+                f"<tr style='border-bottom:1px solid rgba(255,255,255,0.05);'>"
+                f"<td style='padding:6px 10px;color:#888;font-size:12px;'>{r['date']}</td>"
+                f"<td style='padding:6px 10px;color:#ccc;'>{r['pitcher']}</td>"
+                f"<td style='padding:6px 10px;color:#888;font-size:12px;'>vs {r['opp']}</td>"
+                f"<td style='padding:6px 10px;color:#f5c842;font-weight:700;'>{r['proj_k']}</td>"
+                f"<td style='padding:6px 10px;color:#ccc;font-weight:700;'>{r['actual_k']}</td>"
+                f"<td style='padding:6px 10px;color:{dcol};'>{'+' if diff>=0 else ''}{diff}</td>"
+                f"<td style='padding:6px 10px;color:#888;font-size:11px;'>{r['tier']}</td></tr>")
+        head = "".join(
+            f"<th style='padding:6px 10px;color:#888;font-size:10px;letter-spacing:1.5px;"
+            f"text-transform:uppercase;text-align:left;border-bottom:1px solid rgba(255,255,255,0.1);'>{h}</th>"
+            for h in ["Date", "Pitcher", "Opp", "Proj K", "Actual", "Δ", "Tier"])
+        st.markdown(
+            f"<div style='overflow-x:auto;'><table style='width:100%;border-collapse:collapse;'>"
+            f"<thead><tr>{head}</tr></thead><tbody>{body}</tbody></table></div>",
+            unsafe_allow_html=True)
+        st.caption(f"Showing {min(25, n_eval)} of {n_eval} evaluated starts. "
+                   "Metrics above reflect all of them.")

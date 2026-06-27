@@ -11,10 +11,28 @@ Run:
 import datetime
 import json
 import os
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 import numpy as np
 import plotly.graph_objects as go
 import statsapi
 import streamlit as st
+
+# Optional timezone + Streamlit threading context (both degrade gracefully if absent)
+try:
+    from zoneinfo import ZoneInfo
+    _UTC = ZoneInfo("UTC")
+    _ET  = ZoneInfo("America/New_York")
+except Exception:
+    _UTC = _ET = None
+
+try:
+    from streamlit.runtime.scriptrunner import add_script_run_ctx, get_script_run_ctx
+except Exception:
+    add_script_run_ctx = None
+    def get_script_run_ctx():
+        return None
 
 # ── Page config ────────────────────────────────────────────────────────────────
 st.set_page_config(page_title="SP Props", page_icon="⚾", layout="wide")
@@ -48,6 +66,13 @@ LEAGUE_WHIP     = 1.28
 LEAGUE_IP_START = 5.2    # average innings per start
 LEAGUE_K_PCT    = 0.225  # average batter strikeout rate (22.5%)
 LEAGUE_BB_PCT   = 0.085  # average batter walk rate
+LEAGUE_OPS      = 0.720  # league-average OPS baseline for the opponent run adjustment
+
+# ── Model coefficients (hand-set defaults; tune against the backtest, not by eye) ──
+OPP_K_SENSITIVITY = 2.5   # K/9 multiplier per unit of opponent K% deviation from league
+FIP_WEIGHT        = 0.5   # FIP vs ERA split in the run-rate baseline (0=all ERA, 1=all FIP)
+OPS_TO_RUNS       = 3.0   # opponent OPS deviation → ER/9 adjustment
+FIP_CONSTANT      = 3.10  # league-normalizing constant paired with the 13/3/2 FIP weights
 
 # Typical sportsbook K prop lines for reference
 # Model will project K total and compare to these common lines
@@ -86,38 +111,11 @@ ABB_TO_FULL = {
 FULL_TO_ABB = {v: k for k, v in ABB_TO_FULL.items()}
 
 STATSAPI_NAME_MAP = {
-    "Arizona Diamondbacks":  "Arizona Diamondbacks",
-    "Atlanta Braves":        "Atlanta Braves",
-    "Baltimore Orioles":     "Baltimore Orioles",
-    "Boston Red Sox":        "Boston Red Sox",
-    "Chicago Cubs":          "Chicago Cubs",
-    "Chicago White Sox":     "Chicago White Sox",
-    "Cincinnati Reds":       "Cincinnati Reds",
-    "Cleveland Guardians":   "Cleveland Guardians",
-    "Colorado Rockies":      "Colorado Rockies",
-    "Detroit Tigers":        "Detroit Tigers",
-    "Houston Astros":        "Houston Astros",
-    "Kansas City Royals":    "Kansas City Royals",
-    "Los Angeles Angels":    "Los Angeles Angels",
-    "Los Angeles Dodgers":   "Los Angeles Dodgers",
-    "Miami Marlins":         "Miami Marlins",
-    "Milwaukee Brewers":     "Milwaukee Brewers",
-    "Minnesota Twins":       "Minnesota Twins",
-    "New York Mets":         "New York Mets",
-    "New York Yankees":      "New York Yankees",
-    "Oakland Athletics":     "Oakland Athletics",
-    "Athletics":             "Oakland Athletics",
-    "Sacramento Athletics":  "Oakland Athletics",
-    "Philadelphia Phillies": "Philadelphia Phillies",
-    "Pittsburgh Pirates":    "Pittsburgh Pirates",
-    "San Diego Padres":      "San Diego Padres",
-    "San Francisco Giants":  "San Francisco Giants",
-    "Seattle Mariners":      "Seattle Mariners",
-    "St. Louis Cardinals":   "St. Louis Cardinals",
-    "Tampa Bay Rays":        "Tampa Bay Rays",
-    "Texas Rangers":         "Texas Rangers",
-    "Toronto Blue Jays":     "Toronto Blue Jays",
-    "Washington Nationals":  "Washington Nationals",
+    # Only non-identity remaps are needed; api_name_to_abb falls back to the raw name.
+    # The Athletics' API name shifts with the franchise relocation, so alias the
+    # variants back to the abbreviation key used in ABB_TO_FULL ("Oakland Athletics").
+    "Athletics":            "Oakland Athletics",
+    "Sacramento Athletics": "Oakland Athletics",
 }
 
 def api_name_to_abb(name: str):
@@ -137,6 +135,31 @@ def ip_to_decimal(ip_val) -> float:
     return whole + outs / 3
 
 
+def compute_pitching_line(so: int, bb: int, hr: int, er: int, h: int,
+                          ip: float, gs: int) -> dict:
+    """
+    Derive a pitcher's rate line from counting stats. Single source of truth for the
+    FIP formula/constant and the season-to-date rates, shared by the live season fetch
+    and the backtest's look-ahead-clean reconstruction so the two can never drift.
+    Returns {} when there are no innings (caller treats that as "not enough data").
+    """
+    if ip <= 0:
+        return {}
+    return {
+        "k9":   round(so * 9 / ip, 2),
+        "bb9":  round(bb * 9 / ip, 2),
+        "era":  round(er * 9 / ip, 2),
+        "whip": round((h + bb) / ip, 3),
+        "fip":  round((13 * hr + 3 * bb - 2 * so) / ip + FIP_CONSTANT, 2),
+        "hr9":  round(hr * 9 / ip, 2),
+        "ip":   round(ip, 1),
+        "gs":   gs,
+        "so":   so, "bb": bb, "hr": hr,
+        "ip_per_start": round(ip / gs, 2) if gs > 0 else 0,
+        "k_per_start":  round(so / gs, 1) if gs > 0 else 0,
+    }
+
+
 # ── Data fetching ──────────────────────────────────────────────────────────────
 @st.cache_data(show_spinner=False, ttl=1800)
 def fetch_todays_games() -> tuple[list, str]:
@@ -150,7 +173,9 @@ def fetch_todays_games() -> tuple[list, str]:
 
 @st.cache_data(show_spinner=False, ttl=3600)
 def fetch_pitcher_season_stats(player_id: int, season: int) -> dict:
-    """Full season stats for a pitcher."""
+    """Full season stats for a pitcher. The rate line is derived from counting stats via
+    compute_pitching_line (same definition the backtest uses); only W-L is taken straight
+    from the API, since it can't be reconstructed from a pitching log."""
     try:
         raw = statsapi.get("people", {
             "personIds": player_id,
@@ -163,79 +188,38 @@ def fetch_pitcher_season_stats(player_id: int, season: int) -> dict:
         s = splits[0].get("stat", {}) if splits else {}
         if not s:
             return {}
-        k9   = float(s.get("strikeoutsPer9Inn", "0") or 0)
-        bb9  = float(s.get("walksPer9Inn",      "0") or 0)
-        era  = float(s.get("era",               "0") or 0)
-        whip = float(s.get("whip",              "0") or 0)
         # API returns innings in baseball notation (6.1 = 6⅓), not true decimal
-        ip   = ip_to_decimal(s.get("inningsPitched", "0") or 0)
-        gs   = int(s.get("gamesStarted", 0))
-        so   = int(s.get("strikeOuts", 0))
-        bb   = int(s.get("baseOnBalls", 0))
-        hr   = int(s.get("homeRuns",   0))
-        hr9  = float(s.get("homeRunsPer9", "0") or 0)
-        # FIP uses counting stats per inning, not per-9 rates.
-        # Formula: FIP = (13*HR + 3*BB - 2*SO) / IP + FIP_constant (~3.10)
-        fip  = round((13 * hr + 3 * bb - 2 * so) / ip + 3.10, 2) if ip > 0 else era
-        ip_per_start = round(ip / gs, 2) if gs > 0 else 0
-        k_per_start  = round(so / gs, 1) if gs > 0 else 0
-        return {
-            "k9":          k9,
-            "bb9":         bb9,
-            "era":         era,
-            "whip":        whip,
-            "fip":         fip,
-            "hr9":         hr9,
-            "ip":          ip,
-            "gs":          gs,
-            "so":          so,
-            "bb":          bb,
-            "hr":          hr,
-            "ip_per_start": ip_per_start,
-            "k_per_start":  k_per_start,
-            "wins":        int(s.get("wins",   0)),
-            "losses":      int(s.get("losses", 0)),
-        }
+        line = compute_pitching_line(
+            so=int(s.get("strikeOuts", 0)),
+            bb=int(s.get("baseOnBalls", 0)),
+            hr=int(s.get("homeRuns", 0)),
+            er=int(s.get("earnedRuns", 0)),
+            h=int(s.get("hits", 0)),
+            ip=ip_to_decimal(s.get("inningsPitched", "0") or 0),
+            gs=int(s.get("gamesStarted", 0)),
+        )
+        if not line:
+            return {}
+        line["wins"]   = int(s.get("wins", 0))
+        line["losses"] = int(s.get("losses", 0))
+        return line
     except Exception:
         return {}
 
 
-@st.cache_data(show_spinner=False, ttl=3600)
-def fetch_pitcher_last_n_starts(player_id: int, season: int, n: int = 5) -> list[dict]:
+def last_n_starts_from_log(log: list[dict], n: int = 5) -> list[dict]:
     """
-    Fetch game log for a pitcher and return their last N starts.
-    Each entry has: date, opponent, ip, k, er, h, bb.
+    Last N starts (most recent first) sliced from a full game log produced by
+    fetch_pitcher_game_log_full. Pure helper, no API call — the live card and the
+    backtest now share a single game-log fetch instead of pulling it twice.
     """
-    try:
-        raw = statsapi.get("people", {
-            "personIds": player_id,
-            "hydrate": f"stats(group=pitching,type=gameLog,season={season})",
-        })
-        people = raw.get("people", [])
-        if not people:
-            return []
-        splits = people[0].get("stats", [{}])[0].get("splits", [])
-        # Filter to starts only (gamesStarted == 1)
-        starts = [sp for sp in splits if int(sp.get("stat", {}).get("gamesStarted", 0)) == 1]
-        # Sort by date descending, take last N
-        starts = sorted(starts, key=lambda x: x.get("date", ""), reverse=True)[:n]
-        result = []
-        for sp in starts:
-            s = sp.get("stat", {})
-            result.append({
-                "date":     sp.get("date", "")[:10],
-                "opponent": sp.get("opponent", {}).get("name", "?"),
-                # Convert baseball IP notation (6.1 = 6⅓) to true decimal innings
-                "ip":       ip_to_decimal(s.get("inningsPitched", 0) or 0),
-                "k":        int(s.get("strikeOuts", 0)),
-                "er":       int(s.get("earnedRuns", 0)),
-                "h":        int(s.get("hits", 0)),
-                "bb":       int(s.get("baseOnBalls", 0)),
-                "hr":       int(s.get("homeRuns", 0)),
-            })
-        return result
-    except Exception:
-        return []
+    starts = sorted((g for g in log if g["gs"] == 1),
+                    key=lambda g: g["date"], reverse=True)[:n]
+    return [
+        {"date": g["date"], "opponent": g["opp_name"] or "?", "ip": g["ip"],
+         "k": g["so"], "er": g["er"], "h": g["h"], "bb": g["bb"], "hr": g["hr"]}
+        for g in starts
+    ]
 
 
 @st.cache_data(show_spinner=False, ttl=3600)
@@ -269,11 +253,9 @@ def fetch_team_batting(team_id: int, season: int) -> dict:
 
 @st.cache_data(show_spinner=False, ttl=3600)
 def fetch_pitcher_by_id(player_id: int, season: int) -> tuple[dict, list]:
-    """Convenience wrapper returning (season_stats, last_5_starts)."""
-    return (
-        fetch_pitcher_season_stats(player_id, season),
-        fetch_pitcher_last_n_starts(player_id, season, 5),
-    )
+    """(season_stats, last_5_starts) — both built from one shared game-log fetch."""
+    log = fetch_pitcher_game_log_full(player_id, season)
+    return fetch_pitcher_season_stats(player_id, season), last_n_starts_from_log(log)
 
 
 @st.cache_data(show_spinner=False, ttl=3600)
@@ -417,22 +399,9 @@ def reconstruct_state_before(log: list[dict], cutoff_date: str):
     hr = sum(g["hr"] for g in prior); er = sum(g["er"] for g in prior)
     h  = sum(g["h"]  for g in prior); ip = sum(g["ip"] for g in prior)
     gs = sum(g["gs"] for g in prior)
-    if ip <= 0:
+    season_stats = compute_pitching_line(so=so, bb=bb, hr=hr, er=er, h=h, ip=ip, gs=gs)
+    if not season_stats:
         return None, None
-    fip = round((13 * hr + 3 * bb - 2 * so) / ip + 3.10, 2)
-    season_stats = {
-        "k9":   round(so * 9 / ip, 2),
-        "bb9":  round(bb * 9 / ip, 2),
-        "era":  round(er * 9 / ip, 2),
-        "whip": round((h + bb) / ip, 3),
-        "fip":  fip,
-        "hr9":  round(hr * 9 / ip, 2),
-        "ip":   round(ip, 1),
-        "gs":   gs,
-        "so":   so, "bb": bb, "hr": hr,
-        "ip_per_start": round(ip / gs, 2) if gs > 0 else 0,
-        "k_per_start":  round(so / gs, 1) if gs > 0 else 0,
-    }
     prior_starts  = [g for g in prior if g["gs"] == 1]
     recent_starts = [
         {"ip": g["ip"], "k": g["so"], "er": g["er"],
@@ -507,7 +476,7 @@ def project_strikeouts(pitcher: dict, recent_starts: list, opp_batting: dict,
     # If opponent K% is 5pp above league avg (0.275 vs 0.225), pitcher gets a boost
     opp_k_pct    = opp_batting.get("k_pct", LEAGUE_K_PCT)
     k_pct_delta  = opp_k_pct - LEAGUE_K_PCT          # positive = more Ks for pitcher
-    k9_adj       = round(blended_k9 * (1 + k_pct_delta * 2.5), 2)  # scale factor
+    k9_adj       = round(blended_k9 * (1 + k_pct_delta * OPP_K_SENSITIVITY), 2)
 
     # Expected innings — blend season avg with recent, cap at 7.0
     exp_ip = min(7.0, round(
@@ -519,21 +488,21 @@ def project_strikeouts(pitcher: dict, recent_starts: list, opp_batting: dict,
     proj_k     = round(round(proj_k_raw * 2) / 2, 1)  # snap to 0.5
 
     # Projected runs allowed
-    opp_ops      = opp_batting.get("ops",    0.720)
-    opp_runs_pg  = opp_batting.get("runs_pg", 4.5)
+    opp_ops      = opp_batting.get("ops", LEAGUE_OPS)
     park_factor  = PARK_RUN_FACTOR.get(park_abb, 1.00)
 
     # Expected ER per 9 innings, adjusted for park and opponent.
     # Baseline blends FIP and ERA: FIP strips out defense/sequencing luck and is
     # more predictive of future runs (which is why the card flags it as the more
     # predictive stat), while ERA still carries real run-prevention signal.
-    # 50/50 by default — change FIP_WEIGHT to lean either way.
+    # Split is the module-level FIP_WEIGHT (0..1).
     pitcher_era = pitcher.get("era", LEAGUE_ERA)
     pitcher_fip = pitcher.get("fip", pitcher_era)
-    FIP_WEIGHT  = 0.5
     run_rate    = pitcher_fip * FIP_WEIGHT + pitcher_era * (1 - FIP_WEIGHT)
-    opp_ops_adj = (opp_ops - 0.720) * 3.0           # ops deviation → run adjustment
-    era_adj     = run_rate * park_factor + opp_ops_adj
+    opp_ops_adj = (opp_ops - LEAGUE_OPS) * OPS_TO_RUNS    # ops deviation → run adjustment
+    # Park scales the whole expected run environment, opponent offense included, so a
+    # strong lineup in a hitter's park compounds rather than adding a flat bump.
+    era_adj     = (run_rate + opp_ops_adj) * park_factor
     proj_er_raw = era_adj * (exp_ip / 9)
     proj_er     = round(round(proj_er_raw * 2) / 2, 1)
 
@@ -586,6 +555,36 @@ def quality_tier(k9: float) -> tuple[str, str]:
     return             "Contact pitcher", "#ff5252"
 
 
+def _load_sp(task: dict):
+    """Resolve a pitcher's id if needed, fetch their season line + last-5, and build the
+    render row — or return None if they can't be loaded or fail the min-GS filter. Reads
+    only caches and the task dict, so it's safe to run inside the thread pool."""
+    pid = task["sp_pid"]
+    if not isinstance(pid, int) or not pid:
+        pid = fetch_pitcher_id_by_name(task["sp_name"])
+    if not pid:
+        return None
+    season_stats, recent_starts = fetch_pitcher_by_id(pid, SEASON)
+    if not season_stats or season_stats.get("gs", 0) < task["min_gs"]:
+        return None
+    proj = project_strikeouts(
+        season_stats, recent_starts, task["opp_batting"],
+        task["venue_abb"], task["recent_weight"],
+    )
+    if not proj:
+        return None
+    tier_label, tier_color = quality_tier(season_stats.get("k9", 0))
+    return {
+        "pid": pid, "name": task["sp_name"],
+        "team": task["team_name"], "team_abb": task["team_abb"],
+        "is_home": task["is_home"], "opp": task["opp_name"], "opp_abb": task["opp_abb"],
+        "venue": task["venue_name"], "venue_abb": task["venue_abb"],
+        "season_stats": season_stats, "recent_starts": recent_starts,
+        "proj": proj, "tier_label": tier_label, "tier_color": tier_color,
+        "game_time": task["game_time"],
+    }
+
+
 # ── Sidebar ────────────────────────────────────────────────────────────────────
 with st.sidebar:
     st.title("⚾ SP Props Model")
@@ -630,84 +629,85 @@ if not todays_games:
     st.stop()
 
 # ── Build projections for every SP ────────────────────────────────────────────
+# Two parallel fetch passes (team batting, then pitcher lines) replace the old
+# per-game serial loop. Every fetch is cached and I/O-bound, so a small thread pool
+# turns a cold full-slate load from dozens of serial round-trips into a few seconds.
 all_pitchers = []
 todays_team_batting = {}   # {abb: batting} collected across today's games → snapshotted
+MAX_WORKERS = 8
 
-progress = st.progress(0, text="Loading pitcher data...")
-total_games = len(todays_games)
+# Carry the main thread's Streamlit context into workers so cached calls run cleanly
+# (no "missing ScriptRunContext" log spam). Degrades to a no-op if the API isn't present.
+_ctx = get_script_run_ctx()
+def _run_with_ctx(fn, *args):
+    if add_script_run_ctx is not None and _ctx is not None:
+        add_script_run_ctx(threading.current_thread(), _ctx)
+    return fn(*args)
 
-for i, game in enumerate(todays_games):
-    progress.progress((i + 1) / total_games,
-                      text=f"Loading {game.get('home_name','?')} vs {game.get('away_name','?')}...")
+# Pass 1 — fetch each team's batting once, in parallel.
+team_abb_by_id = {}
+for game in todays_games:
+    if game.get("home_id"):
+        team_abb_by_id[game["home_id"]] = api_name_to_abb(game.get("home_name", ""))
+    if game.get("away_id"):
+        team_abb_by_id[game["away_id"]] = api_name_to_abb(game.get("away_name", ""))
 
-    h_name = game.get("home_name", "")
-    a_name = game.get("away_name", "")
-    h_abb  = api_name_to_abb(h_name)
-    a_abb  = api_name_to_abb(a_name)
+progress = st.progress(0.0, text="Loading team batting...")
+team_batting_by_id = {}
+with ThreadPoolExecutor(max_workers=MAX_WORKERS) as pool:
+    futs = {pool.submit(_run_with_ctx, fetch_team_batting, tid, SEASON): tid
+            for tid in team_abb_by_id}
+    for done, fut in enumerate(as_completed(futs)):
+        tid = futs[fut]
+        try:
+            bat = fut.result()
+        except Exception:
+            bat = {}
+        team_batting_by_id[tid] = bat
+        abb = team_abb_by_id.get(tid)
+        if abb and bat:
+            todays_team_batting[abb] = bat
+        progress.progress((done + 1) / max(len(futs), 1), text="Loading team batting...")
 
-    home_sp_name = game.get("home_probable_pitcher", "TBD")
-    away_sp_name = game.get("away_probable_pitcher", "TBD")
-    home_sp_pid  = game.get("home_pitcher_id")
-    away_sp_pid  = game.get("away_pitcher_id")
-    venue_abb    = h_abb  # None if home team unknown; PARK_RUN_FACTOR.get() defaults to 1.00
-    venue_name   = game.get("venue_name", "")
-
-    # Fetch team batting for each side (opposing lineup)
-    h_team_id = game.get("home_id")
-    a_team_id = game.get("away_id")
-    h_batting = fetch_team_batting(h_team_id, SEASON) if h_team_id else {}
-    a_batting = fetch_team_batting(a_team_id, SEASON) if a_team_id else {}
-    if h_abb and h_batting: todays_team_batting[h_abb] = h_batting
-    if a_abb and a_batting: todays_team_batting[a_abb] = a_batting
-
-    # Process each SP in this game
+# Build one task per startable SP, with its opponent's batting already resolved.
+tasks = []
+for game in todays_games:
+    h_name = game.get("home_name", ""); a_name = game.get("away_name", "")
+    h_abb  = api_name_to_abb(h_name);   a_abb  = api_name_to_abb(a_name)
+    venue_abb  = h_abb                   # park is always the home team's
+    venue_name = game.get("venue_name", "")
+    h_bat = team_batting_by_id.get(game.get("home_id"), {})
+    a_bat = team_batting_by_id.get(game.get("away_id"), {})
     for sp_name, sp_pid, is_home, opp_batting, opp_name, opp_abb in [
-        (home_sp_name, home_sp_pid, True,  a_batting, a_name, a_abb),
-        (away_sp_name, away_sp_pid, False, h_batting, h_name, h_abb),
+        (game.get("home_probable_pitcher", "TBD"), game.get("home_pitcher_id"),
+         True,  a_bat, a_name, a_abb),
+        (game.get("away_probable_pitcher", "TBD"), game.get("away_pitcher_id"),
+         False, h_bat, h_name, h_abb),
     ]:
         if not sp_name or sp_name == "TBD":
             continue
-
-        # Get pitcher ID
-        pid = sp_pid
-        if not isinstance(pid, int) or not pid:
-            pid = fetch_pitcher_id_by_name(sp_name)
-        if not pid:
-            continue
-
-        season_stats, recent_starts = fetch_pitcher_by_id(pid, SEASON)
-        if not season_stats:
-            continue
-
-        gs = season_stats.get("gs", 0)
-        if gs < min_gs_filter:
-            continue
-
-        proj = project_strikeouts(
-            season_stats, recent_starts, opp_batting, venue_abb, recent_weight
-        )
-        if not proj:
-            continue
-
-        tier_label, tier_color = quality_tier(season_stats.get("k9", 0))
-
-        all_pitchers.append({
-            "pid":           pid,
-            "name":          sp_name,
-            "team":          h_name if is_home else a_name,
-            "team_abb":      h_abb  if is_home else a_abb,
-            "is_home":       is_home,
-            "opp":           opp_name,
-            "opp_abb":       opp_abb,
-            "venue":         venue_name,
-            "venue_abb":     venue_abb,
-            "season_stats":  season_stats,
-            "recent_starts": recent_starts,
-            "proj":          proj,
-            "tier_label":    tier_label,
-            "tier_color":    tier_color,
-            "game_time":     game.get("game_datetime", ""),
+        tasks.append({
+            "sp_name": sp_name, "sp_pid": sp_pid, "is_home": is_home,
+            "opp_batting": opp_batting, "opp_name": opp_name, "opp_abb": opp_abb,
+            "team_name": h_name if is_home else a_name,
+            "team_abb":  h_abb  if is_home else a_abb,
+            "venue_abb": venue_abb, "venue_name": venue_name,
+            "game_time": game.get("game_datetime", ""),
+            "min_gs": min_gs_filter, "recent_weight": recent_weight,
         })
+
+# Pass 2 — fetch every pitcher's line in parallel and assemble the render rows.
+progress.progress(0.0, text="Loading pitcher data...")
+with ThreadPoolExecutor(max_workers=MAX_WORKERS) as pool:
+    futs2 = [pool.submit(_run_with_ctx, _load_sp, t) for t in tasks]
+    for done, fut in enumerate(as_completed(futs2)):
+        try:
+            row = fut.result()
+        except Exception:
+            row = None
+        if row:
+            all_pitchers.append(row)
+        progress.progress((done + 1) / max(len(futs2), 1), text="Loading pitcher data...")
 
 progress.empty()
 
@@ -720,7 +720,7 @@ if not all_pitchers:
     st.stop()
 
 # Sort by projected Ks descending
-all_pitchers.sort(key=lambda x: x["proj"].get("proj_k", 0), reverse=True)
+all_pitchers.sort(key=lambda x: (-x["proj"].get("proj_k", 0), x["name"]))
 
 st.caption(f"{len(all_pitchers)} starters with projections · "
            f"recent form weight: {round(recent_weight*100)}% · "
@@ -735,10 +735,14 @@ for p in all_pitchers:
     conf         = proj["confidence"]
     conf_color   = "#00c07a" if "High" in conf else ("#f5c842" if "Moderate" in conf else "#888")
 
-    # Game time
+    # Game time — show US Eastern (falls back to UTC if tz data is unavailable)
     try:
         gt = datetime.datetime.strptime(p["game_time"], "%Y-%m-%dT%H:%M:%SZ")
-        time_str = gt.strftime("%I:%M %p UTC").lstrip("0")
+        if _ET is not None:
+            gt_et = gt.replace(tzinfo=_UTC).astimezone(_ET)
+            time_str = gt_et.strftime("%I:%M %p ").lstrip("0") + gt_et.strftime("%Z")
+        else:
+            time_str = gt.strftime("%I:%M %p UTC").lstrip("0")
     except Exception:
         time_str = ""
 
@@ -913,15 +917,17 @@ summary_rows = []
 for p in all_pitchers:
     proj  = p["proj"]
     stats = p["season_stats"]
-    # Best K prop recommendation (highest edge with a clear over/under)
+    # Best-priced actionable line: the line nearest the projection that still clears the
+    # edge. For overs that's the highest qualifying line; for unders, the lowest — both
+    # sit just past the projection, where the odds are closest to even money.
     best_line, best_rec, best_col, best_reason = None, None, "#888", ""
-    for line in reversed(COMMON_K_LINES):  # check from highest line down
+    for line in reversed(COMMON_K_LINES):       # descending → highest qualifying OVER
         rec, col, reason = proj["k_props"][line]
         if rec == "OVER":
             best_line, best_rec, best_col, best_reason = line, "OVER", col, reason
             break
     if not best_line:
-        for line in reversed(COMMON_K_LINES):  # highest line down — most actionable UNDER
+        for line in COMMON_K_LINES:             # ascending → lowest qualifying UNDER
             rec, col, reason = proj["k_props"][line]
             if rec == "UNDER":
                 best_line, best_rec, best_col, best_reason = line, "UNDER", col, reason

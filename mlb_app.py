@@ -17,6 +17,12 @@ import statsapi
 import streamlit as st
 
 # ── Snapshot system ────────────────────────────────────────────────────────────
+# NOTE: The backtest tab that consumed these snapshots has been removed.
+# The daily SAVE path is deliberately retained: snapshots are the only
+# look-ahead-free record of pre-game stats, and they cannot be recreated
+# retroactively. Keeping the saver (one small JSON per day) preserves the
+# option of ever validating the model again. Delete this block + the
+# save_snapshot() call in the main flow to drop the feature entirely.
 SNAPSHOT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "snapshots")
 
 def ensure_snapshot_dir():
@@ -35,7 +41,8 @@ def save_snapshot(batting: dict, pitching: dict, standings: dict,
     Called once per day automatically when the app loads.
     pitchers: {player_id: {era, whip, k9, ...}} for today's probable starters.
     batting_recent / pitching_recent: recent-form team stats as computed today.
-    Storing these lets the backtest blend recent form WITHOUT look-ahead bias —
+    Storing these preserves recent form WITHOUT look-ahead bias for any
+    future evaluation —
     a snapshot taken on day D holds recent form over [D-window, D], all of which
     predates any game played on D+1 or later.
     recent_window: the day-window (e.g. 14) used to compute the recent stats.
@@ -87,106 +94,6 @@ def save_snapshot(batting: dict, pitching: dict, standings: dict,
         pass  # Fail silently — snapshot is best-effort
 
 
-def load_sp_snapshot(date_str: str) -> dict:
-    """
-    Load the pitcher stats from a snapshot for a given date.
-    Returns {player_id_str: stats_dict} or {} if not found.
-    """
-    path = snapshot_path(date_str)
-    if not os.path.exists(path):
-        return {}
-    try:
-        with open(path, "r") as f:
-            payload = json.load(f)
-        return payload.get("pitchers", {})
-    except Exception:
-        return {}
-
-def load_recent_snapshot(date_str: str) -> tuple[dict, dict]:
-    """
-    Load snapshotted recent-form team stats for a given date.
-    Returns (batting_recent, pitching_recent) or ({}, {}) if not present.
-    Older snapshots saved before recent-form snapshotting existed simply
-    return ({}, {}), in which case the backtest falls back to season-only
-    for that game — no look-ahead, just no recent signal.
-    """
-    path = snapshot_path(date_str)
-    if not os.path.exists(path):
-        return {}, {}
-    try:
-        with open(path, "r") as f:
-            payload = json.load(f)
-        return payload.get("batting_recent", {}), payload.get("pitching_recent", {})
-    except Exception:
-        return {}, {}
-
-def load_snapshot(date_str: str) -> tuple[dict, dict, dict]:
-    """
-    Load the snapshot for a given date.
-    Returns (batting, pitching, standings) or (None, None, None) if not found.
-    """
-    path = snapshot_path(date_str)
-    if not os.path.exists(path):
-        return None, None, None
-    try:
-        with open(path, "r") as f:
-            payload = json.load(f)
-        return payload["batting"], payload["pitching"], payload.get("standings", {})
-    except Exception:
-        return None, None, None
-
-
-def get_sp_stats_from_cache(snap_cache_pitchers: dict, player_id) -> dict:
-    """
-    Look up a pitcher's stats from the snapshot pitcher cache.
-    Handles both int and string keys since JSON keys are always strings.
-    """
-    if not player_id or not snap_cache_pitchers:
-        return {}
-    return (snap_cache_pitchers.get(str(player_id)) or
-            snap_cache_pitchers.get(int(player_id) if str(player_id).isdigit() else player_id) or {})
-
-def get_best_snapshot_for_game(game_date_str: str) -> tuple[dict, dict, dict, str]:
-    """
-    Find the most recent snapshot taken BEFORE a game's date.
-    This ensures we use stats as they existed before the game was played.
-    Returns (batting, pitching, standings, snapshot_date) or (None,None,None,None).
-    """
-    ensure_snapshot_dir()
-    try:
-        game_dt = datetime.datetime.strptime(game_date_str, "%Y-%m-%d")
-    except ValueError:
-        return None, None, None, None
-
-    # List all snapshots, find most recent one before game date
-    snapshot_files = sorted([
-        f for f in os.listdir(SNAPSHOT_DIR)
-        if f.startswith("stats_") and f.endswith(".json")
-    ], reverse=True)
-
-    for fname in snapshot_files:
-        snap_date_str = fname.replace("stats_", "").replace(".json", "")
-        try:
-            snap_dt = datetime.datetime.strptime(snap_date_str, "%Y-%m-%d")
-            if snap_dt < game_dt:
-                b, p, s = load_snapshot(snap_date_str)
-                if b and p:
-                    return b, p, s, snap_date_str
-        except ValueError:
-            continue
-
-    return None, None, None, None
-
-def list_snapshots() -> list[str]:
-    """Return sorted list of available snapshot dates."""
-    ensure_snapshot_dir()
-    files = [
-        f.replace("stats_", "").replace(".json", "")
-        for f in os.listdir(SNAPSHOT_DIR)
-        if f.startswith("stats_") and f.endswith(".json")
-    ]
-    return sorted(files)
-
 # ── Page config ────────────────────────────────────────────────────────────────
 st.set_page_config(page_title="MLB Daily Slate", page_icon="⚾", layout="wide")
 
@@ -203,7 +110,14 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 SEASON     = datetime.datetime.now().year
-HOME_BOOST = 0.04
+# HOME_BOOST calibration: this is an additive shift on the composite score,
+# converted to probability by the logistic in calc_prob (slope K_PROB=2).
+# Even-team home win prob ≈ 0.5 + tanh(K_PROB·boost/2)/2.
+#   0.04 → ~51.9% — below MLB's observed home win rate.
+#   0.06 → ~53.0% — matches the modern MLB base rate (~52.5–53.5% in recent
+#          seasons; long-run historical ~54%).
+# Anchored to the public league-wide base rate, not tuned to results.
+HOME_BOOST = 0.06
 HOME_RUNS  = 0.3
 # Parks more than 5% above/below neutral already encode much of the home
 # environment in their run factor.  Scale the win-probability home boost
@@ -634,20 +548,6 @@ def fetch_todays_games() -> tuple[list, str]:
         return [], str(e)
 
 
-@st.cache_data(show_spinner=False, ttl=1800)
-def fetch_season_games(season: int) -> tuple[list, str]:
-    start = datetime.datetime(season, 3, 20).strftime("%m/%d/%Y")
-    end   = datetime.datetime.today().strftime("%m/%d/%Y")
-    try:
-        games     = statsapi.schedule(start_date=start, end_date=end, sportId=1)
-        completed = [g for g in games
-                     if g.get("status", "") == "Final"
-                     and g.get("game_type", "") == "R"]
-        return completed, ""
-    except Exception as e:
-        return [], str(e)
-
-
 @st.cache_data(show_spinner=False, ttl=3600)
 def fetch_pitcher_season_stats(player_id: int, season: int) -> dict:
     """Fetch a pitcher's season stats by player ID via the MLB Stats API."""
@@ -710,6 +610,7 @@ LEAGUE_AVG = {
     "era": 4.20,  "whip": 1.28,  "k9": 8.7,
     "fip": 4.10,  "bb9": 3.1,
     "rd_pg": 0.0,   # run differential per game vs league avg
+    "wpct": 50.0,   # team win pct (stored as percent in score_team)
 }
 
 def norm_vs_league(val: float, avg: float, std: float, inv: bool = False) -> float:
@@ -725,6 +626,7 @@ LEAGUE_STD = {
     "era": 0.80,  "whip": 0.15,  "k9": 1.5,
     "fip": 0.75,  "bb9": 0.7,
     "rd_pg": 0.5,
+    "wpct": 7.0,    # ≈ .070 win-pct std across teams in a typical season
 }
 
 def score_team(abb: str, batting: dict, pitching: dict, standings: dict) -> dict:
@@ -808,7 +710,14 @@ def score_vs_league(s: dict) -> dict:
         "fip_score":    n("fip",  inv=True),  # FIP more predictive than ERA
         "bb9_score":    n("bb9",  inv=True),  # fewer walks allowed = good
         # Record
-        "wpct_score":   min(1.0, max(0.0, s.get("wpct", 50) / 100)),
+        # CONSISTENCY FIX: wpct was previously scored as raw wpct/100, so a
+        # .600 team scored 0.60 while every other component is z-scored
+        # (where +1.4σ ≈ 0.74). That compressed the record component to a
+        # fraction of its slider weight — the "Record weight" slider claimed
+        # 30% but delivered far less. Now z-scored like everything else
+        # (mean .500, σ .070), so component scales are comparable and the
+        # sliders mean what they say.
+        "wpct_score":   n("wpct"),
         "rd_rec_score": n("rd_pg"),           # used separately in record component
     }
 
@@ -883,11 +792,18 @@ def calc_prob(sa, sb, home, w_off, w_def, w_rec,
 
     # SP adjustment: apply directly as an additive shift on the composite score.
     # sp_score is 0–1 (0.5 = league average). We convert the deviation from 0.5
-    # into a bonus/penalty capped at ±0.04 (same order as HOME_BOOST).
-    # Home SP boosts home team; away SP boosts away team.
-    # This avoids the previous circular approach of re-deriving fake ERA/WHIP/K9
-    # values from the SP score and feeding them back through normalization.
-    SP_MAX = 0.04
+    # into a bonus/penalty capped at ±SP_MAX.
+    # SP_MAX calibration: team pitching stats already carry the staff average,
+    # so this is the marginal effect of TODAY'S starter deviating from that
+    # average. Starters throw ~55–60% of innings, and sportsbook lines move
+    # 20–40 cents (≈5–10pp of win prob) on an ace-vs-scrub SP swap. The old
+    # cap of 0.04 allowed at most ~4pp of combined swing even in the most
+    # extreme mismatch — clearly below that floor. 0.07 allows: typical strong
+    # mismatch (0.75 vs 0.35 SP scores) ≈ 5–6pp, absolute max ≈ 14pp. Still
+    # conservative vs market behavior. This is a reasoned default, not a
+    # fitted value — it's the parameter most worth revisiting if validation
+    # data ever exists again.
+    SP_MAX = 0.07
     sp_h_adj = (sp_h_score - 0.5) * 2 * SP_MAX   # positive = home SP is above avg
     sp_a_adj = (sp_a_score - 0.5) * 2 * SP_MAX   # positive = away SP is above avg
     sc_a += sp_h_adj   # better home SP helps home team
@@ -896,8 +812,21 @@ def calc_prob(sa, sb, home, w_off, w_def, w_rec,
     boost = scaled_home_boost(park_factor)
     if home == "home":   sc_a += boost
     elif home == "away": sc_b += boost
-    total = sc_a + sc_b or 1
-    return sc_a / total, sc_b / total
+
+    # STRUCTURAL FIX: probability now comes from a logistic on the score
+    # DIFFERENCE instead of the ratio sc_a/(sc_a+sc_b). The ratio depended on
+    # the absolute LEVEL of the scores, not just their gap: two bad teams
+    # (0.35 vs 0.30) mapped to 53.8% while two good teams (0.70 vs 0.65)
+    # mapped to 51.9% — same 0.05 edge, different probability, with no
+    # principled justification. It also meant any uniform drift in the
+    # LEAGUE_AVG anchors compressed or inflated every probability. The
+    # logistic depends only on the gap, so it's invariant to both artifacts.
+    # K_PROB=2.0 is chosen so the slope at even matchups equals the old
+    # ratio's slope at scores near 0.5 (2p−1 = tanh(K·gap/2) ≈ gap for K=2),
+    # i.e. typical outputs are preserved; only the level-dependence is removed.
+    K_PROB = 2.0
+    p_a = float(1.0 / (1.0 + np.exp(-K_PROB * (sc_a - sc_b))))
+    return p_a, 1.0 - p_a
 
 
 def calc_run_line(sa, sb, home, w_off, w_def, w_rec,
@@ -1002,31 +931,6 @@ def calc_confidence(sa, sb, pct_h, pct_a, margin_winner, prob_winner,
         reasons.append(f"Both models consistently favor **{prob_winner}** with a "
                        f"{prob_strength} edge across offense, pitching, and record.")
     return level, emoji, color, reasons
-
-
-def prob_to_american(p: float) -> str:
-    """
-    Convert a win probability (0-1) to the American moneyline price at which
-    that win rate exactly breaks even. E.g. 0.60 → '-150', 0.45 → '+122'.
-    """
-    p = min(max(p, 0.01), 0.99)
-    if p >= 0.5:
-        return f"-{round(100 * p / (1 - p))}"
-    return f"+{round(100 * (1 - p) / p)}"
-
-
-def american_profit(odds: int) -> float:
-    """Profit in units on a 1-unit winning bet at the given American price."""
-    if odds < 0:
-        return 100 / abs(odds)
-    return odds / 100
-
-
-def american_breakeven(odds: int) -> float:
-    """Break-even win probability for a given American price."""
-    if odds < 0:
-        return abs(odds) / (abs(odds) + 100)
-    return 100 / (odds + 100)
 
 
 def park_factor_reason(venue_name: str, park_factor: float) -> str | None:
@@ -1144,8 +1048,8 @@ with st.sidebar:
                f"avg {round(avg_games, 0):.0f} games played")
 
 
-# ── Main tabs ──────────────────────────────────────────────────────────────────
-tab_today, tab_back = st.tabs(["⚾ Today's Games", "📊 Backtest"])
+# ── Main view ──────────────────────────────────────────────────────────────────
+(tab_today,) = st.tabs(["⚾ Today's Games"])
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # TAB 1 — Today's Games
@@ -1515,486 +1419,3 @@ with tab_today:
         )
         st.markdown(card_html, unsafe_allow_html=True)
 
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# TAB 2 — Backtest
-# ═══════════════════════════════════════════════════════════════════════════════
-with tab_back:
-    st.header(f"Model Backtesting — {SEASON} Season")
-
-    available_snaps = list_snapshots()
-    snap_count = len(available_snaps)
-    if snap_count == 0:
-        st.caption(
-            "⚠️ No snapshots saved yet — backtesting is using current stats (look-ahead bias). "
-            "The app will save a snapshot each day it runs. Come back tomorrow for clean backtesting."
-        )
-    elif snap_count < 7:
-        st.caption(
-            f"📸 {snap_count} daily snapshot(s) saved. Games with a matching snapshot use "
-            f"pre-game stats. Games before {available_snaps[0]} still use current stats."
-        )
-    else:
-        st.caption(
-            f"📸 {snap_count} daily snapshots available ({available_snaps[0]} → {available_snaps[-1]}). "
-            f"All games with a prior-day snapshot use pre-game stats — no look-ahead bias."
-        )
-
-    num_games = st.slider("Games to evaluate (most recent first)", 10, 200, 100, step=10)
-
-    with st.spinner("Fetching season results..."):
-        season_games, season_err = fetch_season_games(SEASON)
-
-    if season_err:
-        st.error(f"Could not load season games: {season_err}")
-    elif not season_games:
-        st.info("No completed regular season games found yet this season.")
-    else:
-        results_table = []
-        correct_prob = covered = total = 0
-        margin_errors = []
-
-        snap_hits = snap_misses = 0
-        recent_used = 0   # games whose matched snapshot carried recent form (true 65/35)
-        sp_snap_used = sp_neutral_used = 0   # SP data: pre-game snapshot vs neutral 0.5
-        # Pre-load all snapshots into memory once — avoids repeated disk reads per game
-        snap_cache = {}
-        snap_cache_pitchers = {}   # {snap_date: {pid_str: stats}}
-        snap_cache_recent = {}     # {snap_date: (batting_recent, pitching_recent)}
-        for snap_date in list_snapshots():
-            b, p, s = load_snapshot(snap_date)
-            if b and p:
-                snap_cache[snap_date] = (b, p, s)
-            sp_data = load_sp_snapshot(snap_date)
-            if sp_data:
-                snap_cache_pitchers[snap_date] = sp_data
-            rb, rp = load_recent_snapshot(snap_date)
-            if rb:
-                snap_cache_recent[snap_date] = (rb, rp)
-
-        def get_snapshot_from_cache(game_date_str: str):
-            """Find the most recent snapshot before game_date using the in-memory cache."""
-            try:
-                game_dt = datetime.datetime.strptime(game_date_str, "%Y-%m-%d")
-            except ValueError:
-                return None, None, None, None
-            for snap_date in sorted(snap_cache.keys(), reverse=True):
-                snap_dt = datetime.datetime.strptime(snap_date, "%Y-%m-%d")
-                if snap_dt < game_dt:
-                    b, p, s = snap_cache[snap_date]
-                    return b, p, s, snap_date
-            return None, None, None, None
-
-        for game in sorted(season_games, key=lambda g: g.get("game_date", ""), reverse=True)[:num_games]:
-            h_abb = api_name_to_abb(game.get("home_name", ""))
-            a_abb = api_name_to_abb(game.get("away_name", ""))
-            if not h_abb or not a_abb:
-                continue
-            hs = int(game.get("home_score", 0) or 0)
-            as_ = int(game.get("away_score", 0) or 0)
-            game_date = game.get("game_date", "")[:10]
-            try:
-                # Try to find a snapshot taken before this game was played
-                snap_bat, snap_pit, snap_std, snap_date = get_snapshot_from_cache(game_date)
-                if snap_bat and snap_pit:
-                    bt_batting   = snap_bat
-                    bt_pitching  = snap_pit
-                    bt_standings = snap_std or standings_data
-                    used_snapshot = snap_date
-                    snap_hits += 1
-                else:
-                    # No snapshot available — fall back to current stats
-                    bt_batting   = batting_data
-                    bt_pitching  = pitching_data
-                    bt_standings = standings_data
-                    used_snapshot = None
-                    snap_misses += 1
-                s_h = score_team(h_abb, bt_batting, bt_pitching, bt_standings)
-                s_a = score_team(a_abb, bt_batting, bt_pitching, bt_standings)
-
-                # Recent form, as snapshotted BEFORE this game (no look-ahead).
-                # Only available when the matched snapshot carried recent form;
-                # older snapshots leave this empty and the game runs season-only.
-                bt_rec = snap_cache_recent.get(used_snapshot, (None, None)) if used_snapshot else (None, None)
-                bt_bat_recent, bt_pit_recent = bt_rec
-                bt_r_h = (score_team(h_abb, bt_bat_recent, bt_pit_recent, bt_standings)
-                          if bt_bat_recent else None)
-                bt_r_a = (score_team(a_abb, bt_bat_recent, bt_pit_recent, bt_standings)
-                          if bt_bat_recent else None)
-                if bt_r_h and bt_r_a:
-                    recent_used += 1
-
-                # Get SP stats from snapshot if available.
-                # LOOK-AHEAD FIX: previously, when the snapshot had no data for
-                # this game's starters (the usual case — a snapshot from day D-1
-                # holds D-1's probable starters, not day D's), we fell back to
-                # fetch_pitcher_stats_by_name(), which returns CURRENT
-                # season-to-date stats for a game played weeks ago. That leaks
-                # future information into the backtest and inflates apparent
-                # accuracy. We now fall back to a neutral 0.5 SP score instead,
-                # and count how often that happens so coverage is visible.
-                bt_sp_pitchers = snap_cache_pitchers.get(used_snapshot, {}) if used_snapshot else {}
-                bt_home_sp_id  = game.get("home_pitcher_id")
-                bt_away_sp_id  = game.get("away_pitcher_id")
-                bt_home_sp     = get_sp_stats_from_cache(bt_sp_pitchers, bt_home_sp_id)
-                bt_away_sp     = get_sp_stats_from_cache(bt_sp_pitchers, bt_away_sp_id)
-                if bt_home_sp and bt_away_sp:
-                    sp_snap_used += 1
-                else:
-                    sp_neutral_used += 1
-                bt_sp_h_score = pitcher_adjustment(bt_home_sp)   # returns 0.5 if empty
-                bt_sp_a_score = pitcher_adjustment(bt_away_sp)   # returns 0.5 if empty
-                bt_park_factor = PARK_RUN_FACTOR.get(h_abb, 1.0)
-
-                ph, pa    = calc_prob(s_h, s_a, "home", w_off, w_def, w_rec,
-                                      bt_r_h, bt_r_a, w_season, w_recent,
-                                      sp_h_score=bt_sp_h_score, sp_a_score=bt_sp_a_score,
-                                      park_factor=bt_park_factor)
-                prob_pick = s_h["name"] if ph >= pa else s_a["name"]
-                prob_pct  = round(max(ph, pa) * 100)
-                _, _, proj_margin, margin_pick, _, proj_total_bt = calc_run_line(
-                    s_h, s_a, "home", w_off, w_def, w_rec,
-                    bt_r_h, bt_r_a, w_season, w_recent,
-                    sp_h_score=bt_sp_h_score, sp_a_score=bt_sp_a_score)
-                conf_l, conf_e, _, _ = calc_confidence(
-                    s_h, s_a, round(ph*100), round(pa*100), margin_pick, prob_pick,
-                    bt_r_h, bt_r_a, sp_h_score=bt_sp_h_score, sp_a_score=bt_sp_a_score)
-                actual_winner = s_h["name"] if hs > as_ else s_a["name"]
-                actual_margin = round(abs(hs - as_), 1)
-                if margin_pick == actual_winner:
-                    # Standard MLB run line: favorite must win by 2+ (covers -1.5)
-                    did_cover = actual_margin >= 2
-                    cover_str = (f"✅ -1.5 (won by {actual_margin})"
-                                 if did_cover else f"❌ -1.5 (won by {actual_margin})")
-                else:
-                    did_cover = False
-                    cover_str = "❌ Lost outright"
-                prob_correct = prob_pick == actual_winner
-                margin_err   = round(abs(proj_margin - actual_margin), 1)
-                if prob_correct: correct_prob += 1
-                if did_cover:    covered += 1
-                margin_errors.append(margin_err)
-                total += 1
-                results_table.append({
-                    "date":         game_date,
-                    "matchup":      f"{s_a['name']} @ {s_h['name']}",
-                    "used_snapshot": used_snapshot,
-                    "actual":       f"{actual_winner} ({max(hs,as_)}–{min(hs,as_)})",
-                    "actual_margin":actual_margin,
-                    "prob_pick":    prob_pick,
-                    "prob_pct":     prob_pct,
-                    "prob_correct": prob_correct,
-                    "margin_pick":  margin_pick,
-                    "proj_margin":  proj_margin,
-                    "did_cover":    did_cover,
-                    "cover_str":    cover_str,
-                    "margin_err":   margin_err,
-                    "confidence":   f"{conf_e} {conf_l}",
-                    "conf_level":   conf_l,
-                })
-            except Exception:
-                continue
-
-        if total > 0:
-            acc_prob       = round(correct_prob / total * 100)
-            cover_rate     = round(covered / total * 100)
-            avg_margin_err = round(sum(margin_errors) / len(margin_errors), 1) if margin_errors else 0
-
-            # Show snapshot coverage
-            if snap_hits + snap_misses > 0:
-                snap_pct = round(snap_hits / (snap_hits + snap_misses) * 100)
-                oldest_snap = available_snaps[0] if available_snaps else None
-                if snap_pct == 100:
-                    st.success(
-                        f"✅ All {total} games evaluated using pre-game snapshots — no look-ahead bias."
-                    )
-                elif snap_pct > 0:
-                    st.info(
-                        f"📸 {snap_hits}/{snap_hits+snap_misses} games ({snap_pct}%) used pre-game snapshots. "
-                        f"{snap_misses} earlier games used current stats — these predate your first snapshot "
-                        f"({oldest_snap}). Look-ahead bias only applies to those older games."
-                    )
-                else:
-                    # snap_hits == 0 but snapshots exist — all games predate the snapshots
-                    if available_snaps:
-                        st.info(
-                            f"📸 You have {len(available_snaps)} snapshot(s) saved "
-                            f"(from {available_snaps[0]} onward), but all backtested games "
-                            f"predate your earliest snapshot. Snapshots will be used for new games "
-                            f"going forward. Current stats used for all historical games."
-                        )
-                    else:
-                        st.warning(
-                            "⚠️ No snapshots saved yet — all games evaluated using current stats. "
-                            "The app saves a snapshot each day it runs."
-                        )
-
-            # Show how many games actually exercised the recent-form blend.
-            # Snapshots saved before recent-form snapshotting was added carry no
-            # recent stats, so those games run season-only even at w_recent > 0.
-            if w_recent > 0 and total > 0:
-                rec_pct = round(recent_used / total * 100)
-                if recent_used == 0:
-                    st.warning(
-                        f"⚠️ Recent-form weight is {round(w_recent*100)}%, but **0 of {total}** "
-                        f"backtested games carried snapshotted recent form — they all ran "
-                        f"season-only. Your existing snapshots predate recent-form capture, so "
-                        f"this backtest does NOT yet reflect the {round(w_season*100)}/{round(w_recent*100)} "
-                        f"blend. New snapshots (saved each day going forward) will include it."
-                    )
-                elif rec_pct < 100:
-                    st.info(
-                        f"📊 {recent_used}/{total} games ({rec_pct}%) used the "
-                        f"{round(w_season*100)}/{round(w_recent*100)} season/recent blend; the rest ran "
-                        f"season-only (their snapshots predate recent-form capture)."
-                    )
-                else:
-                    st.success(
-                        f"✅ All {total} games evaluated with the "
-                        f"{round(w_season*100)}/{round(w_recent*100)} season/recent blend you run live."
-                    )
-
-            # SP data coverage — snapshots hold only that day's probable starters,
-            # so most historical games have no clean pre-game SP data. Those games
-            # now run with a neutral SP score (0.5) instead of leaking current
-            # stats backward in time.
-            if sp_neutral_used > 0:
-                st.caption(
-                    f"⚾ SP adjustment: {sp_snap_used}/{sp_snap_used + sp_neutral_used} games had "
-                    f"pre-game snapshot SP data; the other {sp_neutral_used} ran SP-neutral (0.5) "
-                    f"to avoid look-ahead bias. Live picks still use full SP data — so the live "
-                    f"model has slightly more signal than this backtest shows."
-                )
-
-            m1, m2, m3, m4 = st.columns(4)
-            m1.metric("Games evaluated", total)
-            m2.metric("Win prob accuracy", f"{acc_prob}%", f"{correct_prob}/{total} correct")
-            m3.metric("Run line cover rate", f"{cover_rate}%", f"{covered}/{total} covered")
-            m4.metric("Avg run-line error", f"{avg_margin_err} runs")
-
-            # Accuracy by confidence tier
-            st.markdown('<p class="section-head">Accuracy by confidence tier</p>', unsafe_allow_html=True)
-            tier_order  = ["High", "Moderate", "Low", "Conflicted"]
-            tier_colors = {"High": "#00c07a", "Moderate": "#f5c842", "Low": "#f5a623", "Conflicted": "#ff5252"}
-            tier_emoji  = {"High": "🟢", "Moderate": "🟡", "Low": "🟠", "Conflicted": "🔴"}
-            tier_stats  = {t: {"prob_hit": 0, "covered": 0, "total": 0, "errs": []} for t in tier_order}
-            for row in results_table:
-                lvl = row["conf_level"]
-                if lvl in tier_stats:
-                    tier_stats[lvl]["total"] += 1
-                    if row["prob_correct"]: tier_stats[lvl]["prob_hit"] += 1
-                    if row["did_cover"]:    tier_stats[lvl]["covered"]  += 1
-                    tier_stats[lvl]["errs"].append(row["margin_err"])
-
-            active_tiers = [t for t in tier_order if tier_stats[t]["total"] > 0]
-            if active_tiers:
-                cols = st.columns(len(active_tiers))
-                for i, tier in enumerate(active_tiers):
-                    ts      = tier_stats[tier]
-                    pp      = round(ts["prob_hit"] / ts["total"] * 100) if ts["total"] else 0
-                    cp      = round(ts["covered"]  / ts["total"] * 100) if ts["total"] else 0
-                    ae      = round(sum(ts["errs"]) / len(ts["errs"]), 1) if ts["errs"] else 0
-                    c       = tier_colors[tier]
-                    with cols[i]:
-                        st.markdown(f"""
-                        <div style="background:rgba(255,255,255,0.04);border:1px solid {c}44;
-                                    border-left:4px solid {c};border-radius:10px;padding:14px 16px;">
-                            <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;
-                                        color:{c};margin-bottom:4px;">{tier_emoji[tier]} {tier}</div>
-                            <div style="font-size:11px;color:#888;margin-bottom:10px;">{ts['total']} games</div>
-                            <div style="font-size:13px;margin-bottom:4px;">
-                                <span style="color:#888;">Win prob </span>
-                                <span style="font-weight:800;font-size:18px;
-                                    color:{'#00c07a' if pp>=50 else '#ff5252'}">{pp}%</span>
-                                <span style="color:#666;font-size:11px;"> ({ts['prob_hit']}/{ts['total']})</span>
-                            </div>
-                            <div style="font-size:13px;margin-bottom:4px;">
-                                <span style="color:#888;">Covered </span>
-                                <span style="font-weight:800;font-size:18px;
-                                    color:{'#00c07a' if cp>=50 else '#ff5252'}">{cp}%</span>
-                                <span style="color:#666;font-size:11px;"> ({ts['covered']}/{ts['total']})</span>
-                            </div>
-                            <div style="font-size:11px;color:#888;">Avg error: <span style="color:#ccc;">{ae} runs</span></div>
-                        </div>""", unsafe_allow_html=True)
-
-                st.markdown("")
-                # Bar chart
-                tier_labels = [f"{tier_emoji[t]} {t} ({tier_stats[t]['total']}g)" for t in active_tiers]
-                prob_accs   = [round(tier_stats[t]["prob_hit"]/tier_stats[t]["total"]*100) for t in active_tiers]
-                cov_rates   = [round(tier_stats[t]["covered"] /tier_stats[t]["total"]*100) for t in active_tiers]
-                fig_tier = go.Figure()
-                fig_tier.add_trace(go.Bar(name="Win prob accuracy", x=tier_labels, y=prob_accs,
-                    marker_color="#00c07a", opacity=0.85,
-                    text=[f"{v}%" for v in prob_accs], textposition="outside",
-                    textfont=dict(color="#ccc", size=11)))
-                fig_tier.add_trace(go.Bar(name="Run line cover rate", x=tier_labels, y=cov_rates,
-                    marker_color="#3d8bff", opacity=0.85,
-                    text=[f"{v}%" for v in cov_rates], textposition="outside",
-                    textfont=dict(color="#ccc", size=11)))
-                fig_tier.add_hline(y=50, line_dash="dot", line_color="rgba(255,255,255,0.25)",
-                    annotation_text="50% baseline", annotation_font_color="rgba(255,255,255,0.4)",
-                    annotation_position="right")
-                fig_tier.update_layout(
-                    paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-                    barmode="group", height=280, margin=dict(l=10,r=10,t=30,b=10),
-                    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1,
-                                font=dict(color="#ccc"), bgcolor="rgba(0,0,0,0)"),
-                    yaxis=dict(range=[0,120], ticksuffix="%", tickfont=dict(color="#888", size=10),
-                               showgrid=True, gridcolor="rgba(255,255,255,0.05)", zeroline=False),
-                    xaxis=dict(tickfont=dict(color="#ccc", size=11)),
-                )
-                st.plotly_chart(fig_tier, use_container_width=True)
-
-            # ── Calibration: does "62%" actually win 62% of the time? ─────────
-            # This is the prerequisite for comparing model probability to a
-            # moneyline. If predicted 65% games only win 55%, every "edge" the
-            # model reports vs the market is fiction.
-            st.markdown('<p class="section-head">Calibration — predicted vs actual win rate</p>',
-                        unsafe_allow_html=True)
-            cal_buckets = [(50, 54), (55, 59), (60, 64), (65, 100)]
-            cal_rows = []
-            for lo, hi in cal_buckets:
-                rows = [r for r in results_table if lo <= r["prob_pct"] <= hi]
-                if not rows:
-                    continue
-                hit    = sum(1 for r in rows if r["prob_correct"])
-                avg_p  = sum(r["prob_pct"] for r in rows) / len(rows)
-                actual = hit / len(rows) * 100
-                gap    = actual - avg_p
-                cal_rows.append((f"{lo}–{hi if hi < 100 else '+'}%", len(rows),
-                                 round(avg_p, 1), round(actual, 1), round(gap, 1)))
-            if cal_rows:
-                cal_cols = st.columns(len(cal_rows))
-                for i, (label, n, pred, act, gap) in enumerate(cal_rows):
-                    gap_color = "#00c07a" if gap >= -2 else ("#f5c842" if gap >= -6 else "#ff5252")
-                    with cal_cols[i]:
-                        st.markdown(f"""
-                        <div style="background:rgba(255,255,255,0.04);
-                                    border:1px solid rgba(255,255,255,0.1);
-                                    border-radius:10px;padding:12px 14px;">
-                            <div style="font-size:11px;letter-spacing:1px;color:#888;
-                                        margin-bottom:6px;">PREDICTED {label}</div>
-                            <div style="font-size:11px;color:#666;margin-bottom:8px;">{n} games</div>
-                            <div style="font-size:13px;color:#888;">Actual win rate</div>
-                            <div style="font-weight:800;font-size:20px;color:{gap_color};">{act}%</div>
-                            <div style="font-size:11px;color:#888;">avg predicted {pred}%
-                                · gap <span style="color:{gap_color};">{'+' if gap >= 0 else ''}{gap}pp</span></div>
-                        </div>""", unsafe_allow_html=True)
-                st.caption(
-                    "A tier that predicts 65% but wins 56% is overconfident by 9 points — "
-                    "and 9 points of overconfidence is the difference between a bet that "
-                    "beats -140 and one that loses to it."
-                )
-
-            # ── Profitability: accuracy converted into money ──────────────────
-            # Hit rate alone cannot tell you whether a strategy makes money.
-            # High-confidence picks are structurally favorites, and favorites
-            # carry favorite prices. This simulator applies your typical price
-            # to the tier(s) you actually bet and shows the units result.
-            st.markdown('<p class="section-head">Profitability — break-even prices &amp; flat-stake P/L</p>',
-                        unsafe_allow_html=True)
-            be_bits = []
-            for t in active_tiers:
-                ts = tier_stats[t]
-                if ts["total"] >= 5:
-                    acc_t = ts["prob_hit"] / ts["total"]
-                    be_bits.append(f"**{t}** ({round(acc_t*100)}% over {ts['total']}g) "
-                                   f"breaks even at **{prob_to_american(acc_t)}**")
-            if be_bits:
-                st.markdown(
-                    "At each tier's backtested hit rate, the *worst* price you can pay and "
-                    "still break even: " + " · ".join(be_bits) + ". If the moneylines you "
-                    "actually take are worse (more negative) than these, the tier loses money "
-                    "even while the accuracy chart above stays green."
-                )
-
-            sim_c1, sim_c2 = st.columns([1.2, 1])
-            with sim_c1:
-                sim_tiers = st.multiselect(
-                    "Simulate betting these tiers",
-                    options=active_tiers,
-                    default=[t for t in ["High"] if t in active_tiers] or active_tiers[:1],
-                )
-            with sim_c2:
-                sim_odds = int(st.number_input(
-                    "Avg moneyline price you pay", value=-150, step=5,
-                    help="Your typical price on these picks, e.g. -150. "
-                         "High-confidence model picks are usually market favorites, "
-                         "so be honest here — this number drives everything."))
-            sim_rows = [r for r in results_table if r["conf_level"] in sim_tiers]
-            if sim_rows and sim_odds != 0:
-                wins    = sum(1 for r in sim_rows if r["prob_correct"])
-                losses  = len(sim_rows) - wins
-                profit  = wins * american_profit(sim_odds) - losses * 1.0
-                roi     = profit / len(sim_rows) * 100
-                be_pct  = american_breakeven(sim_odds) * 100
-                hit_pct = wins / len(sim_rows) * 100
-                p_color = "#00c07a" if profit > 0 else "#ff5252"
-                s1, s2, s3, s4 = st.columns(4)
-                s1.metric("Bets", len(sim_rows), f"{wins}–{losses}")
-                s2.metric("Units P/L (1u flat)", f"{profit:+.1f}u")
-                s3.metric("ROI per bet", f"{roi:+.1f}%")
-                s4.metric("Hit rate vs break-even",
-                          f"{hit_pct:.1f}%", f"needs {be_pct:.1f}% at {sim_odds}")
-                st.markdown(
-                    f'<div style="font-size:13px;color:{p_color};">'
-                    f'{"✅ This hit rate beats" if hit_pct > be_pct else "❌ This hit rate does NOT beat"} '
-                    f'the {be_pct:.1f}% break-even required at {sim_odds}. '
-                    f'{"" if hit_pct > be_pct else "Every bet in this simulation had negative expected value regardless of short-term results."}'
-                    f'</div>', unsafe_allow_html=True)
-                st.caption(
-                    "Flat 1-unit stakes at a single assumed price. Real results vary with the "
-                    "actual price of each game — logging real odds per bet is the only way to "
-                    "measure true ROI. This simulator exists to show whether the strategy can "
-                    "even clear the vig at the prices you typically pay."
-                )
-
-            # Overall accuracy bar
-            st.markdown('<p class="section-head">Overall accuracy</p>', unsafe_allow_html=True)
-            fig_acc = go.Figure()
-            fig_acc.add_trace(go.Bar(
-                x=["Win Probability Model", "Run Line Cover Rate"], y=[acc_prob, cover_rate],
-                marker_color=["#00c07a" if acc_prob>=50 else "#ff5252",
-                              "#3d8bff" if cover_rate>=50 else "#ff5252"],
-                text=[f"{acc_prob}%", f"{cover_rate}%"],
-                textposition="outside", textfont=dict(color="#ccc", size=13),
-            ))
-            fig_acc.add_hline(y=50, line_dash="dot", line_color="rgba(255,255,255,0.3)",
-                annotation_text="50% baseline", annotation_font_color="rgba(255,255,255,0.4)",
-                annotation_position="right")
-            fig_acc.update_layout(
-                paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-                height=220, margin=dict(l=10,r=10,t=30,b=10), showlegend=False,
-                yaxis=dict(range=[0,120], ticksuffix="%", tickfont=dict(color="#888", size=10),
-                           showgrid=True, gridcolor="rgba(255,255,255,0.05)", zeroline=False),
-                xaxis=dict(tickfont=dict(color="#ccc", size=12)),
-            )
-            st.plotly_chart(fig_acc, use_container_width=True)
-
-            # Game-by-game table
-            st.markdown('<p class="section-head">Most recent 25 games</p>', unsafe_allow_html=True)
-            st.caption(f"Showing 25 of {total} games. Accuracy metrics above reflect all evaluated games.")
-            for row in results_table[:25]:
-                with st.container():
-                    c1, c2, c3, c4, c5 = st.columns([1.2, 2.2, 1.8, 2.2, 1.2])
-                    with c1:
-                        snap_icon = "📸" if row.get("used_snapshot") else "⚠️"
-                        snap_tip  = row["used_snapshot"] if row.get("used_snapshot") else "current stats"
-                        st.caption(f"{row['date']} {snap_icon}")
-                        st.caption(f"stats: {snap_tip}")
-                    with c2:
-                        st.markdown(f"**{row['matchup']}**")
-                        st.caption(f"Result: {row['actual']}")
-                    with c3:
-                        icon = "✅" if row["prob_correct"] else "❌"
-                        st.markdown(f"{icon} **{row['prob_pick']}**")
-                        st.caption(f"Edge: {row['prob_pct']}%")
-                    with c4:
-                        st.markdown(row["cover_str"])
-                        st.caption(f"RL: {row['margin_pick']} -1.5 · Proj margin: {row['proj_margin']} · Actual: {row['actual_margin']} runs")
-                    with c5:
-                        st.markdown(row["confidence"])
-                    st.divider()
-        else:
-            st.info("Not enough data to evaluate yet.")

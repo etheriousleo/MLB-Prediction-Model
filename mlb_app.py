@@ -1004,6 +1004,31 @@ def calc_confidence(sa, sb, pct_h, pct_a, margin_winner, prob_winner,
     return level, emoji, color, reasons
 
 
+def prob_to_american(p: float) -> str:
+    """
+    Convert a win probability (0-1) to the American moneyline price at which
+    that win rate exactly breaks even. E.g. 0.60 → '-150', 0.45 → '+122'.
+    """
+    p = min(max(p, 0.01), 0.99)
+    if p >= 0.5:
+        return f"-{round(100 * p / (1 - p))}"
+    return f"+{round(100 * (1 - p) / p)}"
+
+
+def american_profit(odds: int) -> float:
+    """Profit in units on a 1-unit winning bet at the given American price."""
+    if odds < 0:
+        return 100 / abs(odds)
+    return odds / 100
+
+
+def american_breakeven(odds: int) -> float:
+    """Break-even win probability for a given American price."""
+    if odds < 0:
+        return abs(odds) / (abs(odds) + 100)
+    return 100 / (odds + 100)
+
+
 def park_factor_reason(venue_name: str, park_factor: float) -> str | None:
     """Return a confidence reason string if the park is significantly hitter/pitcher-friendly."""
     if park_factor >= 1.05:
@@ -1532,6 +1557,7 @@ with tab_back:
 
         snap_hits = snap_misses = 0
         recent_used = 0   # games whose matched snapshot carried recent form (true 65/35)
+        sp_snap_used = sp_neutral_used = 0   # SP data: pre-game snapshot vs neutral 0.5
         # Pre-load all snapshots into memory once — avoids repeated disk reads per game
         snap_cache = {}
         snap_cache_pitchers = {}   # {snap_date: {pid_str: stats}}
@@ -1599,23 +1625,26 @@ with tab_back:
                 if bt_r_h and bt_r_a:
                     recent_used += 1
 
-                # Get SP stats from snapshot if available, fall back to live lookup
+                # Get SP stats from snapshot if available.
+                # LOOK-AHEAD FIX: previously, when the snapshot had no data for
+                # this game's starters (the usual case — a snapshot from day D-1
+                # holds D-1's probable starters, not day D's), we fell back to
+                # fetch_pitcher_stats_by_name(), which returns CURRENT
+                # season-to-date stats for a game played weeks ago. That leaks
+                # future information into the backtest and inflates apparent
+                # accuracy. We now fall back to a neutral 0.5 SP score instead,
+                # and count how often that happens so coverage is visible.
                 bt_sp_pitchers = snap_cache_pitchers.get(used_snapshot, {}) if used_snapshot else {}
                 bt_home_sp_id  = game.get("home_pitcher_id")
                 bt_away_sp_id  = game.get("away_pitcher_id")
                 bt_home_sp     = get_sp_stats_from_cache(bt_sp_pitchers, bt_home_sp_id)
                 bt_away_sp     = get_sp_stats_from_cache(bt_sp_pitchers, bt_away_sp_id)
-                # Fall back to name lookup only if no snapshot SP data
-                if not bt_home_sp:
-                    sp_name = game.get("home_probable_pitcher", "")
-                    if sp_name and sp_name != "TBD":
-                        bt_home_sp = fetch_pitcher_stats_by_name(sp_name, SEASON)
-                if not bt_away_sp:
-                    sp_name = game.get("away_probable_pitcher", "")
-                    if sp_name and sp_name != "TBD":
-                        bt_away_sp = fetch_pitcher_stats_by_name(sp_name, SEASON)
-                bt_sp_h_score = pitcher_adjustment(bt_home_sp)
-                bt_sp_a_score = pitcher_adjustment(bt_away_sp)
+                if bt_home_sp and bt_away_sp:
+                    sp_snap_used += 1
+                else:
+                    sp_neutral_used += 1
+                bt_sp_h_score = pitcher_adjustment(bt_home_sp)   # returns 0.5 if empty
+                bt_sp_a_score = pitcher_adjustment(bt_away_sp)   # returns 0.5 if empty
                 bt_park_factor = PARK_RUN_FACTOR.get(h_abb, 1.0)
 
                 ph, pa    = calc_prob(s_h, s_a, "home", w_off, w_def, w_rec,
@@ -1726,6 +1755,18 @@ with tab_back:
                         f"{round(w_season*100)}/{round(w_recent*100)} season/recent blend you run live."
                     )
 
+            # SP data coverage — snapshots hold only that day's probable starters,
+            # so most historical games have no clean pre-game SP data. Those games
+            # now run with a neutral SP score (0.5) instead of leaking current
+            # stats backward in time.
+            if sp_neutral_used > 0:
+                st.caption(
+                    f"⚾ SP adjustment: {sp_snap_used}/{sp_snap_used + sp_neutral_used} games had "
+                    f"pre-game snapshot SP data; the other {sp_neutral_used} ran SP-neutral (0.5) "
+                    f"to avoid look-ahead bias. Live picks still use full SP data — so the live "
+                    f"model has slightly more signal than this backtest shows."
+                )
+
             m1, m2, m3, m4 = st.columns(4)
             m1.metric("Games evaluated", total)
             m2.metric("Win prob accuracy", f"{acc_prob}%", f"{correct_prob}/{total} correct")
@@ -1804,6 +1845,110 @@ with tab_back:
                     xaxis=dict(tickfont=dict(color="#ccc", size=11)),
                 )
                 st.plotly_chart(fig_tier, use_container_width=True)
+
+            # ── Calibration: does "62%" actually win 62% of the time? ─────────
+            # This is the prerequisite for comparing model probability to a
+            # moneyline. If predicted 65% games only win 55%, every "edge" the
+            # model reports vs the market is fiction.
+            st.markdown('<p class="section-head">Calibration — predicted vs actual win rate</p>',
+                        unsafe_allow_html=True)
+            cal_buckets = [(50, 54), (55, 59), (60, 64), (65, 100)]
+            cal_rows = []
+            for lo, hi in cal_buckets:
+                rows = [r for r in results_table if lo <= r["prob_pct"] <= hi]
+                if not rows:
+                    continue
+                hit    = sum(1 for r in rows if r["prob_correct"])
+                avg_p  = sum(r["prob_pct"] for r in rows) / len(rows)
+                actual = hit / len(rows) * 100
+                gap    = actual - avg_p
+                cal_rows.append((f"{lo}–{hi if hi < 100 else '+'}%", len(rows),
+                                 round(avg_p, 1), round(actual, 1), round(gap, 1)))
+            if cal_rows:
+                cal_cols = st.columns(len(cal_rows))
+                for i, (label, n, pred, act, gap) in enumerate(cal_rows):
+                    gap_color = "#00c07a" if gap >= -2 else ("#f5c842" if gap >= -6 else "#ff5252")
+                    with cal_cols[i]:
+                        st.markdown(f"""
+                        <div style="background:rgba(255,255,255,0.04);
+                                    border:1px solid rgba(255,255,255,0.1);
+                                    border-radius:10px;padding:12px 14px;">
+                            <div style="font-size:11px;letter-spacing:1px;color:#888;
+                                        margin-bottom:6px;">PREDICTED {label}</div>
+                            <div style="font-size:11px;color:#666;margin-bottom:8px;">{n} games</div>
+                            <div style="font-size:13px;color:#888;">Actual win rate</div>
+                            <div style="font-weight:800;font-size:20px;color:{gap_color};">{act}%</div>
+                            <div style="font-size:11px;color:#888;">avg predicted {pred}%
+                                · gap <span style="color:{gap_color};">{'+' if gap >= 0 else ''}{gap}pp</span></div>
+                        </div>""", unsafe_allow_html=True)
+                st.caption(
+                    "A tier that predicts 65% but wins 56% is overconfident by 9 points — "
+                    "and 9 points of overconfidence is the difference between a bet that "
+                    "beats -140 and one that loses to it."
+                )
+
+            # ── Profitability: accuracy converted into money ──────────────────
+            # Hit rate alone cannot tell you whether a strategy makes money.
+            # High-confidence picks are structurally favorites, and favorites
+            # carry favorite prices. This simulator applies your typical price
+            # to the tier(s) you actually bet and shows the units result.
+            st.markdown('<p class="section-head">Profitability — break-even prices &amp; flat-stake P/L</p>',
+                        unsafe_allow_html=True)
+            be_bits = []
+            for t in active_tiers:
+                ts = tier_stats[t]
+                if ts["total"] >= 5:
+                    acc_t = ts["prob_hit"] / ts["total"]
+                    be_bits.append(f"**{t}** ({round(acc_t*100)}% over {ts['total']}g) "
+                                   f"breaks even at **{prob_to_american(acc_t)}**")
+            if be_bits:
+                st.markdown(
+                    "At each tier's backtested hit rate, the *worst* price you can pay and "
+                    "still break even: " + " · ".join(be_bits) + ". If the moneylines you "
+                    "actually take are worse (more negative) than these, the tier loses money "
+                    "even while the accuracy chart above stays green."
+                )
+
+            sim_c1, sim_c2 = st.columns([1.2, 1])
+            with sim_c1:
+                sim_tiers = st.multiselect(
+                    "Simulate betting these tiers",
+                    options=active_tiers,
+                    default=[t for t in ["High"] if t in active_tiers] or active_tiers[:1],
+                )
+            with sim_c2:
+                sim_odds = int(st.number_input(
+                    "Avg moneyline price you pay", value=-150, step=5,
+                    help="Your typical price on these picks, e.g. -150. "
+                         "High-confidence model picks are usually market favorites, "
+                         "so be honest here — this number drives everything."))
+            sim_rows = [r for r in results_table if r["conf_level"] in sim_tiers]
+            if sim_rows and sim_odds != 0:
+                wins    = sum(1 for r in sim_rows if r["prob_correct"])
+                losses  = len(sim_rows) - wins
+                profit  = wins * american_profit(sim_odds) - losses * 1.0
+                roi     = profit / len(sim_rows) * 100
+                be_pct  = american_breakeven(sim_odds) * 100
+                hit_pct = wins / len(sim_rows) * 100
+                p_color = "#00c07a" if profit > 0 else "#ff5252"
+                s1, s2, s3, s4 = st.columns(4)
+                s1.metric("Bets", len(sim_rows), f"{wins}–{losses}")
+                s2.metric("Units P/L (1u flat)", f"{profit:+.1f}u")
+                s3.metric("ROI per bet", f"{roi:+.1f}%")
+                s4.metric("Hit rate vs break-even",
+                          f"{hit_pct:.1f}%", f"needs {be_pct:.1f}% at {sim_odds}")
+                st.markdown(
+                    f'<div style="font-size:13px;color:{p_color};">'
+                    f'{"✅ This hit rate beats" if hit_pct > be_pct else "❌ This hit rate does NOT beat"} '
+                    f'the {be_pct:.1f}% break-even required at {sim_odds}. '
+                    f'{"" if hit_pct > be_pct else "Every bet in this simulation had negative expected value regardless of short-term results."}'
+                    f'</div>', unsafe_allow_html=True)
+                st.caption(
+                    "Flat 1-unit stakes at a single assumed price. Real results vary with the "
+                    "actual price of each game — logging real odds per bet is the only way to "
+                    "measure true ROI. This simulator exists to show whether the strategy can "
+                    "even clear the vig at the prices you typically pay."
+                )
 
             # Overall accuracy bar
             st.markdown('<p class="section-head">Overall accuracy</p>', unsafe_allow_html=True)

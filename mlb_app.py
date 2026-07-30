@@ -747,9 +747,20 @@ def build_composite(sa: dict, sb: dict):
              lb["whip_score"] * 0.20 + lb["k9_score"]   * 0.10 +
              lb["bb9_score"]  * 0.10)
 
-    # Record: W% (60%) + run differential per game (40%) — RD is more predictive than W%
-    rec_a = la["wpct_score"] * 0.60 + la["rd_score"] * 0.40
-    rec_b = lb["wpct_score"] * 0.60 + lb["rd_score"] * 0.40
+    # Record composite: RD-dominant, W% minor.
+    # EVIDENCE FIX: previously W% 60 / RD 40 — backwards per one of the most
+    # replicated findings in baseball analytics. Wins sit at the noisy end of
+    # the causal chain (skills → component stats → runs → wins, with
+    # sequencing luck added at each step). When actual record and
+    # run-differential-implied record disagree, FUTURE results track the run
+    # differential (Pythagorean expectation); one-run-game records regress to
+    # ~.500 with near-zero year-over-year correlation. W% keeps a small share
+    # only because it weakly captures leverage/bullpen-timing effects that
+    # season aggregates miss. At the old split, raw W% carried 18% of the
+    # whole model (0.30 slider × 0.60) vs 12% for RD — the noisier signal
+    # had the larger share.
+    rec_a = la["wpct_score"] * 0.25 + la["rd_score"] * 0.75
+    rec_b = lb["wpct_score"] * 0.25 + lb["rd_score"] * 0.75
 
     return off_a, def_a, rec_a, off_b, def_b, rec_b
 
@@ -970,9 +981,13 @@ with st.sidebar:
 
     st.markdown("---")
     st.markdown("##### Model weights")
-    w_off_raw = st.slider("Offense weight",  0, 100, 35, step=5)
-    w_def_raw = st.slider("Pitching weight", 0, 100, 35, step=5)
-    w_rec_raw = st.slider("Record weight",   0, 100, 30, step=5)
+    # Defaults 40/40/20 (was 35/35/30): record is the most downstream, most
+    # luck-contaminated of the three signals and is largely redundant with
+    # the measurables that produce it — see the record-composite comment in
+    # build_composite(). These are defaults only; the sliders stay live.
+    w_off_raw = st.slider("Offense weight",  0, 100, 40, step=5)
+    w_def_raw = st.slider("Pitching weight", 0, 100, 40, step=5)
+    w_rec_raw = st.slider("Record weight",   0, 100, 20, step=5)
     total_w   = (w_off_raw + w_def_raw + w_rec_raw) or 1
     w_off = w_off_raw / total_w
     w_def = w_def_raw / total_w

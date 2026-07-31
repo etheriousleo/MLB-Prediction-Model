@@ -2,7 +2,7 @@
 WNBA Win Probability — Today's Slate
 --------------------------------------
 Install dependencies:
-    pip install requests streamlit plotly numpy
+    pip install requests streamlit
 
 Run:
     streamlit run wnba_app.py
@@ -12,82 +12,35 @@ Data source: ESPN public API (no API key required)
 
 import datetime
 import json
+import math
 import os
-import numpy as np
-import plotly.graph_objects as go
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 import requests
 import streamlit as st
 
-# ── Snapshot system ─────────────────────────────────────────────────────────────
+# ── Daily stat snapshots ────────────────────────────────────────────────────────
+# The app archives one stats snapshot per day. Nothing in the app reads these
+# anymore (the backtest tab is gone), but the write is kept because pre-game
+# snapshots cannot be recreated after the fact — if a backtest is ever rebuilt,
+# this archive is the only way it can score games with as-of-that-day stats
+# instead of look-ahead data. Delete this block + the save_snapshot call in the
+# sidebar if you never want a backtest again.
 SNAPSHOT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "wnba_snapshots")
 
-def ensure_snapshot_dir():
-    os.makedirs(SNAPSHOT_DIR, exist_ok=True)
-
-def snapshot_path(date_str: str) -> str:
-    return os.path.join(SNAPSHOT_DIR, f"stats_{date_str}.json")
-
-def save_snapshot(team_stats: dict, standings: dict, date_str: str = None):
-    ensure_snapshot_dir()
-    if date_str is None:
-        date_str = datetime.datetime.today().strftime("%Y-%m-%d")
-    path = snapshot_path(date_str)
+def save_snapshot(team_stats: dict, standings: dict) -> None:
+    """Write today's stats to disk once per day. Silent no-op on any failure."""
+    date_str = datetime.datetime.today().strftime("%Y-%m-%d")
+    path = os.path.join(SNAPSHOT_DIR, f"stats_{date_str}.json")
     if os.path.exists(path):
         return  # Already saved for today
-    payload = {
-        "date":       date_str,
-        "team_stats": team_stats,
-        "standings":  standings,
-    }
     try:
+        os.makedirs(SNAPSHOT_DIR, exist_ok=True)
         with open(path, "w") as f:
-            json.dump(payload, f)
+            json.dump({"date": date_str, "team_stats": team_stats,
+                       "standings": standings}, f)
     except Exception:
         pass
-
-def load_snapshot(date_str: str) -> tuple[dict, dict]:
-    path = snapshot_path(date_str)
-    if not os.path.exists(path):
-        return None, None
-    try:
-        with open(path, "r") as f:
-            payload = json.load(f)
-        return payload.get("team_stats", {}), payload.get("standings", {})
-    except Exception:
-        return None, None
-
-def get_best_snapshot_for_game(game_date_str: str) -> tuple[dict, dict, str]:
-    ensure_snapshot_dir()
-    try:
-        game_dt = datetime.datetime.strptime(game_date_str, "%Y-%m-%d")
-    except ValueError:
-        return None, None, None
-
-    snapshot_files = sorted([
-        f for f in os.listdir(SNAPSHOT_DIR)
-        if f.startswith("stats_") and f.endswith(".json")
-    ], reverse=True)
-
-    for fname in snapshot_files:
-        snap_date_str = fname.replace("stats_", "").replace(".json", "")
-        try:
-            snap_dt = datetime.datetime.strptime(snap_date_str, "%Y-%m-%d")
-            if snap_dt < game_dt:
-                ts, st_d = load_snapshot(snap_date_str)
-                if ts:
-                    return ts, st_d, snap_date_str
-        except ValueError:
-            continue
-    return None, None, None
-
-def list_snapshots() -> list[str]:
-    ensure_snapshot_dir()
-    files = [
-        f.replace("stats_", "").replace(".json", "")
-        for f in os.listdir(SNAPSHOT_DIR)
-        if f.startswith("stats_") and f.endswith(".json")
-    ]
-    return sorted(files)
 
 
 # ── Page config ─────────────────────────────────────────────────────────────────
@@ -105,9 +58,15 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-SEASON     = datetime.datetime.now().year
-HOME_BOOST = 0.035   # WNBA home advantage (slightly less than NBA)
-HOME_PTS   = 2.5     # Expected home-court points bonus
+# Home-court advantage, in composite-score units. Under the logistic win-prob
+# mapping (LOGISTIC_K = 6.0, defined with calc_prob), the slope near an even
+# matchup is K/4 = 1.5, so 0.035 shifts the home team's win probability by
+# ~1.5 * 0.035 ≈ +5pp — i.e. home wins ~55% of even matchups, consistent with
+# historical WNBA home win rates and with HOME_PTS = 2.5 in the spread model.
+# (SEASON is set by the sidebar selectbox; the old module-level SEASON here was
+# dead code that the selectbox silently shadowed.)
+HOME_BOOST = 0.035
+HOME_PTS   = 2.5     # Expected home-court points bonus (spread model)
 
 # ── Team lookup tables ───────────────────────────────────────────────────────────
 # ESPN team IDs → our canonical abbreviations (confirmed May 2026)
@@ -124,9 +83,11 @@ ESPN_ID_TO_ABB = {
     "9":      "NYL",
     "11":     "PHX",
     "132052": "PDX",
-    "16":     "SEA",
     "131935": "TOR",
-    "16":     "WAS",   # conflict resolved below via abbr map
+    "16":     "WAS",
+    # NOTE: Seattle previously shared id "16" here; a duplicate dict key is
+    # silently overwritten by Python, so id 16 always mapped to WAS anyway.
+    # SEA resolves through ESPN_ABB_TO_ABB instead — behavior unchanged.
 }
 
 # ESPN raw abbreviation → our canonical abbreviation
@@ -222,40 +183,262 @@ def arena_factor(home_abb: str) -> float:
 # ── Data fetching via ESPN public API ───────────────────────────────────────────
 ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/basketball/wnba"
 
+@st.cache_resource(show_spinner=False)
+def http_session() -> requests.Session:
+    """One pooled HTTP session for the whole app (connection keep-alive across
+    all ESPN calls, one automatic retry on connection errors)."""
+    s = requests.Session()
+    adapter = requests.adapters.HTTPAdapter(pool_connections=16, pool_maxsize=16,
+                                            max_retries=1)
+    s.mount("https://", adapter)
+    return s
+
+
+def _month_chunks(start: datetime.datetime,
+                  end: datetime.datetime) -> list[tuple]:
+    """Split [start, end] into calendar-month-aligned (chunk_start, chunk_end)
+    pairs, inclusive on both ends."""
+    chunks = []
+    cur = start
+    while cur <= end:
+        next_month = (cur.replace(day=28) + datetime.timedelta(days=4)).replace(day=1)
+        chunk_end  = min(next_month - datetime.timedelta(days=1), end)
+        chunks.append((cur, chunk_end))
+        cur = chunk_end + datetime.timedelta(days=1)
+    return chunks
+
+
+def _final_games_from_events(events: list) -> dict:
+    """Extract completed games from raw ESPN scoreboard events.
+    Returns {event_id: {date, h_abb, a_abb, h, a}} (dict for de-duplication)."""
+    games = {}
+    for ev in events:
+        try:
+            if ev.get("status", {}).get("type", {}).get("name", "") != "STATUS_FINAL":
+                continue
+            comp  = ev.get("competitions", [{}])[0]
+            comps = comp.get("competitors", [])
+            if len(comps) < 2:
+                continue
+            home    = next((c for c in comps if c.get("homeAway") == "home"), comps[0])
+            away    = next((c for c in comps if c.get("homeAway") == "away"), comps[1])
+            h_abb   = ESPN_ABB_TO_ABB.get(home.get("team", {}).get("abbreviation", ""), "")
+            a_abb   = ESPN_ABB_TO_ABB.get(away.get("team", {}).get("abbreviation", ""), "")
+            h_score = int(home.get("score", 0) or 0)
+            a_score = int(away.get("score", 0) or 0)
+            if (h_score == 0 and a_score == 0) or not h_abb or not a_abb:
+                continue
+            key = ev.get("id") or f"{h_abb}-{a_abb}-{ev.get('date', '')}"
+            games[key] = {
+                # UTC date from the event; only used to order games, where a
+                # late-tip rolling into the next UTC day is immaterial.
+                "date":  ev.get("date", "")[:10],
+                "h_abb": h_abb, "a_abb": a_abb,
+                "h":     h_score, "a":  a_score,
+            }
+        except Exception:
+            continue
+    return games
+
+
+def _scoreboard_events_for_day(sess: requests.Session, date_str: str) -> list:
+    try:
+        resp = sess.get(f"{ESPN_BASE}/scoreboard",
+                        params={"dates": date_str}, timeout=8)
+        return resp.json().get("events", [])
+    except Exception:
+        return []
+
+
+@st.cache_data(show_spinner=False, ttl=1800)
+def fetch_completed_games(season: int) -> list[dict]:
+    """
+    Every completed regular-season game for the season, sorted oldest → newest:
+    [{date, h_abb, a_abb, h, a}, ...]
+
+    This is the single scoreboard scan that opponent stats, standings, and
+    recent form are all derived from. It uses ESPN's date-range query
+    (dates=YYYYMMDD-YYYYMMDD&limit=N — same endpoint, verified to return every
+    event in the span), so a full season costs 1 request per month (≤6 total)
+    instead of the old 1 request per day (~150, and the old code ran that scan
+    separately for opp stats AND recent form). If a range request errors or
+    comes back empty, that month falls back to concurrent per-day requests so
+    a quirk in the range API can never silently lose data.
+    Falls back to last season if the selected season has no completed games yet.
+    """
+    sess = http_session()
+    for yr in (season, season - 1):
+        # WNBA regular season starts May 8 (skips early-May preseason games).
+        start = datetime.datetime(yr, 5, 8)
+        end   = min(datetime.datetime(yr, 10, 1), datetime.datetime.today())
+        if start > end:
+            continue
+
+        games: dict = {}
+        for c_start, c_end in _month_chunks(start, end):
+            events = None
+            try:
+                resp = sess.get(
+                    f"{ESPN_BASE}/scoreboard",
+                    params={"dates": f"{c_start:%Y%m%d}-{c_end:%Y%m%d}",
+                            "limit": 400},
+                    timeout=10)
+                events = resp.json().get("events", [])
+            except Exception:
+                events = None
+
+            if not events:
+                # Range query failed for this month — fetch its days in
+                # parallel so the fallback path stays fast too.
+                days = [(c_start + datetime.timedelta(days=i)).strftime("%Y%m%d")
+                        for i in range((c_end - c_start).days + 1)]
+                events = []
+                with ThreadPoolExecutor(max_workers=12) as pool:
+                    futures = [pool.submit(_scoreboard_events_for_day, sess, d)
+                               for d in days]
+                    for fut in as_completed(futures):
+                        events.extend(fut.result())
+
+            games.update(_final_games_from_events(events))
+
+        if games:
+            return sorted(games.values(), key=lambda g: g["date"])
+    return []
+
+
+def fetch_opp_stats(season: int) -> dict:
+    """
+    Per-team opp_pts_pg, margin_pg, W, L, W_PCT — derived from the shared game
+    list with zero extra HTTP. (Name kept from the old implementation, which
+    ran its own full per-day scoreboard scan to compute the same thing.)
+    """
+    own_map, opp_map, wins_map, loss_map = {}, {}, {}, {}
+    for g in fetch_completed_games(season):
+        own_map.setdefault(g["h_abb"], []).append(g["h"])
+        opp_map.setdefault(g["h_abb"], []).append(g["a"])
+        own_map.setdefault(g["a_abb"], []).append(g["a"])
+        opp_map.setdefault(g["a_abb"], []).append(g["h"])
+        if g["h"] > g["a"]:
+            wins_map[g["h_abb"]] = wins_map.get(g["h_abb"], 0) + 1
+            loss_map[g["a_abb"]] = loss_map.get(g["a_abb"], 0) + 1
+        else:
+            wins_map[g["a_abb"]] = wins_map.get(g["a_abb"], 0) + 1
+            loss_map[g["h_abb"]] = loss_map.get(g["h_abb"], 0) + 1
+
+    result = {}
+    for abb in own_map:
+        opps = opp_map.get(abb, [])
+        owns = own_map.get(abb, [])
+        w    = wins_map.get(abb, 0)
+        l    = loss_map.get(abb, 0)
+        gp   = w + l
+        result[abb] = {
+            "opp_pts_pg": round(sum(opps) / len(opps), 1) if opps else 0.0,
+            "margin_pg":  round((sum(owns) / len(owns)) - (sum(opps) / len(opps)), 2) if opps else 0.0,
+            "W":     w,
+            "L":     l,
+            "W_PCT": w / gp if gp > 0 else 0.5,
+        }
+    return result
+
+
+def fetch_standings(season: int) -> dict:
+    """W-L records keyed by full team name, derived from the shared game list."""
+    return {
+        ABB_TO_FULL.get(abb, abb): {"W": v["W"], "L": v["L"], "W_PCT": v["W_PCT"]}
+        for abb, v in fetch_opp_stats(season).items()
+    }
+
+
+def fetch_recent_stats(season: int, last_n: int = 5) -> dict:
+    """
+    Recent-form averages over each team's last N completed games, derived from
+    the shared game list. Because this is now a pure in-memory pass, moving the
+    form-window slider is free — the old version was cache-keyed on N and
+    re-ran the entire per-day scoreboard scan every time the slider changed.
+    (Box stats like FG% aren't in scoreboard data, so recent form covers
+    pts/opp_pts/margin/record and season averages fill in the rest — same
+    approximation as before.)
+    """
+    games_by_team = {}
+    for g in fetch_completed_games(season):          # oldest → newest
+        games_by_team.setdefault(g["h_abb"], []).append((g["h"], g["a"]))
+        games_by_team.setdefault(g["a_abb"], []).append((g["a"], g["h"]))
+
+    result = {}
+    for abb, scores in games_by_team.items():
+        recent = scores[-last_n:]                    # newest N games
+        n = len(recent)
+        if n < 1:
+            continue
+        pts_pg = round(sum(s[0] for s in recent) / n, 1)
+        opp_pg = round(sum(s[1] for s in recent) / n, 1)
+        w      = sum(1 for s in recent if s[0] > s[1])
+        result[abb] = {
+            "G":          n,
+            "pts_pg":     pts_pg,
+            "opp_pts_pg": opp_pg,
+            "margin_pg":  round(pts_pg - opp_pg, 2),
+            "W":          w,
+            "L":          n - w,
+            "W_PCT":      w / n if n > 0 else 0.5,
+        }
+    return result
+
+
+@st.cache_data(show_spinner=False, ttl=1800)
+def fetch_todays_games() -> tuple[list, str]:
+    """Fetch today's WNBA games from ESPN."""
+    today = datetime.datetime.today().strftime("%Y%m%d")
+    try:
+        resp = http_session().get(f"{ESPN_BASE}/scoreboard",
+                                  params={"dates": today}, timeout=10)
+        return resp.json().get("events", []), ""
+    except Exception as e:
+        return [], str(e)
+
+
 @st.cache_data(show_spinner=False, ttl=3600)
 def fetch_team_stats(season: int) -> dict:
     """
     Fetch season team statistics from ESPN for all WNBA teams.
-    Returns {abb: {pts_pg, opp_pts_pg, fg_pct, fg3_pct, ft_pct, reb_pg, ast_pg, tov_pg, ...}}
+    Returns {abb: {pts_pg, opp_pts_pg, fg_pct, fg3_pct, ft_pct, reb_pg, ast_pg,
+    tov_pg, ...}}.
+
+    Teams are fetched concurrently: each team may need up to 4 attempts to find
+    the season/seasontype combination ESPN actually populated, so doing all
+    teams in parallel turns a worst case of ~60 sequential requests into the
+    wall time of the slowest single team.
     """
-    all_stats = {}
-    url = f"{ESPN_BASE}/teams"
+    sess = http_session()
     try:
-        resp  = requests.get(url, timeout=10)
+        resp  = sess.get(f"{ESPN_BASE}/teams", timeout=10)
         teams = resp.json().get("sports", [{}])[0].get("leagues", [{}])[0].get("teams", [])
     except Exception:
-        return all_stats
+        return {}
 
-    for entry in teams:
+    def fetch_one(entry: dict):
         team = entry.get("team", {})
         tid  = team.get("id", "")
         # Resolve abbreviation: try ESPN ID first, then ESPN raw abbr map, then name
         raw_abb = team.get("abbreviation", "")
         abb = (ESPN_ID_TO_ABB.get(tid)
                or ESPN_ABB_TO_ABB.get(raw_abb)
-               or FULL_TO_ABB.get(ESPN_NAME_MAP.get(team.get("displayName", ""), team.get("displayName", ""))))
+               or FULL_TO_ABB.get(ESPN_NAME_MAP.get(team.get("displayName", ""),
+                                                    team.get("displayName", ""))))
         if not abb:
-            continue
+            return None, None
 
         try:
             stats_url = f"{ESPN_BASE}/teams/{tid}/statistics"
             # Try season+1 first (ESPN may label current season by next year),
             # then current season, then seasontype 3
             raw = {}
-            for season_try, stype in [(season+1, 2), (season, 2), (season+1, 3), (season, 3)]:
-                sr  = requests.get(stats_url,
-                                   params={"season": season_try, "seasontype": stype},
-                                   timeout=10)
+            for season_try, stype in [(season + 1, 2), (season, 2),
+                                      (season + 1, 3), (season, 3)]:
+                sr = sess.get(stats_url,
+                              params={"season": season_try, "seasontype": stype},
+                              timeout=10)
                 if sr.status_code == 200 and sr.text:
                     candidate = sr.json()
                     cats = candidate.get("results", {}).get("stats", {}).get("categories", [])
@@ -312,15 +495,13 @@ def fetch_team_stats(season: int) -> dict:
             fga     = g("avgFieldGoalsAttempted",      "FGA")
             efg_pct = (fg_pct + 0.5 * (fgm3 / fga)) if fga else fg_pct
 
-            # Opponent pts not in this endpoint — left as 0, filled from scoreboard results
-            opp_pts   = 0.0
-            margin_pg = 0.0
-
-            all_stats[abb] = {
+            # Opponent pts not in this endpoint — left as 0, filled from
+            # the shared game scan in the sidebar merge step
+            return abb, {
                 "G":         gp,
                 "pts_pg":    round(pts,     1),
-                "opp_pts_pg":round(opp_pts, 1),
-                "margin_pg": margin_pg,
+                "opp_pts_pg":0.0,
+                "margin_pg": 0.0,
                 "fg_pct":    round(fg_pct,  3),
                 "fg3_pct":   round(fg3_pct, 3),
                 "ft_pct":    round(ft_pct,  3),
@@ -334,228 +515,17 @@ def fetch_team_stats(season: int) -> dict:
                 "def_reb_pg":round(def_reb, 1),
             }
         except Exception:
-            continue
+            return None, None
 
+    all_stats = {}
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        futures = [pool.submit(fetch_one, entry) for entry in teams]
+        for fut in as_completed(futures):
+            abb, stats = fut.result()
+            if abb and stats:
+                all_stats[abb] = stats
     return all_stats
 
-
-def fetch_standings(season: int) -> dict:
-    """
-    Derives W-L from fetch_opp_stats (which scans the game log).
-    Returns {full_name: {W, L, W_PCT}}.
-    """
-    opp = fetch_opp_stats(season)
-    return {
-        ABB_TO_FULL.get(abb, abb): {
-            "W":     v["W"],
-            "L":     v["L"],
-            "W_PCT": v["W_PCT"],
-        }
-        for abb, v in opp.items()
-    }
-
-
-@st.cache_data(show_spinner=False, ttl=3600)
-def fetch_opp_stats(season: int) -> dict:
-    """
-    Scan completed game results to compute opp_pts_pg, margin_pg, W, L for every team.
-    Returns {abb: {opp_pts_pg, margin_pg, W, L, W_PCT}}.
-    Also used by fetch_standings — both share this one scoreboard scan.
-    """
-    opp_map  = {}   # abb -> [opp scores]
-    own_map  = {}   # abb -> [own scores]
-    wins_map = {}
-    loss_map = {}
-
-    for yr in [season, season - 1]:
-        # WNBA 2026 regular season started May 8. Use May 8 to avoid
-        # counting pre-season games played in early May.
-        start   = datetime.datetime(yr, 5, 8)
-        end     = min(datetime.datetime(yr, 10, 1), datetime.datetime.today())
-        current = start
-        found   = False
-        while current <= end:
-            date_str = current.strftime("%Y%m%d")
-            try:
-                resp   = requests.get(f"{ESPN_BASE}/scoreboard",
-                                      params={"dates": date_str}, timeout=8)
-                events = resp.json().get("events", [])
-                for ev in events:
-                    status = ev.get("status", {}).get("type", {}).get("name", "")
-                    if status != "STATUS_FINAL":
-                        continue
-                    comp  = ev.get("competitions", [{}])[0]
-                    comps = comp.get("competitors", [])
-                    if len(comps) < 2:
-                        continue
-                    home    = next((c for c in comps if c.get("homeAway") == "home"), comps[0])
-                    away    = next((c for c in comps if c.get("homeAway") == "away"), comps[1])
-                    h_abb   = ESPN_ABB_TO_ABB.get(home.get("team", {}).get("abbreviation", ""), "")
-                    a_abb   = ESPN_ABB_TO_ABB.get(away.get("team", {}).get("abbreviation", ""), "")
-                    h_score = int(home.get("score", 0) or 0)
-                    a_score = int(away.get("score", 0) or 0)
-                    if h_score == 0 and a_score == 0 or not h_abb or not a_abb:
-                        continue
-                    found = True
-                    own_map.setdefault(h_abb, []).append(h_score)
-                    opp_map.setdefault(h_abb, []).append(a_score)
-                    own_map.setdefault(a_abb, []).append(a_score)
-                    opp_map.setdefault(a_abb, []).append(h_score)
-                    if h_score > a_score:
-                        wins_map[h_abb] = wins_map.get(h_abb, 0) + 1
-                        loss_map[a_abb] = loss_map.get(a_abb, 0) + 1
-                    else:
-                        wins_map[a_abb] = wins_map.get(a_abb, 0) + 1
-                        loss_map[h_abb] = loss_map.get(h_abb, 0) + 1
-            except Exception:
-                pass
-            current += datetime.timedelta(days=1)
-        if found:
-            break
-
-    result = {}
-    for abb in set(list(opp_map.keys()) + list(own_map.keys())):
-        opps = opp_map.get(abb, [])
-        owns = own_map.get(abb, [])
-        w    = wins_map.get(abb, 0)
-        l    = loss_map.get(abb, 0)
-        gp   = w + l
-        result[abb] = {
-            "opp_pts_pg": round(sum(opps) / len(opps), 1) if opps else 0.0,
-            "margin_pg":  round((sum(owns) / len(owns)) - (sum(opps) / len(opps)), 2) if opps else 0.0,
-            "W":     w,
-            "L":     l,
-            "W_PCT": w / gp if gp > 0 else 0.5,
-        }
-    return result
-
-
-@st.cache_data(show_spinner=False, ttl=1800)
-def fetch_todays_games() -> tuple[list, str]:
-    """Fetch today's WNBA games from ESPN."""
-    today = datetime.datetime.today().strftime("%Y%m%d")
-    url   = f"{ESPN_BASE}/scoreboard"
-    try:
-        resp  = requests.get(url, params={"dates": today}, timeout=10)
-        data  = resp.json()
-        games = data.get("events", [])
-        return games, ""
-    except Exception as e:
-        return [], str(e)
-
-
-
-
-@st.cache_data(show_spinner=False, ttl=1800)
-def fetch_recent_stats(season: int, last_n: int = 5) -> dict:
-    """
-    Compute per-team averages from their last N completed games.
-    Returns {abb: {pts_pg, opp_pts_pg, margin_pg, fg_pct, fg3_pct, ft_pct,
-                   efg_pct, reb_pg, ast_pg, tov_pg, stl_pg, blk_pg,
-                   off_reb_pg, def_reb_pg, G}}.
-    """
-    # Collect all completed games per team, most recent first
-    games_by_team = {}   # abb -> list of (date, own_score, opp_score, game dict)
-
-    for yr in [season, season - 1]:
-        start   = datetime.datetime(yr, 5, 8)
-        end     = min(datetime.datetime(yr, 10, 1), datetime.datetime.today())
-        # Build day list and scan newest first so we can stop early
-        days = []
-        cur  = start
-        while cur <= end:
-            days.append(cur)
-            cur += datetime.timedelta(days=1)
-        days.reverse()   # newest first
-
-        found_any = False
-        for day in days:
-            date_str = day.strftime("%Y%m%d")
-            try:
-                resp   = requests.get(f"{ESPN_BASE}/scoreboard",
-                                      params={"dates": date_str}, timeout=8)
-                events = resp.json().get("events", [])
-                for ev in events:
-                    status = ev.get("status", {}).get("type", {}).get("name", "")
-                    if status != "STATUS_FINAL":
-                        continue
-                    comp  = ev.get("competitions", [{}])[0]
-                    comps = comp.get("competitors", [])
-                    if len(comps) < 2:
-                        continue
-                    home    = next((c for c in comps if c.get("homeAway") == "home"), comps[0])
-                    away    = next((c for c in comps if c.get("homeAway") == "away"), comps[1])
-                    h_abb   = ESPN_ABB_TO_ABB.get(home.get("team", {}).get("abbreviation", ""), "")
-                    a_abb   = ESPN_ABB_TO_ABB.get(away.get("team", {}).get("abbreviation", ""), "")
-                    h_score = int(home.get("score", 0) or 0)
-                    a_score = int(away.get("score", 0) or 0)
-                    if h_score == 0 and a_score == 0 or not h_abb or not a_abb:
-                        continue
-                    found_any = True
-                    # Get per-team box stats from linescores if available
-                    for abb, own, opp in [(h_abb, h_score, a_score), (a_abb, a_score, h_score)]:
-                        if abb:
-                            games_by_team.setdefault(abb, []).append({
-                                "date":  day.strftime("%Y-%m-%d"),
-                                "own":   own,
-                                "opp":   opp,
-                            })
-            except Exception:
-                pass
-
-        if found_any:
-            break
-
-    # For each team, take the last N games and average the scores
-    # (Box stats like FG% are not available from scoreboard alone —
-    #  we approximate recent form using pts/opp_pts which we do have,
-    #  and use season averages for shooting %, rebounds, etc.)
-    result = {}
-    for abb, game_list in games_by_team.items():
-        recent = game_list[:last_n]   # already newest-first
-        if not recent:
-            continue
-        n       = len(recent)
-        pts_pg  = round(sum(g["own"] for g in recent) / n, 1)
-        opp_pg  = round(sum(g["opp"] for g in recent) / n, 1)
-        margin  = round(pts_pg - opp_pg, 2)
-        w       = sum(1 for g in recent if g["own"] > g["opp"])
-        l       = n - w
-        result[abb] = {
-            "G":          n,
-            "pts_pg":     pts_pg,
-            "opp_pts_pg": opp_pg,
-            "margin_pg":  margin,
-            "W":          w,
-            "L":          l,
-            "W_PCT":      w / n if n > 0 else 0.5,
-        }
-    return result
-
-@st.cache_data(show_spinner=False, ttl=1800)
-def fetch_season_games(season: int) -> tuple[list, str]:
-    """Fetch all completed WNBA regular-season games for the given season."""
-    all_games = []
-    # WNBA season runs May–September
-    start = datetime.datetime(season, 5, 8)  # Regular season starts May 8
-    end   = min(datetime.datetime(season, 10, 15), datetime.datetime.today())
-    url   = f"{ESPN_BASE}/scoreboard"
-
-    current = start
-    while current <= end:
-        date_str = current.strftime("%Y%m%d")
-        try:
-            resp  = requests.get(url, params={"dates": date_str}, timeout=8)
-            events = resp.json().get("events", [])
-            for ev in events:
-                status = ev.get("status", {}).get("type", {}).get("name", "")
-                if status == "STATUS_FINAL":
-                    all_games.append(ev)
-        except Exception:
-            pass
-        current += datetime.timedelta(days=1)
-
-    return all_games, ""
 
 
 def parse_espn_game(event: dict) -> dict | None:
@@ -725,7 +695,13 @@ def score_vs_league(s: dict) -> dict:
         "blk_score":    n("blk_pg"),
         # Overall
         "margin_score": n("margin_pg"),
-        "wpct_score":   min(1.0, max(0.0, s.get("wpct", 50) / 100)),
+        # Win% z-scored like every other component so all composite inputs
+        # share one scale. League-wide W% spread is ~0.165 std across teams;
+        # with the (z+3)/6 normalisation that lands within ~0.01 of the old
+        # raw-wpct value for typical records, so outputs barely move — the
+        # gain is that the scale assumption is now explicit instead of a
+        # numeric coincidence.
+        "wpct_score":   norm_vs_league(s.get("wpct", 50) / 100, 0.5, 0.165),
     }
 
 
@@ -757,6 +733,19 @@ def build_composite(sa: dict, sb: dict):
     return off_a, def_a, rec_a, off_b, def_b, rec_b
 
 
+# Steepness of the logistic that maps composite-score edge → win probability.
+# Composite scores live on a 0–1 scale (0.5 = league average), so the edge
+# d = sc_a - sc_b is typically within ±0.10 for ordinary matchups and ~±0.30
+# for extreme best-vs-worst mismatches. With K = 6.0:
+#     d = 0.05 → 57%      d = 0.10 → 65%      d = 0.30 → 86%
+# which matches the realistic WNBA range (even elite teams rarely price above
+# ~85–90% against the league's worst). The old score-ratio formula
+# (sc_a / (sc_a + sc_b)) compressed everything into ~45–55%: with both scores
+# hovering near 0.5, a 0.60-vs-0.50 blowout matchup came out as only 54.5%,
+# while HOME_BOOST moved the needle a token ~1.7pp. K is the single
+# calibration knob if probabilities ever run systematically hot or cold.
+LOGISTIC_K = 6.0
+
 def calc_prob(sa, sb, home, w_off, w_def, w_rec,
               ra=None, rb=None, w_season=1.0, w_recent=0.0):
     ea = blend_stats(sa, ra, w_season, w_recent) if ra else sa
@@ -766,8 +755,9 @@ def calc_prob(sa, sb, home, w_off, w_def, w_rec,
     sc_b = off_b * w_off + def_b * w_def + rec_b * w_rec
     if home == "home":   sc_a += HOME_BOOST
     elif home == "away": sc_b += HOME_BOOST
-    total = sc_a + sc_b or 1
-    return sc_a / total, sc_b / total
+    # Logistic mapping of the score edge — see the LOGISTIC_K note above.
+    p_a = 1.0 / (1.0 + math.exp(-LOGISTIC_K * (sc_a - sc_b)))
+    return p_a, 1.0 - p_a
 
 
 def calc_spread(sa, sb, home, w_off, w_def, w_rec, af: float = 1.0,
@@ -804,7 +794,12 @@ def calc_spread(sa, sb, home, w_off, w_def, w_rec, af: float = 1.0,
 def calc_confidence(sa, sb, pct_h, pct_a, margin_winner, prob_winner):
     models_agree  = prob_winner == margin_winner
     prob_gap      = abs(pct_h - pct_a)
-    prob_strength = "strong" if prob_gap >= 12 else ("moderate" if prob_gap >= 5 else "narrow")
+    # Thresholds retuned for the logistic win-prob scale: probabilities now
+    # span a realistic ~15–86% instead of the old ratio model's compressed
+    # ~45–55% band, so the old 12pp/5pp cutoffs would flag nearly every game
+    # as "strong". 24pp = a 62/38 game, 10pp = 55/45 — roughly the same
+    # selectivity the old cutoffs had on the old scale.
+    prob_strength = "strong" if prob_gap >= 24 else ("moderate" if prob_gap >= 10 else "narrow")
 
     off_leader = sa["name"] if sa["pts_pg"]  > sb["pts_pg"]  else sb["name"]
     rec_leader = sa["name"] if sa["wpct"]    > sb["wpct"]    else sb["name"]
@@ -898,33 +893,15 @@ with st.sidebar:
     else:
         st.caption("📋 Standings not yet available (normal early in season)")
 
-    # Save snapshot once per day — no longer requires standings,
-    # since ESPN may not populate them early in the season
-    today_str = datetime.datetime.today().strftime("%Y-%m-%d")
+    # Archive today's stats (see save_snapshot's note on why the archive stays).
     if team_stats_data:
-        save_snapshot(team_stats_data, standings_data or {}, today_str)
-        if os.path.exists(snapshot_path(today_str)):
-            st.caption("📸 Today's snapshot saved ✅")
-        else:
-            st.caption("📸 Snapshot save failed — check folder permissions")
+        save_snapshot(team_stats_data, standings_data or {})
 
-    st.markdown("---")
-    available_snaps = list_snapshots()
-    if available_snaps:
-        st.caption(f"📸 {len(available_snaps)} snapshot(s) saved  \n"
-                   f"Earliest: {available_snaps[0]}  \n"
-                   f"Latest: {available_snaps[-1]}")
-    else:
-        st.caption("📸 No snapshots yet — one will be saved each day the app runs.")
-
-
-# ── Main tabs ────────────────────────────────────────────────────────────────────
-tab_today, tab_back = st.tabs(["📅 Today's Games", "📊 Backtest"])
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB 1 — Today's Games
+# Today's Games
 # ═══════════════════════════════════════════════════════════════════════════════
-with tab_today:
+with st.container():
     st.header("Today's WNBA Slate")
 
     if not team_stats_data:
@@ -952,7 +929,10 @@ with tab_today:
             ra = recent_stats_data.get(home_abb)
             rb = recent_stats_data.get(away_abb)
 
-            if sa["G"] < 1 or sb["G"] < 1:
+            # score_team floors G at 1, so the old `G < 1` guard could never
+            # fire — a team missing from the stats dict silently produced
+            # all-zero inputs. Check dict membership instead.
+            if home_abb not in team_stats_data or away_abb not in team_stats_data:
                 st.warning(f"⚠️ No season stats yet for {game['home_name']} or {game['away_name']}")
                 continue
 
@@ -987,7 +967,7 @@ with tab_today:
                 hc1, hc2, hc3 = st.columns([3, 1, 1])
                 with hc1:
                     home_label = f"🏠 {game['home_name']}" if home_display else game['home_name']
-                    st.subheader(f"{away_label if (away_label := game['away_name']) else ''} @ {home_label}")
+                    st.subheader(f"{game['away_name']} @ {home_label}")
                     if game.get("venue"):
                         st.caption(f"📍 {game['venue']}  ·  Arena factor: {af:.2f}x")
                 with hc2:
@@ -1121,302 +1101,3 @@ with tab_today:
                 for r in reasons:
                     st.markdown(f'<div class="confidence-reason">• {r}</div>',
                                 unsafe_allow_html=True)
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# TAB 2 — Backtest
-# ═══════════════════════════════════════════════════════════════════════════════
-with tab_back:
-    st.header("Backtest — Season Results")
-    st.caption(
-        "Evaluates win-probability and spread picks against actual game outcomes. "
-        "Games with a pre-game snapshot use stats as of that snapshot date (no look-ahead bias)."
-    )
-
-    num_games = st.slider("Games to evaluate (most recent first)", 10, 200, 60, step=10)
-
-    with st.spinner("Fetching season games..."):
-        season_games_raw, err2 = fetch_season_games(SEASON)
-
-    if err2:
-        st.warning(f"API issue: {err2}")
-
-    season_games = [g for g in [parse_espn_game(ev) for ev in season_games_raw] if g]
-    season_games.sort(key=lambda g: g["date"], reverse=True)
-
-    if not season_games:
-        st.info("No completed games found yet this season.")
-    else:
-        available_snaps  = list_snapshots()
-        results_table    = []
-        correct_prob     = 0
-        covered          = 0
-        margin_errors    = []
-        total            = 0
-        snap_hits        = 0
-        snap_misses      = 0
-
-        for game in season_games[:num_games]:
-            home_abb = game["home_abb"]
-            away_abb = game["away_abb"]
-
-            if not (home_abb in ABB_TO_FULL and away_abb in ABB_TO_FULL):
-                continue
-
-            # Use pre-game snapshot if available
-            snap_ts, snap_st, snap_date = get_best_snapshot_for_game(game["date"])
-            if snap_ts:
-                use_ts  = snap_ts
-                use_st  = snap_st or standings_data
-                snap_hits += 1
-                used_snap = snap_date
-            else:
-                use_ts  = team_stats_data
-                use_st  = standings_data
-                snap_misses += 1
-                used_snap = None
-
-            sa = score_team(home_abb, use_ts, use_st)
-            sb = score_team(away_abb, use_ts, use_st)
-            if sa["G"] < 1 or sb["G"] < 1:
-                continue
-
-            af = arena_factor(home_abb)
-            pct_h, pct_a = calc_prob(sa, sb, "home", w_off, w_def, w_rec)
-            pct_h_i = round(pct_h * 100)
-            pct_a_i = round(pct_a * 100)
-
-            prob_winner = sa["name"] if pct_h >= pct_a else sb["name"]
-
-            proj_h, proj_a, margin_winner, margin, total_pts = calc_spread(
-                sa, sb, "home", w_off, w_def, w_rec, af)
-
-            actual_h = game["home_score"]
-            actual_a = game["away_score"]
-            if actual_h == 0 and actual_a == 0:
-                continue
-
-            actual_winner = sa["name"] if actual_h > actual_a else sb["name"]
-            actual_margin = actual_h - actual_a   # positive = home win
-            proj_margin   = round(proj_h - proj_a, 1)
-
-            # Spread pick: snap to nearest 0.5; fav must win by MORE than the spread
-            spread_val  = round(round(abs(margin) * 2) / 2, 1)
-            if margin_winner == sa["name"]:
-                did_cover = actual_margin > spread_val   # e.g. spread -10.5 → need win by 11+
-            else:
-                did_cover = actual_margin < -spread_val
-
-            prob_correct = prob_winner == actual_winner
-            margin_err   = abs(proj_margin - actual_margin)
-
-            conf_l, conf_e, _, _ = calc_confidence(
-                sa, sb, pct_h_i, pct_a_i, margin_winner, prob_winner)
-
-            cover_str = (
-                f"✅ **{margin_winner}** covered"
-                if did_cover else
-                f"❌ **{dog_spread_name if (dog_spread_name := sb['name'] if margin_winner == sa['name'] else sa['name']) else ''}** beat the spread"
-            )
-
-            if prob_correct: correct_prob += 1
-            if did_cover:    covered      += 1
-            margin_errors.append(margin_err)
-            total += 1
-
-            results_table.append({
-                "date":          game["date"],
-                "matchup":       f"{sb['name']} @ {sa['name']}",
-                "actual":        f"{sa['name']} {actual_h} – {sb['name']} {actual_a}",
-                "actual_margin": actual_margin,
-                "prob_pick":     prob_winner,
-                "prob_pct":      max(pct_h_i, pct_a_i),
-                "prob_correct":  prob_correct,
-                "margin_pick":   margin_winner,
-                "proj_margin":   proj_margin,
-                "did_cover":     did_cover,
-                "cover_str":     cover_str,
-                "margin_err":    round(margin_err, 1),
-                "confidence":    f"{conf_e} {conf_l}",
-                "conf_level":    conf_l,
-                "used_snapshot": used_snap,
-            })
-
-        if total > 0:
-            acc_prob       = round(correct_prob / total * 100)
-            cover_rate     = round(covered / total * 100)
-            avg_margin_err = round(sum(margin_errors) / len(margin_errors), 1) if margin_errors else 0
-
-            if snap_hits + snap_misses > 0:
-                snap_pct = round(snap_hits / (snap_hits + snap_misses) * 100)
-                if snap_pct == 100:
-                    st.success(f"✅ All {total} games evaluated using pre-game snapshots — no look-ahead bias.")
-                elif snap_pct > 0:
-                    st.info(
-                        f"📸 {snap_hits}/{snap_hits+snap_misses} games ({snap_pct}%) used pre-game snapshots. "
-                        f"{snap_misses} earlier games used current stats."
-                    )
-                else:
-                    if available_snaps:
-                        st.info(
-                            f"📸 {len(available_snaps)} snapshot(s) saved from {available_snaps[0]} onward, "
-                            f"but all backtested games predate the earliest snapshot. "
-                            f"Snapshots will be used going forward."
-                        )
-                    else:
-                        st.warning(
-                            "⚠️ No snapshots yet — all games evaluated using current stats. "
-                            "The app saves a snapshot each day it runs."
-                        )
-
-            m1, m2, m3, m4 = st.columns(4)
-            m1.metric("Games evaluated", total)
-            m2.metric("Win prob accuracy",  f"{acc_prob}%",       f"{correct_prob}/{total} correct")
-            m3.metric("Spread cover rate",  f"{cover_rate}%",     f"{covered}/{total} covered")
-            m4.metric("Avg spread error",   f"{avg_margin_err} pts")
-
-            # Accuracy by confidence tier
-            st.markdown('<p class="section-head">Accuracy by confidence tier</p>',
-                        unsafe_allow_html=True)
-            tier_order  = ["High", "Moderate", "Low", "Conflicted"]
-            tier_colors = {"High": "#f60", "Moderate": "#f5c842",
-                           "Low": "#f5a623", "Conflicted": "#ff5252"}
-            tier_emoji  = {"High": "🟢", "Moderate": "🟡", "Low": "🟠", "Conflicted": "🔴"}
-            tier_stats  = {t: {"prob_hit": 0, "covered": 0, "total": 0, "errs": []}
-                           for t in tier_order}
-            for row in results_table:
-                lvl = row["conf_level"]
-                if lvl in tier_stats:
-                    tier_stats[lvl]["total"] += 1
-                    if row["prob_correct"]: tier_stats[lvl]["prob_hit"] += 1
-                    if row["did_cover"]:    tier_stats[lvl]["covered"]  += 1
-                    tier_stats[lvl]["errs"].append(row["margin_err"])
-
-            active_tiers = [t for t in tier_order if tier_stats[t]["total"] > 0]
-            if active_tiers:
-                cols = st.columns(len(active_tiers))
-                for i, tier in enumerate(active_tiers):
-                    ts = tier_stats[tier]
-                    pp = round(ts["prob_hit"] / ts["total"] * 100) if ts["total"] else 0
-                    cp = round(ts["covered"]  / ts["total"] * 100) if ts["total"] else 0
-                    ae = round(sum(ts["errs"]) / len(ts["errs"]), 1) if ts["errs"] else 0
-                    c  = tier_colors[tier]
-                    with cols[i]:
-                        st.markdown(f"""
-                        <div style="background:rgba(255,255,255,0.04);border:1px solid {c}44;
-                                    border-left:4px solid {c};border-radius:10px;padding:14px 16px;">
-                            <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;
-                                        color:{c};margin-bottom:4px;">{tier_emoji[tier]} {tier}</div>
-                            <div style="font-size:11px;color:#888;margin-bottom:10px;">{ts['total']} games</div>
-                            <div style="font-size:13px;margin-bottom:4px;">
-                                <span style="color:#888;">Win prob </span>
-                                <span style="font-weight:800;font-size:18px;
-                                    color:{'#f60' if pp>=50 else '#ff5252'}">{pp}%</span>
-                                <span style="color:#666;font-size:11px;"> ({ts['prob_hit']}/{ts['total']})</span>
-                            </div>
-                            <div style="font-size:13px;margin-bottom:4px;">
-                                <span style="color:#888;">Covered </span>
-                                <span style="font-weight:800;font-size:18px;
-                                    color:{'#f60' if cp>=50 else '#ff5252'}">{cp}%</span>
-                                <span style="color:#666;font-size:11px;"> ({ts['covered']}/{ts['total']})</span>
-                            </div>
-                            <div style="font-size:11px;color:#888;">Avg error: <span style="color:#ccc;">{ae} pts</span></div>
-                        </div>""", unsafe_allow_html=True)
-
-                st.markdown("")
-                tier_labels = [f"{tier_emoji[t]} {t} ({tier_stats[t]['total']}g)"
-                               for t in active_tiers]
-                prob_accs   = [round(tier_stats[t]["prob_hit"]/tier_stats[t]["total"]*100)
-                               for t in active_tiers]
-                cov_rates   = [round(tier_stats[t]["covered"] /tier_stats[t]["total"]*100)
-                               for t in active_tiers]
-
-                fig_tier = go.Figure()
-                fig_tier.add_trace(go.Bar(
-                    name="Win prob accuracy", x=tier_labels, y=prob_accs,
-                    marker_color="#f60", opacity=0.85,
-                    text=[f"{v}%" for v in prob_accs], textposition="outside",
-                    textfont=dict(color="#ccc", size=11)))
-                fig_tier.add_trace(go.Bar(
-                    name="Spread cover rate", x=tier_labels, y=cov_rates,
-                    marker_color="#3d8bff", opacity=0.85,
-                    text=[f"{v}%" for v in cov_rates], textposition="outside",
-                    textfont=dict(color="#ccc", size=11)))
-                fig_tier.add_hline(y=50, line_dash="dot",
-                    line_color="rgba(255,255,255,0.25)",
-                    annotation_text="50% baseline",
-                    annotation_font_color="rgba(255,255,255,0.4)",
-                    annotation_position="right")
-                fig_tier.update_layout(
-                    paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-                    barmode="group", height=280,
-                    margin=dict(l=10, r=10, t=30, b=10),
-                    legend=dict(orientation="h", yanchor="bottom", y=1.02,
-                                xanchor="right", x=1,
-                                font=dict(color="#ccc"), bgcolor="rgba(0,0,0,0)"),
-                    yaxis=dict(range=[0, 120], ticksuffix="%",
-                               tickfont=dict(color="#888", size=10),
-                               showgrid=True, gridcolor="rgba(255,255,255,0.05)",
-                               zeroline=False),
-                    xaxis=dict(tickfont=dict(color="#ccc", size=11)),
-                )
-                st.plotly_chart(fig_tier, use_container_width=True)
-
-            # Overall accuracy bar
-            st.markdown('<p class="section-head">Overall accuracy</p>',
-                        unsafe_allow_html=True)
-            fig_acc = go.Figure()
-            fig_acc.add_trace(go.Bar(
-                x=["Win Probability Model", "Spread Cover Rate"],
-                y=[acc_prob, cover_rate],
-                marker_color=["#f60" if acc_prob >= 50 else "#ff5252",
-                              "#3d8bff" if cover_rate >= 50 else "#ff5252"],
-                text=[f"{acc_prob}%", f"{cover_rate}%"],
-                textposition="outside", textfont=dict(color="#ccc", size=13),
-            ))
-            fig_acc.add_hline(y=50, line_dash="dot",
-                line_color="rgba(255,255,255,0.3)",
-                annotation_text="50% baseline",
-                annotation_font_color="rgba(255,255,255,0.4)",
-                annotation_position="right")
-            fig_acc.update_layout(
-                paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-                height=220, margin=dict(l=10, r=10, t=30, b=10), showlegend=False,
-                yaxis=dict(range=[0, 120], ticksuffix="%",
-                           tickfont=dict(color="#888", size=10),
-                           showgrid=True, gridcolor="rgba(255,255,255,0.05)",
-                           zeroline=False),
-                xaxis=dict(tickfont=dict(color="#ccc", size=12)),
-            )
-            st.plotly_chart(fig_acc, use_container_width=True)
-
-            # Game-by-game table
-            st.markdown('<p class="section-head">Most recent 25 games</p>',
-                        unsafe_allow_html=True)
-            st.caption(f"Showing 25 of {total} games. Metrics above reflect all evaluated games.")
-            for row in results_table[:25]:
-                with st.container():
-                    c1, c2, c3, c4, c5 = st.columns([1.2, 2.2, 1.8, 2.2, 1.2])
-                    with c1:
-                        snap_icon = "📸" if row.get("used_snapshot") else "⚠️"
-                        snap_tip  = row["used_snapshot"] if row.get("used_snapshot") else "current stats"
-                        st.caption(f"{row['date']} {snap_icon}")
-                        st.caption(f"stats: {snap_tip}")
-                    with c2:
-                        st.markdown(f"**{row['matchup']}**")
-                        st.caption(f"Result: {row['actual']}")
-                    with c3:
-                        icon = "✅" if row["prob_correct"] else "❌"
-                        st.markdown(f"{icon} **{row['prob_pick']}**")
-                        st.caption(f"Edge: {row['prob_pct']}%")
-                    with c4:
-                        st.markdown(row["cover_str"])
-                        st.caption(
-                            f"Spread pick: {row['margin_pick']} · "
-                            f"Proj margin: {row['proj_margin']:+.1f} · "
-                            f"Actual: {row['actual_margin']:+d} pts")
-                    with c5:
-                        st.markdown(row["confidence"])
-                    st.divider()
-        else:
-            st.info("Not enough completed games to evaluate yet.")

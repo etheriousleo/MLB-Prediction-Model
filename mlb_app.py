@@ -12,6 +12,7 @@ import datetime
 import json
 import os
 import numpy as np
+import pandas as pd
 import plotly.graph_objects as go
 import statsapi
 import streamlit as st
@@ -110,6 +111,14 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 SEASON     = datetime.datetime.now().year
+
+# ── MODEL FREEZE ───────────────────────────────────────────────────────────────
+# This version is FROZEN for forward measurement. Every logged pick is tagged
+# with this string so results can be attributed to exactly one model. The past
+# stretch was unmeasurable partly because picks spanned three model versions.
+# No parameter/formula changes until the pick tracker holds ≥100 graded picks
+# for this version. Change the string if the model ever changes again.
+MODEL_VERSION = "v3.0-frozen-2026-08-06"
 # HOME_BOOST calibration: this is an additive shift on the composite score,
 # converted to probability by the logistic in calc_prob (slope K_PROB=2).
 # Even-team home win prob ≈ 0.5 + tanh(K_PROB·boost/2)/2.
@@ -884,7 +893,16 @@ def calc_confidence(sa, sb, pct_h, pct_a, margin_winner, prob_winner,
                     ra=None, rb=None, sp_h_score=0.5, sp_a_score=0.5):
     models_agree  = prob_winner == margin_winner
     prob_gap      = abs(pct_h - pct_a)
-    prob_strength = "strong" if prob_gap >= 12 else ("moderate" if prob_gap >= 5 else "narrow")
+    # THRESHOLD RECALIBRATION: the recent model changes (SP_MAX 0.04→0.07,
+    # HOME_BOOST 0.04→0.06, z-scored wpct) systematically WIDEN probability
+    # gaps. Measured on 4,000 identical simulated matchups: median gap went
+    # 7.8pp → 9.3pp, and the share of games clearing the old "strong" bar
+    # (≥12) went 30% → 38.5% — i.e. the High tier silently became ~30% more
+    # inclusive, admitting weaker edges under the same label. These
+    # thresholds restore the ORIGINAL selectivity under the new gap
+    # distribution (measured equivalents: High 14.4, Moderate 6.3 — rounded
+    # strict to 15 / 6.5).
+    prob_strength = "strong" if prob_gap >= 15 else ("moderate" if prob_gap >= 6.5 else "narrow")
 
     ops_leader    = sa["name"] if sa["ops"]  > sb["ops"]  else sb["name"]
     rec_leader    = sa["name"] if sa["wpct"] > sb["wpct"] else sb["name"]
@@ -1434,3 +1452,119 @@ with tab_today:
         )
         st.markdown(card_html, unsafe_allow_html=True)
 
+
+    # ═══════════════════════════════════════════════════════════════════════════
+    # PICK TRACKER — forward measurement (replaces the removed backtest)
+    # This is the instrument that answers "is the model actually good?"
+    # It logs the live model's picks exactly as displayed (no look-ahead
+    # possible), tagged with MODEL_VERSION, and lets you grade them with the
+    # real odds you got. Verdicts require sample size: the tracker shows
+    # progress toward 100 graded picks per tier before conclusions.
+    # ═══════════════════════════════════════════════════════════════════════════
+    st.divider()
+    st.subheader("📌 Pick Tracker")
+
+    PICK_LOG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                 "pick_log.json")
+
+    def load_pick_log() -> list:
+        if not os.path.exists(PICK_LOG_PATH):
+            return []
+        try:
+            with open(PICK_LOG_PATH, "r") as f:
+                return json.load(f)
+        except Exception:
+            return []
+
+    def save_pick_log(rows: list):
+        with open(PICK_LOG_PATH, "w") as f:
+            json.dump(rows, f, indent=1)
+
+    def unit_profit(odds: float) -> float:
+        """Profit in units on a 1u winning bet at an American price."""
+        if odds < 0:
+            return 100.0 / abs(odds)
+        return odds / 100.0
+
+    log = load_pick_log()
+    today_str = datetime.datetime.today().strftime("%Y-%m-%d")
+    existing_keys = {(r["date"], r["matchup"]) for r in log}
+
+    c_log1, c_log2 = st.columns([1, 2])
+    with c_log1:
+        if st.button("Log today's slate to tracker"):
+            added = 0
+            for g in slate_results:
+                matchup = f"{g['away']} @ {g['home']}"
+                if (today_str, matchup) in existing_keys:
+                    continue
+                log.append({
+                    "date":    today_str,
+                    "matchup": matchup,
+                    "pick":    g["prob_pick"],
+                    "prob":    round(max(g["home_pct"], g["away_pct"]), 1),
+                    "tier":    g["conf_level"],
+                    "version": MODEL_VERSION,
+                    "odds":    0,      # fill in the price you actually got
+                    "result":  "",     # W / L / Push
+                })
+                added += 1
+            save_pick_log(log)
+            st.success(f"Logged {added} new picks."
+                       if added else "Today's slate is already logged.")
+            st.rerun()
+    with c_log2:
+        st.caption("Log every day, grade with the real price you got. Verdicts "
+                   "need ~100 graded picks per tier — resist reading anything "
+                   "into fewer.")
+
+    if log:
+        df = pd.DataFrame(log)
+        edited = st.data_editor(
+            df,
+            column_config={
+                "odds":   st.column_config.NumberColumn(
+                    "odds", help="American price you actually got, e.g. -155", step=5),
+                "result": st.column_config.SelectboxColumn(
+                    "result", options=["", "W", "L", "Push"]),
+                "date":    st.column_config.TextColumn(disabled=True),
+                "matchup": st.column_config.TextColumn(disabled=True),
+                "pick":    st.column_config.TextColumn(disabled=True),
+                "prob":    st.column_config.NumberColumn(disabled=True),
+                "tier":    st.column_config.TextColumn(disabled=True),
+                "version": st.column_config.TextColumn(disabled=True),
+            },
+            hide_index=True, use_container_width=True, height=300)
+        if st.button("Save grades"):
+            save_pick_log(edited.to_dict("records"))
+            st.success("Saved.")
+            st.rerun()
+
+        # Summary — current model version only, graded picks only
+        cur = edited[(edited["version"] == MODEL_VERSION) &
+                     (edited["result"].isin(["W", "L"]))]
+        if len(cur):
+            st.markdown(f"**{MODEL_VERSION}** — graded picks: {len(cur)}")
+            sum_rows = []
+            for tier in ["High", "Moderate", "Low", "Conflicted"]:
+                t = cur[cur["tier"] == tier]
+                if not len(t):
+                    continue
+                w = int((t["result"] == "W").sum())
+                l = int((t["result"] == "L").sum())
+                priced = t[t["odds"] != 0]
+                units = sum(unit_profit(r["odds"]) if r["result"] == "W" else -1.0
+                            for _, r in priced.iterrows())
+                sum_rows.append({
+                    "tier": tier, "record": f"{w}–{l}",
+                    "hit %": round(w / (w + l) * 100, 1),
+                    "units (priced picks)": round(units, 2),
+                    "toward 100": f"{w + l}/100",
+                })
+            st.dataframe(pd.DataFrame(sum_rows), hide_index=True,
+                         use_container_width=True)
+            st.caption("Units use only picks with a price entered, flat 1u. "
+                       "Hit rate without the price you paid says nothing about "
+                       "profit — a 60% tier loses money at worse than -150.")
+    else:
+        st.caption("No picks logged yet. Log today's slate to start the record.")

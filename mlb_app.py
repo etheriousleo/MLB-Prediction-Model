@@ -8,9 +8,11 @@ Run:
     streamlit run mlb_app.py
 """
 
+import base64
 import datetime
 import json
 import os
+import requests
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
@@ -33,7 +35,7 @@ def snapshot_path(date_str: str) -> str:
     """Return the file path for a given date's snapshot (YYYY-MM-DD)."""
     return os.path.join(SNAPSHOT_DIR, f"stats_{date_str}.json")
 
-def save_snapshot(batting: dict, pitching: dict, standings: dict,
+def _save_snapshot_local(batting: dict, pitching: dict, standings: dict,
                   pitchers: dict = None, date_str: str = None,
                   batting_recent: dict = None, pitching_recent: dict = None,
                   recent_window: int = None):
@@ -497,6 +499,55 @@ def fetch_standings() -> dict:
         pass
     return records
 
+def save_snapshot(batting: dict, pitching: dict, standings: dict,
+                  pitchers: dict = None, date_str: str = None,
+                  batting_recent: dict = None, pitching_recent: dict = None,
+                  recent_window: int = None):
+    """Local snapshot logic + GitHub mirror (survives Cloud reboots)."""
+    _save_snapshot_local(batting, pitching, standings, pitchers, date_str,
+                         batting_recent, pitching_recent, recent_window)
+    if date_str is None:
+        date_str = datetime.datetime.today().strftime("%Y-%m-%d")
+    try:
+        with open(snapshot_path(date_str), "r") as f:
+            payload = json.load(f)
+        _push_snapshot_to_github(date_str, payload)
+    except Exception:
+        pass
+
+
+def _push_snapshot_to_github(date_str: str, payload: dict):
+    """Mirror a daily snapshot to the data branch (skip if already there,
+    preserving morning-stats semantics). One check per session per day."""
+    cfg = _gh_cfg()
+    if cfg is None:
+        return
+    flag = f"_snap_pushed_{date_str}"
+    if st.session_state.get(flag):
+        return
+    try:
+        if not _gh_ensure_branch(cfg):
+            return
+        path = f"snapshots/{date_str}.json"
+        remote, sha = _gh_get_file(cfg, path)
+        if sha is None:
+            _gh_put_file(cfg, path, payload, None, f"snapshot: {date_str}")
+        else:
+            # Only push if the local payload COMPLETES the remote copy
+            # (pitchers or recent form arriving later in the day). Never
+            # overwrite same-completeness data — the remote holds the
+            # earliest (cleanest, most pre-game) version.
+            upgrade = ((payload.get("pitchers") and not remote.get("pitchers"))
+                       or (payload.get("batting_recent")
+                           and not remote.get("batting_recent")))
+            if upgrade:
+                _gh_put_file(cfg, path, payload, sha,
+                             f"snapshot: {date_str} (completed)")
+        st.session_state[flag] = True
+    except Exception:
+        pass   # snapshots are best-effort; never block the app on them
+
+
 
 def enrich_standings_with_rd(standings: dict, batting: dict) -> dict:
     """
@@ -908,23 +959,162 @@ def breakeven_prob(odds: float) -> float:
 
 
 
+# ── GitHub-backed storage (for Streamlit Cloud hosting) ───────────────────────
+# Streamlit Cloud containers are EPHEMERAL: local files (pick_log.json,
+# snapshots/) are wiped on every reboot — and every git push reboots the app.
+# When [github] secrets are configured, the app reads/writes pick_log.json
+# and daily snapshots directly to the repo via the GitHub Contents API,
+# making the repo the durable store. Writes go to a separate branch
+# (default "data") because Streamlit Cloud redeploys on every commit to the
+# watched branch — committing the log to main would reboot the app on every
+# save. The data branch is created automatically if missing.
+#
+# Setup (once):
+#   1. GitHub → Settings → Developer settings → Fine-grained tokens → new
+#      token. Repository access: ONLY this repo. Permissions: Contents,
+#      Read and write. Set an expiry you'll remember to renew.
+#   2. Streamlit Cloud → app → Settings → Secrets:
+#         [github]
+#         token  = "github_pat_..."
+#         repo   = "your-username/your-repo"
+#         branch = "data"
+#   3. Never commit the token to the repo; never share it anywhere else.
+# Without secrets configured, everything falls back to local files.
+
+GH_API = "https://api.github.com"
+
+
+def _gh_cfg():
+    try:
+        gh = st.secrets["github"]
+        return {"token": gh["token"], "repo": gh["repo"],
+                "branch": gh.get("branch", "data")}
+    except Exception:
+        return None
+
+
+def _gh_headers(cfg):
+    return {"Authorization": f"Bearer {cfg['token']}",
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28"}
+
+
+def _gh_ensure_branch(cfg):
+    """Create the data branch off the default branch if it doesn't exist."""
+    flag = f"_gh_branch_ok_{cfg['branch']}"
+    if st.session_state.get(flag):
+        return True
+    try:
+        r = requests.get(f"{GH_API}/repos/{cfg['repo']}/branches/{cfg['branch']}",
+                         headers=_gh_headers(cfg), timeout=15)
+        if r.status_code == 200:
+            st.session_state[flag] = True
+            return True
+        repo = requests.get(f"{GH_API}/repos/{cfg['repo']}",
+                            headers=_gh_headers(cfg), timeout=15).json()
+        base = repo.get("default_branch", "main")
+        sha = requests.get(f"{GH_API}/repos/{cfg['repo']}/branches/{base}",
+                           headers=_gh_headers(cfg), timeout=15
+                           ).json()["commit"]["sha"]
+        c = requests.post(f"{GH_API}/repos/{cfg['repo']}/git/refs",
+                          headers=_gh_headers(cfg),
+                          json={"ref": f"refs/heads/{cfg['branch']}", "sha": sha},
+                          timeout=15)
+        ok = c.status_code in (200, 201, 422)   # 422 = already exists (race)
+        st.session_state[flag] = ok
+        return ok
+    except Exception as e:
+        st.error(f"GitHub branch check failed: {e}")
+        return False
+
+
+def _gh_get_file(cfg, path):
+    """Return (parsed_json_or_None, sha_or_None) for a file on the data branch."""
+    r = requests.get(f"{GH_API}/repos/{cfg['repo']}/contents/{path}",
+                     params={"ref": cfg["branch"]},
+                     headers=_gh_headers(cfg), timeout=15)
+    if r.status_code == 404:
+        return None, None
+    r.raise_for_status()
+    j = r.json()
+    raw = base64.b64decode(j["content"]).decode("utf-8")
+    return json.loads(raw), j["sha"]
+
+
+def _gh_put_file(cfg, path, obj, sha, message):
+    """Create/update a file on the data branch. Returns new sha or None."""
+    body = {"message": message, "branch": cfg["branch"],
+            "content": base64.b64encode(
+                json.dumps(obj, indent=1).encode("utf-8")).decode("ascii")}
+    if sha:
+        body["sha"] = sha
+    r = requests.put(f"{GH_API}/repos/{cfg['repo']}/contents/{path}",
+                     headers=_gh_headers(cfg), json=body, timeout=15)
+    if r.status_code in (409, 422):
+        # Stale/missing sha — refetch and retry once
+        _, fresh = _gh_get_file(cfg, path)
+        if fresh:
+            body["sha"] = fresh
+        elif "sha" in body:
+            del body["sha"]
+        r = requests.put(f"{GH_API}/repos/{cfg['repo']}/contents/{path}",
+                         headers=_gh_headers(cfg), json=body, timeout=15)
+    r.raise_for_status()
+    return r.json()["content"]["sha"]
+
+
 PICK_LOG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                              "pick_log.json")
 
 
 def load_pick_log() -> list:
-    if not os.path.exists(PICK_LOG_PATH):
-        return []
+    """GitHub-backed when configured (session-cached: one fetch per session),
+    local file otherwise."""
+    cfg = _gh_cfg()
+    if cfg is None:
+        if not os.path.exists(PICK_LOG_PATH):
+            return []
+        try:
+            with open(PICK_LOG_PATH, "r") as f:
+                return json.load(f)
+        except Exception:
+            return []
+    if "_pick_log_cache" in st.session_state:
+        return st.session_state["_pick_log_cache"]
     try:
-        with open(PICK_LOG_PATH, "r") as f:
-            return json.load(f)
-    except Exception:
+        data, sha = _gh_get_file(cfg, "pick_log.json")
+    except Exception as e:
+        st.error(f"Couldn't load pick log from GitHub ({e}). "
+                 f"Showing empty log — do NOT save grades until this "
+                 f"resolves, or GitHub history will need restoring.")
         return []
+    st.session_state["_pick_log_cache"] = data or []
+    st.session_state["_pick_log_sha"] = sha
+    return st.session_state["_pick_log_cache"]
 
 
 def save_pick_log(rows: list):
-    with open(PICK_LOG_PATH, "w") as f:
-        json.dump(rows, f, indent=1)
+    """Writes local always (harmless, useful offline); pushes to GitHub
+    when configured so the log survives Streamlit Cloud reboots."""
+    try:
+        with open(PICK_LOG_PATH, "w") as f:
+            json.dump(rows, f, indent=1)
+    except Exception:
+        pass
+    cfg = _gh_cfg()
+    if cfg is None:
+        return
+    if not _gh_ensure_branch(cfg):
+        st.error("Pick log NOT saved to GitHub (branch unavailable).")
+        return
+    try:
+        new_sha = _gh_put_file(cfg, "pick_log.json", rows,
+                               st.session_state.get("_pick_log_sha"),
+                               "tracker: update pick log")
+        st.session_state["_pick_log_cache"] = rows
+        st.session_state["_pick_log_sha"] = new_sha
+    except Exception as e:
+        st.error(f"Pick log NOT saved to GitHub: {e}")
 
 
 def unit_profit(odds: float) -> float:
@@ -1632,6 +1822,14 @@ with tab_today:
     # ═══════════════════════════════════════════════════════════════════════════
     st.divider()
     st.subheader("📌 Pick Tracker")
+    _cfg = _gh_cfg()
+    if _cfg:
+        st.caption(f"🗄 Log storage: GitHub — {_cfg['repo']} @ {_cfg['branch']} "
+                   f"(survives Streamlit Cloud reboots)")
+    else:
+        st.caption("🗄 Log storage: local file — fine on your machine, but "
+                   "WIPED on Streamlit Cloud reboots. Add [github] secrets "
+                   "to persist (see comment above _gh_cfg in the code).")
 
     log = load_pick_log()
     today_str = datetime.datetime.today().strftime("%Y-%m-%d")

@@ -1322,6 +1322,95 @@ with tab_today:
                 f"<span style='font-size:10px;color:{col};'>{label}</span></div>")
 
 
+    # ── Odds panel — all price entry in ONE place, one Enter to apply ─────────
+    # Design (Juan): the model makes every pick; prices are entered once,
+    # together, in a single form (st.form defers all reruns until submit, so
+    # Enter/Apply once applies everything). The gate then renders a sorted
+    # decision board here and a verdict line under each card. The cushion
+    # threshold is user-controlled: cushion 0 = zero EV *if the model is
+    # exactly right*, and selecting noisy estimates that barely clear the bar
+    # loads the portfolio with the model's own overestimates — so the default
+    # demands +3pp. The tracker buckets results by cushion so real data can
+    # justify moving this slider either way.
+    upcoming = [g for g in slate_results if not g["completed"]]
+    gate_calls = {}
+    if upcoming:
+        st.subheader("💰 Price gate")
+        gate_thresh = st.slider(
+            "GOOD PICK cushion threshold (pp over break-even)",
+            0.0, 8.0, 3.0, 0.5,
+            help="0 = accept anything at/above break-even (zero EV if the "
+                 "model is exactly right; negative in practice, since noisy "
+                 "estimates that barely clear the bar are mostly overestimates). "
+                 "3 ≈ +4–7% EV if the model is right. The tracker's cushion "
+                 "buckets will show what this should actually be.")
+        with st.form("odds_form"):
+            st.caption("Price on the model's pick for each game — type them "
+                       "all, then press Enter or Apply once.")
+            for g in upcoming:
+                mkey = f"{g['away']} @ {g['home']}"
+                pick = g["prob_pick"]
+                pick_p = (g["home_pct"] if pick == g["home"]
+                          else g["away_pct"])
+                fc1, fc2 = st.columns([2.4, 1])
+                with fc1:
+                    st.markdown(
+                        f"<div style='padding-top:8px;font-size:13px;'>"
+                        f"{g['away']} @ {g['home']} — pick: <b>{pick}</b> "
+                        f"<span style='color:#888;'>({pick_p:.1f}%)</span></div>",
+                        unsafe_allow_html=True)
+                with fc2:
+                    st.number_input("price", value=0, step=5,
+                                    key=f"mlpick_{mkey}",
+                                    label_visibility="collapsed")
+            st.form_submit_button("Apply odds")
+
+        # Compute all gate calls from the submitted values
+        for g in upcoming:
+            mkey = f"{g['away']} @ {g['home']}"
+            ml_pick = st.session_state.get(f"mlpick_{mkey}", 0)
+            if abs(ml_pick) < 100:
+                continue
+            pick = g["prob_pick"]
+            pick_p = (g["home_pct"] if pick == g["home"]
+                      else g["away_pct"]) / 100.0
+            be_p = breakeven_prob(ml_pick)
+            cushion = pick_p - be_p
+            ev = pick_p * unit_profit(ml_pick) - (1 - pick_p)
+            if cushion >= gate_thresh / 100.0:
+                call, ccol = "✅ GOOD PICK", "#00c07a"
+            elif cushion >= 0:
+                call, ccol = "🟡 THIN — pass", "#f5c842"
+            else:
+                call, ccol = "⛔ STAY AWAY", "#ff5252"
+            gate_calls[mkey] = {"pick": pick, "odds": ml_pick,
+                                "model": pick_p, "be": be_p,
+                                "cushion": cushion, "ev": ev,
+                                "call": call, "color": ccol}
+            st.session_state[f"pickml_{mkey}"] = ml_pick
+            st.session_state[f"edge_{mkey}"] = round(cushion * 100, 1)
+
+        # Decision board — the day's calls in one glance, best first
+        if gate_calls:
+            board = sorted(gate_calls.items(),
+                           key=lambda kv: -kv[1]["cushion"])
+            board_df = pd.DataFrame([{
+                "Call":     v["call"],
+                "Matchup":  k,
+                "Pick":     v["pick"],
+                "Price":    f"{v['odds']:+d}",
+                "Model %":  round(v["model"] * 100, 1),
+                "Needs %":  round(v["be"] * 100, 1),
+                "Cushion":  f"{v['cushion']*100:+.1f}",
+                "EV/unit":  f"{v['ev']*100:+.1f}%",
+            } for k, v in board])
+            st.dataframe(board_df, hide_index=True, use_container_width=True)
+            n_good = sum(1 for v in gate_calls.values()
+                         if v["call"].startswith("✅"))
+            st.caption(f"{n_good} playable of {len(gate_calls)} priced. "
+                       f"Zero-GOOD days are correct outputs, not failures — "
+                       f"they're the days the market offered nothing.")
+
     # ── Render each game ───────────────────────────────────────────────────────────
     for game in slate_results:
         color = game["conf_color"]
@@ -1467,62 +1556,26 @@ with tab_today:
         )
         st.markdown(card_html, unsafe_allow_html=True)
 
-        # ── Price gate — "is the model's pick playable at this price?" ─────
-        # Design intent (Juan): the MODEL makes the pick, always. The odds do
-        # not pick sides or hunt value — they are purely a go/no-go gate on
-        # the model's pick. One input: the price offered on the pick. Rule:
-        # the model's probability must clear the break-even probability that
-        # price demands, with cushion to spare.
-        #   model 60% at -600 → needs 85.7% → 25.7pp short → ⛔ STAY AWAY
-        #   model 60% at -130 → needs 56.5% → +3.5pp clear → ✅ GOOD PICK
-        # Cushion threshold +3pp ≈ +4–7% EV per unit across typical prices;
-        # below that, normal model error swamps the margin.
+        # ── Gate verdict (read-only; prices are entered in the panel above) ─
         if not game["completed"]:
             mkey = f"{game['away']} @ {game['home']}"
-            pick = game["prob_pick"]
-            pick_p = (game["home_pct"] if pick == game["home"]
-                      else game["away_pct"]) / 100.0
-            gc1, gc2 = st.columns([1, 2.6])
-            with gc1:
-                ml_pick = st.number_input(f"Price on {pick}", value=0, step=5,
-                                          key=f"mlpick_{mkey}",
-                                          help="The moneyline your book offers "
-                                               "on the model's pick, e.g. -155")
-            with gc2:
-                if abs(ml_pick) >= 100:
-                    be = breakeven_prob(ml_pick)
-                    cushion = pick_p - be            # + = model clears the price
-                    ev = pick_p * unit_profit(ml_pick) - (1 - pick_p)
-                    if cushion >= 0.03:
-                        tag  = (f"✅ GOOD PICK — clears break-even by "
-                                f"+{cushion*100:.1f}pp (≈{ev*100:+.1f}% EV "
-                                f"if the model's number is right)")
-                        tcol = "#00c07a"
-                    elif cushion >= 0:
-                        tag  = (f"🟡 THIN — clears break-even by only "
-                                f"+{cushion*100:.1f}pp; inside normal model "
-                                f"error. Pass.")
-                        tcol = "#f5c842"
-                    else:
-                        tag  = (f"⛔ STAY AWAY — this price needs "
-                                f"{be*100:.1f}%, the model gives "
-                                f"{pick_p*100:.1f}% ({cushion*100:.1f}pp short)")
-                        tcol = "#ff5252"
-                    st.markdown(
-                        f"<div style='font-size:12px;padding-top:26px;'>"
-                        f"<span style='color:#888;'>Model: {pick} "
-                        f"{pick_p*100:.1f}% · break-even at {ml_pick:+d}: "
-                        f"{be*100:.1f}%</span><br>"
-                        f"<span style='color:{tcol};font-weight:700;'>{tag}</span>"
-                        f"<span style='color:#666;'> · grade it in the tracker</span>"
-                        f"</div>", unsafe_allow_html=True)
-                    st.session_state[f"edge_{mkey}"] = round(cushion * 100, 1)
-                    st.session_state[f"pickml_{mkey}"] = ml_pick
-                else:
-                    st.markdown("<div style='font-size:12px;color:#666;"
-                                "padding-top:34px;'>Enter the price on the "
-                                "pick to get the go/no-go call</div>",
-                                unsafe_allow_html=True)
+            gc = gate_calls.get(mkey)
+            if gc:
+                st.markdown(
+                    f"<div style='font-size:12px;margin:-6px 0 14px 2px;'>"
+                    f"<span style='color:{gc['color']};font-weight:700;'>"
+                    f"{gc['call']}</span>"
+                    f"<span style='color:#888;'> at {gc['odds']:+d} — model "
+                    f"{gc['model']*100:.1f}% vs needed {gc['be']*100:.1f}% "
+                    f"(cushion {gc['cushion']*100:+.1f}pp, "
+                    f"EV {gc['ev']*100:+.1f}%/unit)</span></div>",
+                    unsafe_allow_html=True)
+            else:
+                st.markdown(
+                    "<div style='font-size:11px;color:#555;"
+                    "margin:-6px 0 14px 2px;'>No price entered — add it in "
+                    "the price gate panel above for a go/no-go call</div>",
+                    unsafe_allow_html=True)
 
     # ═══════════════════════════════════════════════════════════════════════════
     # PICK TRACKER — forward measurement (replaces the removed backtest)
@@ -1634,18 +1687,35 @@ with tab_today:
                 })
             st.dataframe(pd.DataFrame(sum_rows), hide_index=True,
                          use_container_width=True)
-            # The real test of the gate: do GOOD-PICK-tagged bets
-            # (cushion ≥ +3pp at log time) actually make money?
+            # The empirical answer to "how much cushion is enough":
+            # graded, priced picks split by cushion at log time. If 0–3
+            # holds up over ~100 picks, the slider can come down with
+            # evidence; if it bleeds, the default earns its keep.
             if "edge" in cur.columns:
-                val = cur[(cur["edge"].fillna(-99) >= 3.0) & (cur["odds"] != 0)]
-                if len(val):
-                    vw = int((val["result"] == "W").sum())
-                    vl = int((val["result"] == "L").sum())
-                    vu = sum(unit_profit(r["odds"]) if r["result"] == "W" else -1.0
-                             for _, r in val.iterrows())
-                    st.markdown(f"**GOOD-PICK-tagged (cushion ≥ +3pp):** {vw}–{vl}, "
-                                f"{vu:+.2f}u — this line, at ~100 graded, is the "
-                                f"verdict on whether the gate actually works.")
+                priced = cur[(cur["odds"] != 0) & cur["edge"].notna()]
+                buckets = [("cushion ≥ +3pp", priced["edge"] >= 3.0),
+                           ("cushion 0 to +3pp",
+                            (priced["edge"] >= 0) & (priced["edge"] < 3.0)),
+                           ("cushion < 0 (stay-aways, if bet anyway)",
+                            priced["edge"] < 0)]
+                brows = []
+                for label, mask in buckets:
+                    b = priced[mask]
+                    if not len(b):
+                        continue
+                    w = int((b["result"] == "W").sum())
+                    l = int((b["result"] == "L").sum())
+                    u = sum(unit_profit(r["odds"]) if r["result"] == "W"
+                            else -1.0 for _, r in b.iterrows())
+                    brows.append({"cushion bucket": label,
+                                  "record": f"{w}–{l}",
+                                  "units": round(u, 2),
+                                  "toward 100": f"{w+l}/100"})
+                if brows:
+                    st.markdown("**Cushion buckets** — the data that decides "
+                                "where the GOOD threshold belongs:")
+                    st.dataframe(pd.DataFrame(brows), hide_index=True,
+                                 use_container_width=True)
             st.caption("Units use only picks with a price entered, flat 1u. "
                        "Hit rate without the price you paid says nothing about "
                        "profit — a 60% tier loses money at worse than -150.")

@@ -119,6 +119,17 @@ SEASON     = datetime.datetime.now().year
 # No parameter/formula changes until the pick tracker holds ≥100 graded picks
 # for this version. Change the string if the model ever changes again.
 MODEL_VERSION = "v3.0-frozen-2026-08-06"
+
+# ── GATE THRESHOLD — deliberately NOT adjustable in the UI ─────────────────────
+# Juan's explicit request: no in-app knob, so in-the-moment eagerness to bet
+# can't loosen the discipline. Changing this requires editing code — that
+# friction is the feature, not an oversight. Why 3.0: cushion 0 means zero EV
+# even if the model's probability is exactly right, and betting noisy
+# estimates that barely clear break-even loads the portfolio with the model's
+# own overestimates (selection on noise). +3pp ≈ +4–7% EV across typical
+# prices IF the model is right. The tracker's cushion buckets are the only
+# legitimate grounds for ever changing this number.
+GATE_THRESH_PP = 3.0
 # HOME_BOOST calibration: this is an additive shift on the composite score,
 # converted to probability by the logistic in calc_prob (slope K_PROB=2).
 # Even-team home win prob ≈ 0.5 + tanh(K_PROB·boost/2)/2.
@@ -897,6 +908,25 @@ def breakeven_prob(odds: float) -> float:
 
 
 
+PICK_LOG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                             "pick_log.json")
+
+
+def load_pick_log() -> list:
+    if not os.path.exists(PICK_LOG_PATH):
+        return []
+    try:
+        with open(PICK_LOG_PATH, "r") as f:
+            return json.load(f)
+    except Exception:
+        return []
+
+
+def save_pick_log(rows: list):
+    with open(PICK_LOG_PATH, "w") as f:
+        json.dump(rows, f, indent=1)
+
+
 def unit_profit(odds: float) -> float:
     """Profit in units on a 1u winning bet at an American price."""
     if odds < 0:
@@ -1327,23 +1357,12 @@ with tab_today:
     # together, in a single form (st.form defers all reruns until submit, so
     # Enter/Apply once applies everything). The gate then renders a sorted
     # decision board here and a verdict line under each card. The cushion
-    # threshold is user-controlled: cushion 0 = zero EV *if the model is
-    # exactly right*, and selecting noisy estimates that barely clear the bar
-    # loads the portfolio with the model's own overestimates — so the default
-    # demands +3pp. The tracker buckets results by cushion so real data can
-    # justify moving this slider either way.
+    # threshold is fixed at GATE_THRESH_PP (see its comment) at Juan's
+    # request — no UI control, so eagerness can't loosen it mid-slump.
     upcoming = [g for g in slate_results if not g["completed"]]
     gate_calls = {}
     if upcoming:
         st.subheader("💰 Price gate")
-        gate_thresh = st.slider(
-            "GOOD PICK cushion threshold (pp over break-even)",
-            0.0, 8.0, 3.0, 0.5,
-            help="0 = accept anything at/above break-even (zero EV if the "
-                 "model is exactly right; negative in practice, since noisy "
-                 "estimates that barely clear the bar are mostly overestimates). "
-                 "3 ≈ +4–7% EV if the model is right. The tracker's cushion "
-                 "buckets will show what this should actually be.")
         with st.form("odds_form"):
             st.caption("Price on the model's pick for each game — type them "
                        "all, then press Enter or Apply once.")
@@ -1377,7 +1396,7 @@ with tab_today:
             be_p = breakeven_prob(ml_pick)
             cushion = pick_p - be_p
             ev = pick_p * unit_profit(ml_pick) - (1 - pick_p)
-            if cushion >= gate_thresh / 100.0:
+            if cushion >= GATE_THRESH_PP / 100.0:
                 call, ccol = "✅ GOOD PICK", "#00c07a"
             elif cushion >= 0:
                 call, ccol = "🟡 THIN — pass", "#f5c842"
@@ -1389,6 +1408,25 @@ with tab_today:
                                 "call": call, "color": ccol}
             st.session_state[f"pickml_{mkey}"] = ml_pick
             st.session_state[f"edge_{mkey}"] = round(cushion * 100, 1)
+
+        # Auto-sync: the panel is the source of truth for TODAY's prices.
+        # Any rows already logged today get their odds/cushion updated from
+        # what's entered above — no second data entry in the tracker. The
+        # tracker's editable odds column remains for past days only.
+        if gate_calls:
+            _log = load_pick_log()
+            _today = datetime.datetime.today().strftime("%Y-%m-%d")
+            _synced = 0
+            for _r in _log:
+                _gc = gate_calls.get(_r["matchup"])
+                if (_gc and _r["date"] == _today
+                        and _r.get("version") == MODEL_VERSION
+                        and _r.get("odds", 0) != _gc["odds"]):
+                    _r["odds"] = _gc["odds"]
+                    _r["edge"] = round(_gc["cushion"] * 100, 1)
+                    _synced += 1
+            if _synced:
+                save_pick_log(_log)
 
         # Decision board — the day's calls in one glance, best first
         if gate_calls:
@@ -1407,9 +1445,16 @@ with tab_today:
             st.dataframe(board_df, hide_index=True, use_container_width=True)
             n_good = sum(1 for v in gate_calls.values()
                          if v["call"].startswith("✅"))
-            st.caption(f"{n_good} playable of {len(gate_calls)} priced. "
-                       f"Zero-GOOD days are correct outputs, not failures — "
-                       f"they're the days the market offered nothing.")
+            if n_good == 0:
+                st.markdown("<div style='font-size:13px;color:#f5c842;"
+                            "font-weight:700;'>No plays today — sitting out "
+                            "IS the play. The market offered nothing.</div>",
+                            unsafe_allow_html=True)
+            else:
+                st.caption(f"{n_good} playable of {len(gate_calls)} priced.")
+            if _synced:
+                st.caption(f"🔄 Synced {_synced} price(s) into today's "
+                           f"tracker rows automatically.")
 
     # ── Render each game ───────────────────────────────────────────────────────────
     for game in slate_results:
@@ -1588,22 +1633,6 @@ with tab_today:
     st.divider()
     st.subheader("📌 Pick Tracker")
 
-    PICK_LOG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                 "pick_log.json")
-
-    def load_pick_log() -> list:
-        if not os.path.exists(PICK_LOG_PATH):
-            return []
-        try:
-            with open(PICK_LOG_PATH, "r") as f:
-                return json.load(f)
-        except Exception:
-            return []
-
-    def save_pick_log(rows: list):
-        with open(PICK_LOG_PATH, "w") as f:
-            json.dump(rows, f, indent=1)
-
     log = load_pick_log()
     today_str = datetime.datetime.today().strftime("%Y-%m-%d")
     existing_keys = {(r["date"], r["matchup"]) for r in log}
@@ -1632,7 +1661,9 @@ with tab_today:
                 added += 1
             save_pick_log(log)
             st.success(f"Logged {added} new picks."
-                       if added else "Today's slate is already logged.")
+                       if added else "Today's slate is already logged — "
+                                     "prices entered above sync into it "
+                                     "automatically.")
             st.rerun()
     with c_log2:
         st.caption("Log every day, grade with the real price you got. Verdicts "

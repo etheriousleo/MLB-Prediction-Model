@@ -889,6 +889,25 @@ def calc_run_line(sa, sb, home, w_off, w_def, w_rec,
     return proj_h, proj_a, proj_margin, winner, raw_margin, proj_total
 
 
+def breakeven_prob(odds: float) -> float:
+    """Break-even win probability implied by an American price (includes vig)."""
+    if odds < 0:
+        return abs(odds) / (abs(odds) + 100)
+    return 100 / (odds + 100)
+
+
+def devig_fair_probs(odds_home: float, odds_away: float) -> tuple:
+    """
+    Convert both sides' American prices into vig-free 'fair' market
+    probabilities by normalizing the two implied probabilities to sum to 1.
+    This is the market's actual opinion with the book's margin removed —
+    the number the model must beat for a bet to have positive EV.
+    """
+    bh, ba = breakeven_prob(odds_home), breakeven_prob(odds_away)
+    total = bh + ba
+    return bh / total, ba / total
+
+
 def calc_confidence(sa, sb, pct_h, pct_a, margin_winner, prob_winner,
                     ra=None, rb=None, sp_h_score=0.5, sp_a_score=0.5):
     models_agree  = prob_winner == margin_winner
@@ -1452,6 +1471,56 @@ with tab_today:
         )
         st.markdown(card_html, unsafe_allow_html=True)
 
+        # ── Model vs market — the "should we be on this?" line ─────────────
+        # Confidence answers "how sure is the model about the winner."
+        # This answers a different question: "is the PRICE wrong if the
+        # model is right?" Edge = model prob − de-vigged market prob.
+        # HONESTY NOTE (read before trusting a VALUE tag): the edge assumes
+        # the model's probability is correct. Until the tracker validates
+        # that, large edges are as likely to be model errors as market
+        # errors — for unvalidated models, the biggest apparent edges are
+        # disproportionately the games where the model is most wrong.
+        # These tags are hypotheses for the tracker to test, not bets.
+        if not game["completed"]:
+            mkey = f"{game['away']} @ {game['home']}"
+            oc1, oc2, oc3 = st.columns([1, 1, 2.2])
+            with oc1:
+                ml_h = st.number_input(f"{game['home']} ML", value=0, step=5,
+                                       key=f"mlh_{mkey}",
+                                       help="American price, e.g. -155")
+            with oc2:
+                ml_a = st.number_input(f"{game['away']} ML", value=0, step=5,
+                                       key=f"mla_{mkey}",
+                                       help="American price, e.g. +135")
+            with oc3:
+                valid = (abs(ml_h) >= 100 and abs(ml_a) >= 100)
+                if valid:
+                    fair_h, fair_a = devig_fair_probs(ml_h, ml_a)
+                    edge_h = game["home_pct"] / 100 - fair_h   # + = model likes home more than market
+                    pick_is_home = game["prob_pick"] == game["home"]
+                    pick_edge = edge_h if pick_is_home else -edge_h
+                    val_side  = game["home"] if edge_h > 0 else game["away"]
+                    val_edge  = abs(edge_h)
+                    if val_edge >= 0.03:
+                        tag, tcol = f"VALUE candidate: {val_side} (+{val_edge*100:.1f}pp)", "#00c07a"
+                    elif pick_edge <= -0.01:
+                        tag, tcol = "STAY AWAY — price demands more than the model gives", "#ff5252"
+                    else:
+                        tag, tcol = "PASS — no meaningful edge either side", "#f5c842"
+                    st.markdown(
+                        f"<div style='font-size:12px;padding-top:26px;'>"
+                        f"<span style='color:#888;'>Market (fair): {game['home']} "
+                        f"{fair_h*100:.1f}% · Model: {game['home_pct']:.1f}%</span><br>"
+                        f"<span style='color:{tcol};font-weight:700;'>{tag}</span>"
+                        f"<span style='color:#666;'> · unvalidated — log it</span></div>",
+                        unsafe_allow_html=True)
+                    st.session_state[f"edge_{mkey}"] = round(pick_edge * 100, 1)
+                    st.session_state[f"pickml_{mkey}"] = ml_h if pick_is_home else ml_a
+                else:
+                    st.markdown("<div style='font-size:12px;color:#666;padding-top:34px;'>"
+                                "Enter both prices to see model vs market</div>",
+                                unsafe_allow_html=True)
+
 
     # ═══════════════════════════════════════════════════════════════════════════
     # PICK TRACKER — forward measurement (replaces the removed backtest)
@@ -1505,7 +1574,10 @@ with tab_today:
                     "prob":    round(max(g["home_pct"], g["away_pct"]), 1),
                     "tier":    g["conf_level"],
                     "version": MODEL_VERSION,
-                    "odds":    0,      # fill in the price you actually got
+                    # Pre-filled from the slate's odds inputs when entered;
+                    # overwrite at grading time if the price you got differs.
+                    "odds":    st.session_state.get(f"pickml_{matchup}", 0),
+                    "edge":    st.session_state.get(f"edge_{matchup}", None),
                     "result":  "",     # W / L / Push
                 })
                 added += 1
@@ -1533,6 +1605,9 @@ with tab_today:
                 "prob":    st.column_config.NumberColumn(disabled=True),
                 "tier":    st.column_config.TextColumn(disabled=True),
                 "version": st.column_config.TextColumn(disabled=True),
+                "edge":    st.column_config.NumberColumn(
+                    "edge", help="Model prob − fair market prob at log time (pp)",
+                    disabled=True),
             },
             hide_index=True, use_container_width=True, height=300)
         if st.button("Save grades"):
@@ -1563,6 +1638,18 @@ with tab_today:
                 })
             st.dataframe(pd.DataFrame(sum_rows), hide_index=True,
                          use_container_width=True)
+            # The real test of "should we be on": do the picks the app
+            # tagged as value (edge ≥ +3pp at log time) actually make money?
+            if "edge" in cur.columns:
+                val = cur[(cur["edge"].fillna(-99) >= 3.0) & (cur["odds"] != 0)]
+                if len(val):
+                    vw = int((val["result"] == "W").sum())
+                    vl = int((val["result"] == "L").sum())
+                    vu = sum(unit_profit(r["odds"]) if r["result"] == "W" else -1.0
+                             for _, r in val.iterrows())
+                    st.markdown(f"**Value-tagged picks (edge ≥ +3pp):** {vw}–{vl}, "
+                                f"{vu:+.2f}u — this line, at ~100 graded, is the "
+                                f"verdict on whether the model finds real edges.")
             st.caption("Units use only picks with a price entered, flat 1u. "
                        "Hit rate without the price you paid says nothing about "
                        "profit — a 60% tier loses money at worse than -150.")

@@ -1972,6 +1972,12 @@ with tab_today:
 
     if log:
         df = pd.DataFrame(log)
+        # Newest day first: fresh rows append to the BOTTOM of the log, which
+        # hid today's picks below the fold and caused a false "slate didn't
+        # log" alarm. Stable sort preserves within-day slate order.
+        if "date" in df.columns:
+            df = df.sort_values("date", ascending=False,
+                                kind="stable").reset_index(drop=True)
         edited = st.data_editor(
             df,
             column_config={

@@ -399,8 +399,10 @@ def fetch_team_stats_recent(season: int, last_n: int) -> tuple[dict, dict]:
     all_pitching = {}
 
     end_dt    = now_et()
+    # Season-start floor must carry APP_TZ: end_dt is timezone-aware, and
+    # Python raises TypeError comparing aware vs naive datetimes in max().
     start_dt  = max(end_dt - datetime.timedelta(days=last_n),
-                    datetime.datetime(season, 3, 20))
+                    datetime.datetime(season, 3, 20, tzinfo=APP_TZ))
     start_str = start_dt.strftime("%m/%d/%Y")
     end_str   = end_dt.strftime("%m/%d/%Y")
 

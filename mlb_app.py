@@ -987,10 +987,31 @@ GH_API = "https://api.github.com"
 def _gh_cfg():
     try:
         gh = st.secrets["github"]
-        return {"token": gh["token"], "repo": gh["repo"],
-                "branch": gh.get("branch", "data")}
+        # .strip() everywhere: a stray space/newline from copy-paste makes
+        # GitHub return 401 "Bad credentials" — the most common setup trip.
+        return {"token": str(gh["token"]).strip(),
+                "repo": str(gh["repo"]).strip().strip("/"),
+                "branch": str(gh.get("branch", "data")).strip()}
     except Exception:
         return None
+
+
+def _gh_error_hint(err) -> str:
+    """Translate GitHub HTTP errors into plain fix-it instructions."""
+    s = str(err)
+    if "401" in s:
+        return ("→ GitHub rejected the token (bad credentials). Re-copy the "
+                "FULL token into Streamlit Secrets (watch for truncation or "
+                "stray spaces), and confirm it hasn't expired or been "
+                "regenerated since you copied it.")
+    if "404" in s:
+        return ("→ Repo not reachable with this token. Check the repo is "
+                "spelled 'owner/name' exactly, and that the token's "
+                "Repository access includes this repo.")
+    if "403" in s:
+        return ("→ Access refused. Check the token has Contents: Read and "
+                "write permission on this repo.")
+    return ""
 
 
 def _gh_headers(cfg):
@@ -1085,8 +1106,8 @@ def load_pick_log() -> list:
         data, sha = _gh_get_file(cfg, "pick_log.json")
     except Exception as e:
         st.error(f"Couldn't load pick log from GitHub ({e}). "
-                 f"Showing empty log — do NOT save grades until this "
-                 f"resolves, or GitHub history will need restoring.")
+                 f"{_gh_error_hint(e)} Showing empty log — do NOT save "
+                 f"grades until this resolves.")
         return []
     st.session_state["_pick_log_cache"] = data or []
     st.session_state["_pick_log_sha"] = sha
@@ -1114,7 +1135,14 @@ def save_pick_log(rows: list):
         st.session_state["_pick_log_cache"] = rows
         st.session_state["_pick_log_sha"] = new_sha
     except Exception as e:
-        st.error(f"Pick log NOT saved to GitHub: {e}")
+        st.error(f"Pick log NOT saved to GitHub: {e} {_gh_error_hint(e)}")
+
+
+@st.cache_data(ttl=600)
+def fetch_results_for_date(date_iso: str) -> list:
+    """Final scores/status for all MLB games on a date (for auto-grading)."""
+    mmdd = datetime.datetime.strptime(date_iso, "%Y-%m-%d").strftime("%m/%d/%Y")
+    return statsapi.schedule(date=mmdd)
 
 
 def unit_profit(odds: float) -> float:
@@ -1589,7 +1617,7 @@ with tab_today:
             if cushion >= GATE_THRESH_PP / 100.0:
                 call, ccol = "✅ GOOD PICK", "#00c07a"
             elif cushion >= 0:
-                call, ccol = "🟡 THIN — pass", "#f5c842"
+                call, ccol = "🟡 THIN — NO BET (edge inside model error)", "#f5c842"
             else:
                 call, ccol = "⛔ STAY AWAY", "#ff5252"
             gate_calls[mkey] = {"pick": pick, "odds": ml_pick,
@@ -1835,7 +1863,7 @@ with tab_today:
     today_str = datetime.datetime.today().strftime("%Y-%m-%d")
     existing_keys = {(r["date"], r["matchup"]) for r in log}
 
-    c_log1, c_log2 = st.columns([1, 2])
+    c_log1, c_log3, c_log2 = st.columns([1, 1, 1.4])
     with c_log1:
         if st.button("Log today's slate to tracker"):
             added = 0
@@ -1863,10 +1891,53 @@ with tab_today:
                                      "prices entered above sync into it "
                                      "automatically.")
             st.rerun()
+    with c_log3:
+        # Auto-grading pulls finals from the same MLB API as the slate.
+        # Grades EVERY logged pick (bet or not) — the un-bet games are the
+        # control group that proves/disproves the gate. Postponed or
+        # cancelled → Push. Doubleheader limitation: matchup keys collide,
+        # so the first final of the day grades the row — rare enough to
+        # accept, correct by hand if it ever matters.
+        if st.button("⚡ Auto-grade finished games"):
+            graded = 0
+            for r in log:
+                if r.get("result"):
+                    continue
+                if r["date"] > today_str:
+                    continue
+                try:
+                    day_games = fetch_results_for_date(r["date"])
+                except Exception:
+                    continue
+                if " @ " not in r["matchup"]:
+                    continue
+                away, home = r["matchup"].split(" @ ", 1)
+                for gm in day_games:
+                    if (gm.get("away_name") == away
+                            and gm.get("home_name") == home):
+                        status = str(gm.get("status", ""))
+                        if status.startswith(("Final", "Game Over",
+                                              "Completed Early")):
+                            hs = gm.get("home_score", 0) or 0
+                            as_ = gm.get("away_score", 0) or 0
+                            winner = home if hs > as_ else away
+                            r["result"] = "W" if winner == r["pick"] else "L"
+                            graded += 1
+                        elif status.startswith(("Postponed", "Cancelled")):
+                            r["result"] = "Push"
+                            graded += 1
+                        break
+            if graded:
+                save_pick_log(log)
+                st.success(f"Auto-graded {graded} picks.")
+                st.rerun()
+            else:
+                st.info("Nothing new to grade yet.")
     with c_log2:
-        st.caption("Log every day, grade with the real price you got. Verdicts "
-                   "need ~100 graded picks per tier — resist reading anything "
-                   "into fewer.")
+        st.caption("Daily loop: log the slate, enter prices in the panel "
+                   "(they sync down), auto-grade the next morning. Every "
+                   "game gets graded — bet or not. Verdicts need ~100 "
+                   "graded picks per tier.")
 
     if log:
         df = pd.DataFrame(log)

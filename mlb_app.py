@@ -18,6 +18,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import statsapi
 import streamlit as st
+from zoneinfo import ZoneInfo
 
 # ── Snapshot system ────────────────────────────────────────────────────────────
 # NOTE: The backtest tab that consumed these snapshots has been removed.
@@ -52,7 +53,7 @@ def _save_snapshot_local(batting: dict, pitching: dict, standings: dict,
     """
     ensure_snapshot_dir()
     if date_str is None:
-        date_str = datetime.datetime.today().strftime("%Y-%m-%d")
+        date_str = today_et("%Y-%m-%d")
     path = snapshot_path(date_str)
 
     # If file exists but has no pitchers, update it — otherwise skip
@@ -112,7 +113,26 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-SEASON     = datetime.datetime.now().year
+
+# ── App clock ──────────────────────────────────────────────────────────────────
+# Streamlit Cloud servers run on UTC. Naive datetime.today() therefore rolls
+# to "tomorrow" at 8 PM Eastern — which made every evening session fetch and
+# log the NEXT day's slate, and made the next morning look frozen
+# ("yesterday's games remain"). Every date in this app now uses the
+# Eastern-time baseball day via these two helpers. Never call
+# datetime.datetime.today()/now() directly anywhere below.
+APP_TZ = ZoneInfo("America/New_York")
+
+
+def now_et() -> datetime.datetime:
+    return datetime.datetime.now(APP_TZ)
+
+
+def today_et(fmt: str = "%Y-%m-%d") -> str:
+    return now_et().strftime(fmt)
+
+
+SEASON     = now_et().year
 
 # ── MODEL FREEZE ───────────────────────────────────────────────────────────────
 # This version is FROZEN for forward measurement. Every logged pick is tagged
@@ -378,7 +398,7 @@ def fetch_team_stats_recent(season: int, last_n: int) -> tuple[dict, dict]:
     all_batting  = {}
     all_pitching = {}
 
-    end_dt    = datetime.datetime.today()
+    end_dt    = now_et()
     start_dt  = max(end_dt - datetime.timedelta(days=last_n),
                     datetime.datetime(season, 3, 20))
     start_str = start_dt.strftime("%m/%d/%Y")
@@ -507,7 +527,7 @@ def save_snapshot(batting: dict, pitching: dict, standings: dict,
     _save_snapshot_local(batting, pitching, standings, pitchers, date_str,
                          batting_recent, pitching_recent, recent_window)
     if date_str is None:
-        date_str = datetime.datetime.today().strftime("%Y-%m-%d")
+        date_str = today_et("%Y-%m-%d")
     try:
         with open(snapshot_path(date_str), "r") as f:
             payload = json.load(f)
@@ -581,7 +601,7 @@ def fetch_run_differential(season: int) -> dict:
     team_runs = defaultdict(lambda: {"rs": 0, "ra": 0, "gp": 0})
     try:
         start = datetime.datetime(season, 3, 20).strftime("%m/%d/%Y")
-        end   = datetime.datetime.today().strftime("%m/%d/%Y")
+        end   = today_et("%m/%d/%Y")
         games = statsapi.schedule(start_date=start, end_date=end, sportId=1)
         completed = [g for g in games
                      if g.get("status") == "Final" and g.get("game_type") == "R"]
@@ -610,10 +630,11 @@ def fetch_run_differential(season: int) -> dict:
 
 
 @st.cache_data(show_spinner=False, ttl=1800)
-def fetch_todays_games() -> tuple[list, str]:
-    today = datetime.datetime.today().strftime("%m/%d/%Y")
+def fetch_todays_games(date_mmdd: str) -> tuple[list, str]:
+    """date_mmdd is deliberately an argument: it's part of the cache key, so
+    a cached slate can never survive across the ET day boundary."""
     try:
-        games = statsapi.schedule(date=today, sportId=1)
+        games = statsapi.schedule(date=date_mmdd, sportId=1)
         return [g for g in games if g.get("game_type", "") == "R"], ""
     except Exception as e:
         return [], str(e)
@@ -1302,7 +1323,7 @@ with st.sidebar:
     # Auto-save today's snapshot including today's probable SP stats
     # Fetch today's games to get probable pitchers, then snapshot their stats
     try:
-        today_str  = datetime.datetime.today().strftime("%m/%d/%Y")
+        today_str  = today_et("%m/%d/%Y")
         snap_games = statsapi.schedule(date=today_str, sportId=1)
         snap_games = [g for g in snap_games if g.get("game_type") == "R"]
         pitcher_ids = set()
@@ -1351,13 +1372,21 @@ with st.sidebar:
 # TAB 1 — Today's Games
 # ═══════════════════════════════════════════════════════════════════════════════
 with tab_today:
-    today_label = datetime.datetime.today().strftime("%A, %B %d").replace(" 0", " ")
+    today_label = today_et("%A, %B %d").replace(" 0", " ")
     st.header(f"Today's Slate — {today_label}")
     st.caption("Every regular season game today run through the model, ranked by confidence. "
                "Starting pitcher stats are incorporated into each prediction.")
 
+    if st.button("🔄 Refresh data",
+                 help="Clear all caches and refetch schedule, stats, "
+                      "probable pitchers, and the pick log"):
+        st.cache_data.clear()
+        for _k in ("_pick_log_cache", "_pick_log_sha"):
+            st.session_state.pop(_k, None)
+        st.rerun()
+
     with st.spinner("Fetching today's schedule..."):
-        todays_games, todays_err = fetch_todays_games()
+        todays_games, todays_err = fetch_todays_games(today_et("%m/%d/%Y"))
 
     if todays_err:
         st.error(f"Could not load schedule: {todays_err}")
@@ -1633,7 +1662,7 @@ with tab_today:
         # tracker's editable odds column remains for past days only.
         if gate_calls:
             _log = load_pick_log()
-            _today = datetime.datetime.today().strftime("%Y-%m-%d")
+            _today = today_et("%Y-%m-%d")
             _synced = 0
             for _r in _log:
                 _gc = gate_calls.get(_r["matchup"])
@@ -1860,7 +1889,7 @@ with tab_today:
                    "to persist (see comment above _gh_cfg in the code).")
 
     log = load_pick_log()
-    today_str = datetime.datetime.today().strftime("%Y-%m-%d")
+    today_str = today_et("%Y-%m-%d")
     existing_keys = {(r["date"], r["matchup"]) for r in log}
 
     c_log1, c_log3, c_log2 = st.columns([1, 1, 1.4])
@@ -1958,6 +1987,7 @@ with tab_today:
                     "edge", help="Cushion: model prob − break-even prob of the logged price (pp)",
                     disabled=True),
             },
+            num_rows="dynamic",
             hide_index=True, use_container_width=True, height=300)
         if st.button("Save grades"):
             save_pick_log(edited.to_dict("records"))

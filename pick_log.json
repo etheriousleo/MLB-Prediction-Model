@@ -468,8 +468,8 @@
   "prob": 53,
   "tier": "Low",
   "version": "v3.0-frozen-2026-08-06",
-  "odds": 0,
-  "edge": null,
+  "odds": -102,
+  "edge": 2.5,
   "result": ""
  },
  {

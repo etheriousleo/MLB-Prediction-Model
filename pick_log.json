@@ -493,5 +493,115 @@
   "odds": -110,
   "edge": -0.4,
   "result": "L"
+ },
+ {
+  "date": "2026-08-10",
+  "matchup": "Kansas City Royals @ Los Angeles Dodgers",
+  "pick": "Los Angeles Dodgers",
+  "prob": 65,
+  "tier": "High",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
+ },
+ {
+  "date": "2026-08-10",
+  "matchup": "Tampa Bay Rays @ Oakland Athletics",
+  "pick": "Tampa Bay Rays",
+  "prob": 62,
+  "tier": "High",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
+ },
+ {
+  "date": "2026-08-10",
+  "matchup": "Boston Red Sox @ Toronto Blue Jays",
+  "pick": "Boston Red Sox",
+  "prob": 59,
+  "tier": "High",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
+ },
+ {
+  "date": "2026-08-10",
+  "matchup": "Colorado Rockies @ Arizona Diamondbacks",
+  "pick": "Arizona Diamondbacks",
+  "prob": 59,
+  "tier": "High",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
+ },
+ {
+  "date": "2026-08-10",
+  "matchup": "New York Mets @ Atlanta Braves",
+  "pick": "Atlanta Braves",
+  "prob": 57,
+  "tier": "Moderate",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
+ },
+ {
+  "date": "2026-08-10",
+  "matchup": "Milwaukee Brewers @ San Diego Padres",
+  "pick": "Milwaukee Brewers",
+  "prob": 56,
+  "tier": "Moderate",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
+ },
+ {
+  "date": "2026-08-10",
+  "matchup": "Philadelphia Phillies @ St. Louis Cardinals",
+  "pick": "St. Louis Cardinals",
+  "prob": 53,
+  "tier": "Low",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
+ },
+ {
+  "date": "2026-08-10",
+  "matchup": "Houston Astros @ San Francisco Giants",
+  "pick": "Houston Astros",
+  "prob": 51,
+  "tier": "Low",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
+ },
+ {
+  "date": "2026-08-10",
+  "matchup": "Texas Rangers @ Los Angeles Angels",
+  "pick": "Texas Rangers",
+  "prob": 52,
+  "tier": "Conflicted",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
+ },
+ {
+  "date": "2026-08-10",
+  "matchup": "Baltimore Orioles @ Minnesota Twins",
+  "pick": "Minnesota Twins",
+  "prob": 50,
+  "tier": "Conflicted",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
  }
 ]

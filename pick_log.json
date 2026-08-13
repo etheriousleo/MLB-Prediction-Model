@@ -933,5 +933,104 @@
   "odds": -110,
   "edge": -0.4,
   "result": "L"
+ },
+ {
+  "date": "2026-08-13",
+  "matchup": "Boston Red Sox @ Toronto Blue Jays",
+  "pick": "Boston Red Sox",
+  "prob": 60,
+  "tier": "High",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": -154,
+  "edge": -0.6,
+  "result": ""
+ },
+ {
+  "date": "2026-08-13",
+  "matchup": "Cleveland Guardians @ Detroit Tigers",
+  "pick": "Detroit Tigers",
+  "prob": 59,
+  "tier": "High",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 114,
+  "edge": 12.3,
+  "result": ""
+ },
+ {
+  "date": "2026-08-13",
+  "matchup": "Seattle Mariners @ New York Yankees",
+  "pick": "New York Yankees",
+  "prob": 59,
+  "tier": "High",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": -136,
+  "edge": 1.4,
+  "result": ""
+ },
+ {
+  "date": "2026-08-13",
+  "matchup": "Cincinnati Reds @ Chicago White Sox",
+  "pick": "Chicago White Sox",
+  "prob": 59,
+  "tier": "Moderate",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": -130,
+  "edge": 2.5,
+  "result": ""
+ },
+ {
+  "date": "2026-08-13",
+  "matchup": "Pittsburgh Pirates @ Miami Marlins",
+  "pick": "Miami Marlins",
+  "prob": 56,
+  "tier": "Moderate",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 110,
+  "edge": 8.4,
+  "result": ""
+ },
+ {
+  "date": "2026-08-13",
+  "matchup": "Chicago Cubs @ Washington Nationals",
+  "pick": "Chicago Cubs",
+  "prob": 54,
+  "tier": "Moderate",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": -134,
+  "edge": -3.3,
+  "result": ""
+ },
+ {
+  "date": "2026-08-13",
+  "matchup": "Texas Rangers @ Los Angeles Angels",
+  "pick": "Texas Rangers",
+  "prob": 52,
+  "tier": "Low",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": -162,
+  "edge": -9.8,
+  "result": ""
+ },
+ {
+  "date": "2026-08-13",
+  "matchup": "Philadelphia Phillies @ Minnesota Twins",
+  "pick": "Minnesota Twins",
+  "prob": 51,
+  "tier": "Low",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": -108,
+  "edge": -0.9,
+  "result": ""
+ },
+ {
+  "date": "2026-08-13",
+  "matchup": "Milwaukee Brewers @ Los Angeles Dodgers",
+  "pick": "Los Angeles Dodgers",
+  "prob": 51,
+  "tier": "Conflicted",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": -146,
+  "edge": -8.3,
+  "result": ""
  }
 ]

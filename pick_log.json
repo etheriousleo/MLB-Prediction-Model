@@ -1524,8 +1524,8 @@
   "prob": 58,
   "tier": "High",
   "version": "v3.0-frozen-2026-08-06",
-  "odds": 0,
-  "edge": null,
+  "odds": -158,
+  "edge": -3.2,
   "result": ""
  },
  {
@@ -1535,8 +1535,8 @@
   "prob": 59,
   "tier": "Moderate",
   "version": "v3.0-frozen-2026-08-06",
-  "odds": 0,
-  "edge": null,
+  "odds": -250,
+  "edge": -12.4,
   "result": ""
  },
  {
@@ -1546,8 +1546,8 @@
   "prob": 58,
   "tier": "Moderate",
   "version": "v3.0-frozen-2026-08-06",
-  "odds": 0,
-  "edge": null,
+  "odds": -130,
+  "edge": 1.5,
   "result": ""
  },
  {
@@ -1557,8 +1557,8 @@
   "prob": 57,
   "tier": "Moderate",
   "version": "v3.0-frozen-2026-08-06",
-  "odds": 0,
-  "edge": null,
+  "odds": -116,
+  "edge": 3.3,
   "result": ""
  },
  {
@@ -1568,8 +1568,8 @@
   "prob": 57,
   "tier": "Moderate",
   "version": "v3.0-frozen-2026-08-06",
-  "odds": 0,
-  "edge": null,
+  "odds": -178,
+  "edge": -7.0,
   "result": ""
  },
  {
@@ -1579,8 +1579,8 @@
   "prob": 56,
   "tier": "Moderate",
   "version": "v3.0-frozen-2026-08-06",
-  "odds": 0,
-  "edge": null,
+  "odds": -156,
+  "edge": -4.9,
   "result": ""
  },
  {
@@ -1590,8 +1590,8 @@
   "prob": 55,
   "tier": "Moderate",
   "version": "v3.0-frozen-2026-08-06",
-  "odds": 0,
-  "edge": null,
+  "odds": -110,
+  "edge": 2.6,
   "result": ""
  },
  {
@@ -1601,8 +1601,8 @@
   "prob": 55,
   "tier": "Moderate",
   "version": "v3.0-frozen-2026-08-06",
-  "odds": 0,
-  "edge": null,
+  "odds": -245,
+  "edge": -16.0,
   "result": ""
  },
  {
@@ -1612,8 +1612,8 @@
   "prob": 54,
   "tier": "Moderate",
   "version": "v3.0-frozen-2026-08-06",
-  "odds": 0,
-  "edge": null,
+  "odds": -120,
+  "edge": -0.5,
   "result": ""
  },
  {
@@ -1623,8 +1623,8 @@
   "prob": 54,
   "tier": "Moderate",
   "version": "v3.0-frozen-2026-08-06",
-  "odds": 0,
-  "edge": null,
+  "odds": -122,
+  "edge": -1.0,
   "result": ""
  },
  {
@@ -1634,8 +1634,8 @@
   "prob": 51,
   "tier": "Low",
   "version": "v3.0-frozen-2026-08-06",
-  "odds": 0,
-  "edge": null,
+  "odds": 100,
+  "edge": 1.0,
   "result": ""
  }
 ]

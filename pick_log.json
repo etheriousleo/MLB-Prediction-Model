@@ -1516,5 +1516,126 @@
   "odds": -108,
   "edge": -0.9,
   "result": "W"
+ },
+ {
+  "date": "2026-08-17",
+  "matchup": "Baltimore Orioles @ Tampa Bay Rays",
+  "pick": "Tampa Bay Rays",
+  "prob": 58,
+  "tier": "High",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
+ },
+ {
+  "date": "2026-08-17",
+  "matchup": "Los Angeles Dodgers @ Colorado Rockies",
+  "pick": "Los Angeles Dodgers",
+  "prob": 59,
+  "tier": "Moderate",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
+ },
+ {
+  "date": "2026-08-17",
+  "matchup": "Arizona Diamondbacks @ Boston Red Sox",
+  "pick": "Boston Red Sox",
+  "prob": 58,
+  "tier": "Moderate",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
+ },
+ {
+  "date": "2026-08-17",
+  "matchup": "St. Louis Cardinals @ Cincinnati Reds (G2)",
+  "pick": "St. Louis Cardinals",
+  "prob": 57,
+  "tier": "Moderate",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
+ },
+ {
+  "date": "2026-08-17",
+  "matchup": "Oakland Athletics @ Kansas City Royals",
+  "pick": "Kansas City Royals",
+  "prob": 57,
+  "tier": "Moderate",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
+ },
+ {
+  "date": "2026-08-17",
+  "matchup": "Chicago White Sox @ Chicago Cubs",
+  "pick": "Chicago Cubs",
+  "prob": 56,
+  "tier": "Moderate",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
+ },
+ {
+  "date": "2026-08-17",
+  "matchup": "St. Louis Cardinals @ Cincinnati Reds",
+  "pick": "St. Louis Cardinals",
+  "prob": 55,
+  "tier": "Moderate",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
+ },
+ {
+  "date": "2026-08-17",
+  "matchup": "Miami Marlins @ Philadelphia Phillies",
+  "pick": "Philadelphia Phillies",
+  "prob": 55,
+  "tier": "Moderate",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
+ },
+ {
+  "date": "2026-08-17",
+  "matchup": "San Diego Padres @ New York Mets",
+  "pick": "New York Mets",
+  "prob": 54,
+  "tier": "Moderate",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
+ },
+ {
+  "date": "2026-08-17",
+  "matchup": "Atlanta Braves @ Minnesota Twins",
+  "pick": "Atlanta Braves",
+  "prob": 54,
+  "tier": "Moderate",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
+ },
+ {
+  "date": "2026-08-17",
+  "matchup": "Detroit Tigers @ Pittsburgh Pirates",
+  "pick": "Pittsburgh Pirates",
+  "prob": 51,
+  "tier": "Low",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
  }
 ]

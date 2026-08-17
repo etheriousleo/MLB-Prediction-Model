@@ -10,6 +10,7 @@ Run:
 
 import base64
 import datetime
+import re
 import json
 import os
 import requests
@@ -1168,6 +1169,18 @@ def fetch_results_for_date(date_iso: str) -> list:
     return statsapi.schedule(date=mmdd)
 
 
+def matchup_key(g: dict) -> str:
+    """Unique, human-readable identity for a game. Doubleheader game 2+
+    gets a suffix — 'Athletics @ Red Sox (G2)' — so widget keys, gate
+    calls, and tracker rows never collide when teams play twice in a day."""
+    base = f"{g['away']} @ {g['home']}"
+    try:
+        gn = int(g.get("game_num") or 1)
+    except Exception:
+        gn = 1
+    return f"{base} (G{gn})" if gn > 1 else base
+
+
 def unit_profit(odds: float) -> float:
     """Profit in units on a 1u winning bet at an American price."""
     if odds < 0:
@@ -1520,6 +1533,13 @@ with tab_today:
         slate_results.append({
             "home":          s_h["name"],
             "away":          s_a["name"],
+            # Game-level identity — a matchup string alone collides on
+            # doubleheader days (same teams twice), which crashed the odds
+            # form with StreamlitDuplicateElementKey and would have merged
+            # two games into one tracker row.
+            "game_id":       game.get("game_id"),
+            "game_num":      game.get("game_num", 1),
+            "doubleheader":  game.get("doubleheader", "N"),
             "home_record":   f"{s_h['w']}–{s_h['l']}",
             "away_record":   f"{s_a['w']}–{s_a['l']}",
             "home_sp":       home_sp_name,
@@ -1616,7 +1636,7 @@ with tab_today:
             st.caption("Price on the model's pick for each game — type them "
                        "all, then press Enter or Apply once.")
             for g in upcoming:
-                mkey = f"{g['away']} @ {g['home']}"
+                mkey = matchup_key(g)
                 pick = g["prob_pick"]
                 pick_p = (g["home_pct"] if pick == g["home"]
                           else g["away_pct"])
@@ -1624,7 +1644,7 @@ with tab_today:
                 with fc1:
                     st.markdown(
                         f"<div style='padding-top:8px;font-size:13px;'>"
-                        f"{g['away']} @ {g['home']} — pick: <b>{pick}</b> "
+                        f"{matchup_key(g)} — pick: <b>{pick}</b> "
                         f"<span style='color:#888;'>({pick_p:.1f}%)</span></div>",
                         unsafe_allow_html=True)
                 with fc2:
@@ -1635,7 +1655,7 @@ with tab_today:
 
         # Compute all gate calls from the submitted values
         for g in upcoming:
-            mkey = f"{g['away']} @ {g['home']}"
+            mkey = matchup_key(g)
             ml_pick = st.session_state.get(f"mlpick_{mkey}", 0)
             if abs(ml_pick) < 100:
                 continue
@@ -1852,7 +1872,7 @@ with tab_today:
 
         # ── Gate verdict (read-only; prices are entered in the panel above) ─
         if not game["completed"]:
-            mkey = f"{game['away']} @ {game['home']}"
+            mkey = matchup_key(game)
             gc = gate_calls.get(mkey)
             if gc:
                 st.markdown(
@@ -1899,7 +1919,7 @@ with tab_today:
         if st.button("Log today's slate to tracker"):
             added = 0
             for g in slate_results:
-                matchup = f"{g['away']} @ {g['home']}"
+                matchup = matchup_key(g)
                 if (today_str, matchup) in existing_keys:
                     continue
                 log.append({
@@ -1926,9 +1946,8 @@ with tab_today:
         # Auto-grading pulls finals from the same MLB API as the slate.
         # Grades EVERY logged pick (bet or not) — the un-bet games are the
         # control group that proves/disproves the gate. Postponed or
-        # cancelled → Push. Doubleheader limitation: matchup keys collide,
-        # so the first final of the day grades the row — rare enough to
-        # accept, correct by hand if it ever matters.
+        # cancelled → Push. Doubleheaders: rows carry a (G2) suffix and are
+        # matched to the correct game via game_num.
         if st.button("⚡ Auto-grade finished games"):
             graded = 0
             for r in log:
@@ -1943,9 +1962,23 @@ with tab_today:
                 if " @ " not in r["matchup"]:
                     continue
                 away, home = r["matchup"].split(" @ ", 1)
-                for gm in day_games:
-                    if (gm.get("away_name") == away
-                            and gm.get("home_name") == home):
+                # Doubleheader-aware matching: '(G2)' suffix pins game 2;
+                # legacy unsuffixed rows on a two-game day default to game 1.
+                want_gn = None
+                m = re.match(r"^(.*) \(G(\d+)\)$", home)
+                if m:
+                    home, want_gn = m.group(1), int(m.group(2))
+                cands = [gm for gm in day_games
+                         if gm.get("away_name") == away
+                         and gm.get("home_name") == home]
+                if want_gn is not None:
+                    cands = [gm for gm in cands
+                             if int(gm.get("game_num") or 1) == want_gn]
+                elif len(cands) > 1:
+                    g1 = [gm for gm in cands
+                          if int(gm.get("game_num") or 1) == 1]
+                    cands = g1 or cands[:1]
+                for gm in cands[:1]:
                         status = str(gm.get("status", ""))
                         if status.startswith(("Final", "Game Over",
                                               "Completed Early")):

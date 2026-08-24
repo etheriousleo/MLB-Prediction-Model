@@ -2078,13 +2078,25 @@ with tab_today:
                     l = int((b["result"] == "L").sum())
                     u = sum(unit_profit(r["odds"]) if r["result"] == "W"
                             else -1.0 for _, r in b.iterrows())
+                    # Calibration columns: the log stores model prob and
+                    # cushion (edge), so the price's break-even is
+                    # recoverable as prob − edge. "actual" landing well
+                    # below "model says" in a bucket = the model is
+                    # overconfident exactly there.
+                    avg_model = b["prob"].mean()
+                    avg_need  = (b["prob"] - b["edge"]).mean()
                     brows.append({"cushion bucket": label,
                                   "record": f"{w}–{l}",
+                                  "model says": f"{avg_model:.1f}%",
+                                  "price needs": f"{avg_need:.1f}%",
+                                  "actual": f"{w/(w+l)*100:.1f}%",
                                   "units": round(u, 2),
                                   "toward 100": f"{w+l}/100"})
                 if brows:
                     st.markdown("**Cushion buckets** — the data that decides "
-                                "where the GOOD threshold belongs:")
+                                "where the GOOD threshold belongs. Compare "
+                                "*model says* vs *actual* per bucket: a gap "
+                                "is overconfidence in that zone.")
                     st.dataframe(pd.DataFrame(brows), hide_index=True,
                                  use_container_width=True)
             st.caption("Units use only picks with a price entered, flat 1u. "

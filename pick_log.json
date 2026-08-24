@@ -2307,7 +2307,7 @@
   "version": "v3.0-frozen-2026-08-06",
   "odds": -210,
   "edge": -4.7,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-08-23",
@@ -2318,7 +2318,7 @@
   "version": "v3.0-frozen-2026-08-06",
   "odds": -270,
   "edge": -12.0,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-08-23",
@@ -2329,7 +2329,7 @@
   "version": "v3.0-frozen-2026-08-06",
   "odds": 109,
   "edge": 12.2,
-  "result": ""
+  "result": "L"
  },
  {
   "date": "2026-08-23",
@@ -2340,7 +2340,7 @@
   "version": "v3.0-frozen-2026-08-06",
   "odds": -130,
   "edge": 2.5,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-08-23",
@@ -2351,7 +2351,7 @@
   "version": "v3.0-frozen-2026-08-06",
   "odds": -210,
   "edge": -9.7,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-08-23",
@@ -2362,7 +2362,7 @@
   "version": "v3.0-frozen-2026-08-06",
   "odds": -164,
   "edge": -4.1,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-08-23",
@@ -2373,7 +2373,7 @@
   "version": "v3.0-frozen-2026-08-06",
   "odds": -134,
   "edge": -0.3,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-08-23",
@@ -2384,7 +2384,7 @@
   "version": "v3.0-frozen-2026-08-06",
   "odds": -136,
   "edge": -1.6,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-08-23",
@@ -2395,7 +2395,7 @@
   "version": "v3.0-frozen-2026-08-06",
   "odds": -154,
   "edge": -5.6,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-08-23",
@@ -2406,7 +2406,7 @@
   "version": "v3.0-frozen-2026-08-06",
   "odds": -102,
   "edge": 4.5,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-08-23",
@@ -2417,7 +2417,7 @@
   "version": "v3.0-frozen-2026-08-06",
   "odds": -154,
   "edge": -7.6,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-08-23",
@@ -2428,7 +2428,7 @@
   "version": "v3.0-frozen-2026-08-06",
   "odds": -104,
   "edge": 2.0,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-08-23",
@@ -2439,7 +2439,7 @@
   "version": "v3.0-frozen-2026-08-06",
   "odds": -106,
   "edge": 0.5,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-08-23",
@@ -2461,6 +2461,6 @@
   "version": "v3.0-frozen-2026-08-06",
   "odds": -108,
   "edge": -0.9,
-  "result": ""
+  "result": "L"
  }
 ]

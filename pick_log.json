@@ -1,5 +1,82 @@
 [
  {
+  "date": "2026-08-27",
+  "matchup": "Houston Astros @ New York Yankees",
+  "pick": "New York Yankees",
+  "prob": 62,
+  "tier": "High",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": -120,
+  "edge": 7.5,
+  "result": ""
+ },
+ {
+  "date": "2026-08-27",
+  "matchup": "Milwaukee Brewers @ New York Mets",
+  "pick": "Milwaukee Brewers",
+  "prob": 61,
+  "tier": "High",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": -186,
+  "edge": -4.0,
+  "result": ""
+ },
+ {
+  "date": "2026-08-27",
+  "matchup": "Colorado Rockies @ Washington Nationals",
+  "pick": "Washington Nationals",
+  "prob": 57,
+  "tier": "Moderate",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": -138,
+  "edge": -1.0,
+  "result": ""
+ },
+ {
+  "date": "2026-08-27",
+  "matchup": "Los Angeles Dodgers @ Atlanta Braves",
+  "pick": "Los Angeles Dodgers",
+  "prob": 52,
+  "tier": "Low",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 112,
+  "edge": 4.8,
+  "result": ""
+ },
+ {
+  "date": "2026-08-27",
+  "matchup": "Arizona Diamondbacks @ San Francisco Giants",
+  "pick": "San Francisco Giants",
+  "prob": 51,
+  "tier": "Low",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": -102,
+  "edge": 0.5,
+  "result": ""
+ },
+ {
+  "date": "2026-08-27",
+  "matchup": "Baltimore Orioles @ St. Louis Cardinals",
+  "pick": "St. Louis Cardinals",
+  "prob": 52,
+  "tier": "Conflicted",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 116,
+  "edge": 5.7,
+  "result": ""
+ },
+ {
+  "date": "2026-08-27",
+  "matchup": "Kansas City Royals @ Toronto Blue Jays",
+  "pick": "Toronto Blue Jays",
+  "prob": 52,
+  "tier": "Conflicted",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": -102,
+  "edge": 1.5,
+  "result": ""
+ },
+ {
   "date": "2026-08-26",
   "matchup": "Houston Astros @ New York Yankees",
   "pick": "New York Yankees",
@@ -2902,82 +2979,5 @@
   "odds": -110,
   "edge": -0.4,
   "result": "L"
- },
- {
-  "date": "2026-08-27",
-  "matchup": "Houston Astros @ New York Yankees",
-  "pick": "New York Yankees",
-  "prob": 62,
-  "tier": "High",
-  "version": "v3.0-frozen-2026-08-06",
-  "odds": -120,
-  "edge": 7.5,
-  "result": ""
- },
- {
-  "date": "2026-08-27",
-  "matchup": "Milwaukee Brewers @ New York Mets",
-  "pick": "Milwaukee Brewers",
-  "prob": 61,
-  "tier": "High",
-  "version": "v3.0-frozen-2026-08-06",
-  "odds": -186,
-  "edge": -4.0,
-  "result": ""
- },
- {
-  "date": "2026-08-27",
-  "matchup": "Colorado Rockies @ Washington Nationals",
-  "pick": "Washington Nationals",
-  "prob": 57,
-  "tier": "Moderate",
-  "version": "v3.0-frozen-2026-08-06",
-  "odds": -138,
-  "edge": -1.0,
-  "result": ""
- },
- {
-  "date": "2026-08-27",
-  "matchup": "Los Angeles Dodgers @ Atlanta Braves",
-  "pick": "Los Angeles Dodgers",
-  "prob": 52,
-  "tier": "Low",
-  "version": "v3.0-frozen-2026-08-06",
-  "odds": 112,
-  "edge": 4.8,
-  "result": ""
- },
- {
-  "date": "2026-08-27",
-  "matchup": "Arizona Diamondbacks @ San Francisco Giants",
-  "pick": "San Francisco Giants",
-  "prob": 51,
-  "tier": "Low",
-  "version": "v3.0-frozen-2026-08-06",
-  "odds": -102,
-  "edge": 0.5,
-  "result": ""
- },
- {
-  "date": "2026-08-27",
-  "matchup": "Baltimore Orioles @ St. Louis Cardinals",
-  "pick": "St. Louis Cardinals",
-  "prob": 52,
-  "tier": "Conflicted",
-  "version": "v3.0-frozen-2026-08-06",
-  "odds": 116,
-  "edge": 5.7,
-  "result": ""
- },
- {
-  "date": "2026-08-27",
-  "matchup": "Kansas City Royals @ Toronto Blue Jays",
-  "pick": "Toronto Blue Jays",
-  "prob": 52,
-  "tier": "Conflicted",
-  "version": "v3.0-frozen-2026-08-06",
-  "odds": -102,
-  "edge": 1.5,
-  "result": ""
  }
 ]

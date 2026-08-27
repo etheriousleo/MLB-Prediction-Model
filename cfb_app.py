@@ -197,7 +197,8 @@ def _parse_event(ev: dict) -> dict | None:
 
 
 @st.cache_data(ttl=86400)
-def derive_fbs_ids(season: int) -> frozenset:
+def derive_fbs_ids(season: int, upto_week: int = 16,
+                   min_games: int = 6) -> frozenset:
     """
     FBS membership derived from EVIDENCE, not ESPN's team directory —
     which was observed returning an arbitrary mixed slice (major FBS
@@ -210,7 +211,7 @@ def derive_fbs_ids(season: int) -> frozenset:
     flag, which names the problem honestly.
     """
     counts = {}
-    for wk in range(1, 17):
+    for wk in range(1, upto_week + 1):
         try:
             slate = fetch_week_slate(season, wk)
         except Exception:
@@ -218,7 +219,7 @@ def derive_fbs_ids(season: int) -> frozenset:
         for g in slate:
             for tid in (g["home_id"], g["away_id"]):
                 counts[tid] = counts.get(tid, 0) + 1
-    return frozenset(t for t, c in counts.items() if c >= 6)
+    return frozenset(t for t, c in counts.items() if c >= min_games)
 
 
 @st.cache_data(ttl=1800)
@@ -766,6 +767,14 @@ with st.sidebar:
 
     with st.spinner("Deriving FBS membership..."):
         fbs_ids = set(derive_fbs_ids(PRIOR_SEASON))
+        # Auto-heal for newly promoted programs: once the current season
+        # is deep enough, teams appearing in 4+ FBS-scoreboard games this
+        # year are FBS regardless of last season (FCS teams cap out at
+        # ~2 money games). A promoted team is a no-play for its first
+        # month, then joins the pool with real current-season stats.
+        if int(week) >= 5:
+            fbs_ids |= set(derive_fbs_ids(SEASON, upto_week=int(week),
+                                          min_games=4))
         # The directory endpoint is untrustworthy (observed returning a
         # mixed FBS/FCS slice) — union it in ONLY when its size looks
         # like an actual FBS list (~136 teams), so it can add newly
@@ -914,6 +923,11 @@ with tab_week:
                        "the model's pick. Enter them all, then Apply once. "
                        "Leave a field at 0 to skip that market.")
             for g in upcoming:
+                # No-read games (non-FBS side or data gap) collect no
+                # prices: their "probabilities" come from a placeholder
+                # rating, so any gate verdict on them would be fabricated.
+                if not g["fbs_both"]:
+                    continue
                 mkey = matchup_key(g)
                 pick_p = (g["home_pct"] if g["prob_pick"] == g["home"]
                           else g["away_pct"])
@@ -945,6 +959,8 @@ with tab_week:
             st.form_submit_button("Apply odds")
 
         for g in upcoming:
+            if not g["fbs_both"]:
+                continue
             mkey = matchup_key(g)
 
             # ML gate — identical math to the MLB app.
@@ -1180,7 +1196,15 @@ with tab_week:
         st.markdown(card_html, unsafe_allow_html=True)
 
         # Gate verdicts under the card (read-only; entry is in the panel)
-        if not game["completed"]:
+        if not game["completed"] and not game["fbs_both"]:
+            st.markdown(
+                "<div style='font-size:11px;color:#888;"
+                "margin:-6px 0 14px 2px;'>No model read for this game — "
+                "no prices collected, no gate verdict, and it will not "
+                "enter the tracker. A verdict from a placeholder rating "
+                "would be fabricated, not conservative.</div>",
+                unsafe_allow_html=True)
+        elif not game["completed"]:
             lines = []
             gc = gate_ml.get(mkey)
             if gc:
@@ -1248,6 +1272,11 @@ with tab_week:
                 # bet at log time — but the skip is announced, not silent.
                 if g["completed"]:
                     skipped_final += 1
+                    continue
+                # No-read games stay out of the tracker entirely: the
+                # logged "prob" would be placeholder arithmetic, not a
+                # model claim, and would poison calibration analysis.
+                if not g["fbs_both"]:
                     continue
                 matchup = matchup_key(g)
                 row_date = g["kick_date"] or today_et()

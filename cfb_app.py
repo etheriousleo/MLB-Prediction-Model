@@ -196,6 +196,31 @@ def _parse_event(ev: dict) -> dict | None:
         return None
 
 
+@st.cache_data(ttl=86400)
+def derive_fbs_ids(season: int) -> frozenset:
+    """
+    FBS membership derived from EVIDENCE, not ESPN's team directory —
+    which was observed returning an arbitrary mixed slice (major FBS
+    programs missing, FCS teams present), silently misclassifying games.
+    The evidence: every FBS team appears in ~12 games on the FBS
+    scoreboard over a season; an FCS team appears in at most 1-2 (its
+    money games). Count a full season's appearances; ≥6 = FBS.
+    Limitation: a program newly promoted to FBS THIS season won't clear
+    the bar on last season's data — it falls through to the data-gap
+    flag, which names the problem honestly.
+    """
+    counts = {}
+    for wk in range(1, 17):
+        try:
+            slate = fetch_week_slate(season, wk)
+        except Exception:
+            continue
+        for g in slate:
+            for tid in (g["home_id"], g["away_id"]):
+                counts[tid] = counts.get(tid, 0) + 1
+    return frozenset(t for t, c in counts.items() if c >= 6)
+
+
 @st.cache_data(ttl=1800)
 def fetch_week_slate(season: int, week: int) -> list:
     """All FBS scoreboard events for one week of the regular season."""
@@ -241,14 +266,14 @@ def fetch_results_for_date(date_iso: str) -> list:
 # The confidence tiers flag low game counts for exactly this reason.
 
 @st.cache_data(ttl=1800)
-def fetch_season_team_stats(season: int, upto_week: int | None = None) -> dict:
+def fetch_season_team_stats(season: int, upto_week: int | None = None,
+                            fbs_ids: frozenset = frozenset()) -> dict:
     """
     {team_id: {pf_pg, pa_pg, mpg, wpct, wins, losses, games}}
     from completed FBS-vs-FBS games. upto_week limits how deep to scan
     (weeks 1..upto_week); None scans the full regular season (1..16).
     Cached 30 min; the prior season's call is effectively static.
     """
-    fbs = fetch_fbs_teams()
     acc = {}     # id -> [pf, pa, w, l, g]
     gamelog = {}  # id -> [(opp_id, pf, pa)] — feeds the opponent adjustment
 
@@ -270,7 +295,7 @@ def fetch_season_team_stats(season: int, upto_week: int | None = None) -> dict:
             if not g["completed"]:
                 continue
             # FBS-vs-FBS only — see comment above.
-            if g["home_id"] not in fbs or g["away_id"] not in fbs:
+            if g["home_id"] not in fbs_ids or g["away_id"] not in fbs_ids:
                 continue
             hs, as_ = g["home_score"], g["away_score"]
             bump(g["home_id"], g["away_id"], hs, as_, hs > as_)
@@ -739,11 +764,22 @@ with st.sidebar:
     week = st.number_input("Week", min_value=1, max_value=16,
                            value=int(cur_week_default), step=1)
 
+    with st.spinner("Deriving FBS membership..."):
+        fbs_ids = set(derive_fbs_ids(PRIOR_SEASON))
+        # The directory endpoint is untrustworthy (observed returning a
+        # mixed FBS/FCS slice) — union it in ONLY when its size looks
+        # like an actual FBS list (~136 teams), so it can add newly
+        # promoted programs but can never subtract anyone.
+        directory = fetch_fbs_teams()
+        dir_trusted = 100 <= len(directory) <= 160
+        if dir_trusted:
+            fbs_ids |= set(directory)
+        fbs_ids = frozenset(fbs_ids)
     with st.spinner(f"Loading {SEASON} results..."):
-        cur_stats = fetch_season_team_stats(SEASON, upto_week=int(week))
+        cur_stats = fetch_season_team_stats(SEASON, upto_week=int(week),
+                                            fbs_ids=fbs_ids)
     with st.spinner(f"Loading {PRIOR_SEASON} baselines..."):
-        prior_stats = fetch_season_team_stats(PRIOR_SEASON)
-    fbs_teams = fetch_fbs_teams()   # {id: display_name}
+        prior_stats = fetch_season_team_stats(PRIOR_SEASON, fbs_ids=fbs_ids)
 
     n_cur = len(cur_stats)
     if n_cur == 0:
@@ -759,7 +795,8 @@ with st.sidebar:
             st.warning("⚠️ Very early season — projections lean on "
                        f"{PRIOR_SEASON} data and small samples.", icon="🏈")
     st.caption(f"{PRIOR_SEASON} baselines: {len(prior_stats)} teams · "
-               f"FBS teams tracked: {len(fbs_teams)}")
+               f"FBS set: {len(fbs_ids)} teams (derived from {PRIOR_SEASON} "
+               f"schedules{'; directory merged' if dir_trusted else '; directory ignored — implausible size ' + str(len(directory))})")
 
 
 # ── Main view ──────────────────────────────────────────────────────────────────
@@ -790,9 +827,11 @@ with tab_week:
         # Membership and stat joins are ALL by ESPN team ID (see the
         # comment in fetch_season_team_stats): display names are not a
         # reliable join key across ESPN endpoints.
-        h_fbs = g["home_id"] in fbs_teams
-        a_fbs = g["away_id"] in fbs_teams
+        h_fbs = g["home_id"] in fbs_ids
+        a_fbs = g["away_id"] in fbs_ids
         fbs_both = h_fbs and a_fbs
+        nonfbs_names = [n for ok, n in ((h_fbs, g["home"]),
+                                        (a_fbs, g["away"])) if not ok]
 
         sh_blend, wp_h = blend_prior(cur_stats.get(g["home_id"]),
                                      prior_stats.get(g["home_id"]), fade_games) \
@@ -829,6 +868,14 @@ with tab_week:
                           "season's data** (newly promoted program or a "
                           "data gap) — a placeholder rating is in use. "
                           "Treat as no-play.")
+        elif nonfbs_names:
+            # Name the side that failed, so a misclassification is
+            # diagnosable from the card instead of a mystery.
+            reasons[0] = (f"**{', '.join(nonfbs_names)}** appeared in "
+                          f"fewer than 6 FBS games in {PRIOR_SEASON} — "
+                          f"treated as non-FBS. No comparable stat line "
+                          f"exists, so this is a placeholder, not a read. "
+                          f"Treat as no-play.")
 
         slate_results.append({
             **g,

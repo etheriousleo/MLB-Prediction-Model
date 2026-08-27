@@ -1836,13 +1836,13 @@
   "date": "2026-08-29",
   "matchup": "North Carolina Tar Heels @ TCU Horned Frogs",
   "market": "ATS",
-  "pick": "TCU Horned Frogs -9.5",
-  "line": -9.5,
+  "pick": "TCU Horned Frogs -8.5",
+  "line": -8.5,
   "prob": 72.9,
   "tier": "Moderate",
   "version": "cfb-v1.1-frozen-2026-08-27",
-  "odds": -110,
-  "edge": 20.5,
+  "odds": -115,
+  "edge": 21.5,
   "result": ""
  },
  {
@@ -1854,8 +1854,8 @@
   "prob": 61.6,
   "tier": "Low",
   "version": "cfb-v1.1-frozen-2026-08-27",
-  "odds": -110,
-  "edge": 9.2,
+  "odds": -105,
+  "edge": 10.4,
   "result": ""
  },
  {

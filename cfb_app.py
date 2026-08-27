@@ -72,7 +72,7 @@ PRIOR_SEASON = SEASON - 1
 # measurement. Every logged pick is tagged with this string. No
 # parameter/formula changes until the tracker holds ≥100 graded picks
 # PER MARKET (ML and ATS separately) for this version.
-MODEL_VERSION = "cfb-v1.0-frozen-2026-08-24"
+MODEL_VERSION = "cfb-v1.1-frozen-2026-08-27"
 
 # ── GATE THRESHOLD — deliberately NOT adjustable in the UI ─────────────────────
 # Carried over verbatim from the MLB app at Juan's request: no in-app knob,
@@ -243,20 +243,22 @@ def fetch_results_for_date(date_iso: str) -> list:
 @st.cache_data(ttl=1800)
 def fetch_season_team_stats(season: int, upto_week: int | None = None) -> dict:
     """
-    {team_name: {pf_pg, pa_pg, mpg, wpct, wins, losses, games}}
+    {team_id: {pf_pg, pa_pg, mpg, wpct, wins, losses, games}}
     from completed FBS-vs-FBS games. upto_week limits how deep to scan
     (weeks 1..upto_week); None scans the full regular season (1..16).
     Cached 30 min; the prior season's call is effectively static.
     """
     fbs = fetch_fbs_teams()
-    acc = {}   # id -> [pf, pa, w, l, g]
+    acc = {}     # id -> [pf, pa, w, l, g]
+    gamelog = {}  # id -> [(opp_id, pf, pa)] — feeds the opponent adjustment
 
-    def bump(tid, pf, pa, won):
+    def bump(tid, opp, pf, pa, won):
         a = acc.setdefault(tid, [0, 0, 0, 0, 0])
         a[0] += pf; a[1] += pa
         a[2] += 1 if won else 0
         a[3] += 0 if won else 1
         a[4] += 1
+        gamelog.setdefault(tid, []).append((opp, pf, pa))
 
     last_week = upto_week or 16
     for wk in range(1, last_week + 1):
@@ -271,21 +273,90 @@ def fetch_season_team_stats(season: int, upto_week: int | None = None) -> dict:
             if g["home_id"] not in fbs or g["away_id"] not in fbs:
                 continue
             hs, as_ = g["home_score"], g["away_score"]
-            bump(g["home_id"], hs, as_, hs > as_)
-            bump(g["away_id"], as_, hs, as_ > hs)
+            bump(g["home_id"], g["away_id"], hs, as_, hs > as_)
+            bump(g["away_id"], g["home_id"], as_, hs, as_ > hs)
 
+    # Keyed by ESPN team ID — NOT display name. Names can differ between
+    # ESPN's /teams and /scoreboard endpoints for the same school, and a
+    # name-keyed join silently drops the team (which once flagged an
+    # FBS-vs-FBS game as "non-FBS"). IDs are identical across endpoints.
     out = {}
     for tid, (pf, pa, w, l, gp) in acc.items():
         if gp == 0:
             continue
-        name = fbs.get(tid, tid)
-        out[name] = {
+        out[tid] = {
             "pf_pg": pf / gp, "pa_pg": pa / gp,
             "mpg": (pf - pa) / gp,
             "wpct": w / (w + l) * 100 if (w + l) else 50.0,
             "wins": w, "losses": l, "games": gp,
         }
-    return out
+    return opponent_adjust(out, gamelog)
+
+
+def opponent_adjust(stats: dict, gamelog: dict, n_iter: int = 30,
+                    damp: float = 0.7) -> dict:
+    """
+    SRS-style iterative opponent adjustment — the answer to "PPG doesn't
+    consider level of competition." Uses ONLY the game scores already
+    pulled; no new data source.
+
+    Idea: a point scored against a stingy defense is worth more than one
+    scored against a sieve. Each pass re-values every team's offense and
+    defense against its opponents' CURRENT adjusted ratings:
+
+        adj_off(i) = mean over i's games of (pts scored − adj_def(opp))
+                     + league mean
+        adj_def(i) = mean over i's games of (pts allowed − adj_off(opp))
+                     + league mean          (lower = better defense)
+
+    Iterated to convergence (damped, so early-season sparse schedules —
+    where the opponent graph is barely connected — can't oscillate), then
+    adjusted values are clamped to a sane band. wpct stays RAW: a record
+    is a record; the schedule context lives in the adjusted margin, which
+    carries 75% of the record composite anyway. mpg is recomputed from
+    the adjusted scoring lines, so K_MARGIN and the z-score anchors keep
+    their meaning (the adjustment preserves the league mean).
+    """
+    if not stats:
+        return stats
+    mean_off = sum(s["pf_pg"] for s in stats.values()) / len(stats)
+    mean_def = sum(s["pa_pg"] for s in stats.values()) / len(stats)
+    adj_off = {t: s["pf_pg"] for t, s in stats.items()}
+    adj_def = {t: s["pa_pg"] for t, s in stats.items()}
+    for _ in range(n_iter):
+        new_off, new_def = {}, {}
+        for t, s in stats.items():
+            games = gamelog.get(t, [])
+            if not games:
+                new_off[t], new_def[t] = adj_off[t], adj_def[t]
+                continue
+            # Opponents missing from stats (shouldn't happen for FBS-vs-FBS
+            # rows, but be safe) count as league average.
+            o = sum(pf - adj_def.get(opp, mean_def)
+                    for opp, pf, pa in games) / len(games) + mean_def
+            d = sum(pa - adj_off.get(opp, mean_off)
+                    for opp, pf, pa in games) / len(games) + mean_off
+            new_off[t] = damp * o + (1 - damp) * adj_off[t]
+            new_def[t] = damp * d + (1 - damp) * adj_def[t]
+        # Re-center every pass: the system has a free "gauge" mode (add a
+        # constant to all defenses, subtract it from all offenses — every
+        # game prediction is unchanged but the levels drift). Pinning the
+        # means to the raw league means each iteration kills the drift.
+        off_shift = mean_off - sum(new_off.values()) / len(new_off)
+        def_shift = mean_def - sum(new_def.values()) / len(new_def)
+        adj_off = {t: v + off_shift for t, v in new_off.items()}
+        adj_def = {t: v + def_shift for t, v in new_def.items()}
+    # Clamp to a sane band: 3σ of the league spread around the mean.
+    lo_o, hi_o = mean_off - 21, mean_off + 21
+    lo_d, hi_d = mean_def - 21, mean_def + 21
+    for t, s in stats.items():
+        s["raw_pf_pg"], s["raw_pa_pg"] = s["pf_pg"], s["pa_pg"]
+        s["pf_pg"] = min(hi_o, max(lo_o, adj_off[t]))
+        s["pa_pg"] = min(hi_d, max(lo_d, adj_def[t]))
+        s["mpg"] = s["pf_pg"] - s["pa_pg"]
+        s["sos"] = round((s["pf_pg"] - s["raw_pf_pg"])
+                         + (s["raw_pa_pg"] - s["pa_pg"]), 1)
+    return stats
 
 
 # League anchors for z-scoring. FBS scoring runs ~28-29 PPG with a ~7 point
@@ -324,6 +395,8 @@ def blend_prior(cur: dict | None, prior: dict | None, fade_games: int) -> tuple[
         return dict(cur), 0.0
     keys = ["pf_pg", "pa_pg", "mpg", "wpct"]
     blended = {k: cur[k] * (1 - w_prior) + prior[k] * w_prior for k in keys}
+    blended["sos"] = round(cur.get("sos", 0) * (1 - w_prior)
+                           + prior.get("sos", 0) * w_prior, 1)
     blended["games"] = gp
     blended["wins"], blended["losses"] = cur.get("wins", 0), cur.get("losses", 0)
     return blended, w_prior
@@ -670,8 +743,7 @@ with st.sidebar:
         cur_stats = fetch_season_team_stats(SEASON, upto_week=int(week))
     with st.spinner(f"Loading {PRIOR_SEASON} baselines..."):
         prior_stats = fetch_season_team_stats(PRIOR_SEASON)
-    fbs_teams = fetch_fbs_teams()
-    fbs_names = set(fbs_teams.values())
+    fbs_teams = fetch_fbs_teams()   # {id: display_name}
 
     n_cur = len(cur_stats)
     if n_cur == 0:
@@ -687,7 +759,7 @@ with st.sidebar:
             st.warning("⚠️ Very early season — projections lean on "
                        f"{PRIOR_SEASON} data and small samples.", icon="🏈")
     st.caption(f"{PRIOR_SEASON} baselines: {len(prior_stats)} teams · "
-               f"FBS teams tracked: {len(fbs_names)}")
+               f"FBS teams tracked: {len(fbs_teams)}")
 
 
 # ── Main view ──────────────────────────────────────────────────────────────────
@@ -715,21 +787,27 @@ with tab_week:
 
     slate_results = []
     for g in slate:
-        h_fbs = g["home"] in fbs_names
-        a_fbs = g["away"] in fbs_names
+        # Membership and stat joins are ALL by ESPN team ID (see the
+        # comment in fetch_season_team_stats): display names are not a
+        # reliable join key across ESPN endpoints.
+        h_fbs = g["home_id"] in fbs_teams
+        a_fbs = g["away_id"] in fbs_teams
         fbs_both = h_fbs and a_fbs
 
-        sh_blend, wp_h = blend_prior(cur_stats.get(g["home"]),
-                                     prior_stats.get(g["home"]), fade_games) \
+        sh_blend, wp_h = blend_prior(cur_stats.get(g["home_id"]),
+                                     prior_stats.get(g["home_id"]), fade_games) \
             if h_fbs else (dict(FCS_PLACEHOLDER), 0.0)
-        sa_blend, wp_a = blend_prior(cur_stats.get(g["away"]),
-                                     prior_stats.get(g["away"]), fade_games) \
+        sa_blend, wp_a = blend_prior(cur_stats.get(g["away_id"]),
+                                     prior_stats.get(g["away_id"]), fade_games) \
             if a_fbs else (dict(FCS_PLACEHOLDER), 0.0)
-        # Teams new to FBS (or missing data both seasons) also get the floor.
+        # FBS teams with no games in either season's data (newly promoted,
+        # or a data gap) also get the floor rating — but flagged as a DATA
+        # gap, not mislabeled "non-FBS".
+        data_gap = False
         if sh_blend is None:
-            sh_blend, fbs_both = dict(FCS_PLACEHOLDER), False
+            sh_blend, fbs_both, data_gap = dict(FCS_PLACEHOLDER), False, True
         if sa_blend is None:
-            sa_blend, fbs_both = dict(FCS_PLACEHOLDER), False
+            sa_blend, fbs_both, data_gap = dict(FCS_PLACEHOLDER), False, True
         w_prior = max(wp_h, wp_a)
 
         pred_margin = calc_margin(sh_blend, sa_blend, g["neutral"],
@@ -746,6 +824,11 @@ with tab_week:
         level, emoji, color, reasons = calc_confidence(
             g, sh_blend, sa_blend, w_prior, pct_h, pct_a,
             pred_margin, fbs_both)
+        if data_gap:
+            reasons[0] = ("An **FBS team here has no games in either "
+                          "season's data** (newly promoted program or a "
+                          "data gap) — a placeholder rating is in use. "
+                          "Treat as no-play.")
 
         slate_results.append({
             **g,
@@ -1033,12 +1116,13 @@ with tab_week:
             f'Proj margin: {abs(game["pred_margin"]):.1f} pts</span></div></div>'
 
             f'<div><div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;'
-            f'color:#666;margin-bottom:4px;">Key stats (H / A)</div>'
+            f'color:#666;margin-bottom:4px;">Key stats · opp-adjusted (H / A)</div>'
             f'<div style="font-size:11px;color:#aaa;">'
             f'PPG: <span style="color:#ccc;">{sh["pf_pg"]:.1f} / {sa["pf_pg"]:.1f}</span><br>'
             f'PPG allowed: <span style="color:#ccc;">{sh["pa_pg"]:.1f} / {sa["pa_pg"]:.1f}</span><br>'
             f'Margin/G: <span style="color:#ccc;">{sh["mpg"]:+.1f} / {sa["mpg"]:+.1f}</span><br>'
-            f'W%: <span style="color:#ccc;">{sh["wpct"]:.0f}% / {sa["wpct"]:.0f}%</span>'
+            f'W%: <span style="color:#ccc;">{sh["wpct"]:.0f}% / {sa["wpct"]:.0f}%</span><br>'
+            f'Sched adj: <span style="color:#ccc;">{sh.get("sos", 0):+.1f} / {sa.get("sos", 0):+.1f}</span>'
             f'</div></div></div>'
 
             # Reasons
@@ -1218,6 +1302,19 @@ with tab_week:
                         adj = side_margin + float(line)
                         r["result"] = ("Push" if abs(adj) < 1e-9
                                        else "W" if adj > 0 else "L")
+                        # CLV: ESPN's last carried line at grading time,
+                        # from the pick side's perspective. Positive CLV =
+                        # the logged number was BETTER than where the
+                        # market ended up — the fastest-converging evidence
+                        # of real edge (long before W/L records mean
+                        # anything). Best-effort: ESPN doesn't carry a line
+                        # on every final.
+                        close_home = (gm.get("odds") or {}).get("home_spread")
+                        if close_home is not None:
+                            close_side = (float(close_home) if side == home
+                                          else -float(close_home))
+                            r["close"] = close_side
+                            r["clv"] = round(float(line) - close_side, 1)
                         graded += 1
                 elif "postponed" in gm["status_detail"].lower() or \
                         "cancel" in gm["status_detail"].lower():
@@ -1262,6 +1359,13 @@ with tab_week:
                 "edge":    st.column_config.NumberColumn(
                     "edge", help="Cushion: model prob − break-even prob of "
                     "the logged price (pp)", disabled=True),
+                "close":   st.column_config.NumberColumn(
+                    "close", help="ESPN's last carried line for the pick "
+                    "side at grading time", disabled=True),
+                "clv":     st.column_config.NumberColumn(
+                    "clv", help="Closing line value in points: logged line "
+                    "− close, pick-side view. Positive = beat the close.",
+                    disabled=True),
             },
             num_rows="dynamic",
             hide_index=True, width="stretch", height=300)
@@ -1339,6 +1443,22 @@ with tab_week:
                                 "points at SIGMA_COVER).")
                     st.dataframe(pd.DataFrame(brows), hide_index=True,
                                  width="stretch")
+            ats_clv = cur[(cur["market"] == "ATS")] if "market" in cur.columns else cur.iloc[0:0]
+            if "clv" in ats_clv.columns:
+                ats_clv = ats_clv[ats_clv["clv"].notna()]
+                if len(ats_clv):
+                    overall = ats_clv["clv"].mean()
+                    good = ats_clv[ats_clv["edge"].fillna(-99) >= 3.0]
+                    msg = (f"**Closing line value (ATS):** {overall:+.2f} "
+                           f"pts/pick over {len(ats_clv)} picks")
+                    if len(good):
+                        msg += (f" · GOOD-bucket picks: "
+                                f"{good['clv'].mean():+.2f} over {len(good)}")
+                    msg += (". Sustained positive CLV is edge evidence that "
+                            "converges far faster than W/L; sustained "
+                            "negative CLV on GOOD picks is an early warning "
+                            "the model is chasing stale numbers.")
+                    st.markdown(msg)
             st.caption("Units use only picks with a price entered, flat 1u. "
                        "ATS hit rate must clear ~52.4% at -110 just to break "
                        "even — treat anything under 55% over a small sample "

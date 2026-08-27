@@ -1108,8 +1108,15 @@ with tab_week:
     with c_log1:
         if st.button("Log this week's slate to tracker"):
             added = 0
+            skipped_final = 0
             for g in slate_results:
+                # Already-final games are EXCLUDED on purpose: a pick logged
+                # after the result exists is look-ahead (the model's stats
+                # already contain that game, and the outcome is known).
+                # The forward record only admits games that could still be
+                # bet at log time — but the skip is announced, not silent.
                 if g["completed"]:
+                    skipped_final += 1
                     continue
                 matchup = matchup_key(g)
                 row_date = g["kick_date"] or today_et()
@@ -1143,11 +1150,18 @@ with tab_week:
                     })
                     added += 1
             save_pick_log(log)
-            st.success(f"Logged {added} new pick rows."
-                       if added else "This week's slate is already logged — "
-                                     "prices entered above sync into it "
-                                     "automatically. ATS rows appear once "
-                                     "a spread is entered.")
+            msg = (f"Logged {added} new pick rows."
+                   if added else "This week's slate is already logged — "
+                                 "prices entered above sync into it "
+                                 "automatically.")
+            if skipped_final:
+                msg += (f" Skipped {skipped_final} already-final game(s): "
+                        f"picks can't be logged after the result exists "
+                        f"(look-ahead) — only games still biddable at log "
+                        f"time enter the forward record.")
+            msg += (" ATS rows appear only for games with a spread entered "
+                    "— enter spreads above and click Log again to add them.")
+            st.success(msg)
             st.rerun()
     with c_log3:
         # Auto-grading pulls finals from the same ESPN API as the slate.
@@ -1168,6 +1182,23 @@ with tab_week:
                 away, home = r["matchup"].split(" @ ", 1)
                 gm = next((x for x in day_games
                            if x["away"] == away and x["home"] == home), None)
+                # Late kickoffs that cross midnight ET can be filed under
+                # the neighboring calendar day on ESPN's scoreboard — check
+                # the adjacent days before giving up on the row.
+                if gm is None:
+                    base = datetime.datetime.strptime(r["date"], "%Y-%m-%d")
+                    for delta in (-1, 1):
+                        alt = (base + datetime.timedelta(days=delta)
+                               ).strftime("%Y-%m-%d")
+                        try:
+                            alt_games = fetch_results_for_date(alt)
+                        except Exception:
+                            continue
+                        gm = next((x for x in alt_games
+                                   if x["away"] == away and x["home"] == home),
+                                  None)
+                        if gm is not None:
+                            break
                 if gm is None:
                     continue
                 if gm["completed"]:

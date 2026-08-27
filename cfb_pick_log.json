@@ -21,8 +21,8 @@
   "prob": 61.6,
   "tier": "Low",
   "version": "cfb-v1.1-frozen-2026-08-27",
-  "odds": -110,
-  "edge": 9.2,
+  "odds": -115,
+  "edge": 8.1,
   "result": ""
  },
  {
@@ -242,8 +242,8 @@
   "prob": 88.2,
   "tier": "Moderate",
   "version": "cfb-v1.1-frozen-2026-08-27",
-  "odds": 0,
-  "edge": null,
+  "odds": -370,
+  "edge": 9.5,
   "result": ""
  },
  {
@@ -268,8 +268,8 @@
   "prob": 66.5,
   "tier": "Moderate",
   "version": "cfb-v1.1-frozen-2026-08-27",
-  "odds": 0,
-  "edge": null,
+  "odds": -192,
+  "edge": 0.7,
   "result": ""
  },
  {
@@ -281,8 +281,8 @@
   "prob": 52.7,
   "tier": "Low",
   "version": "cfb-v1.1-frozen-2026-08-27",
-  "odds": 0,
-  "edge": null,
+  "odds": -194,
+  "edge": -13.3,
   "result": ""
  },
  {
@@ -294,8 +294,8 @@
   "prob": 97.8,
   "tier": "Moderate",
   "version": "cfb-v1.1-frozen-2026-08-27",
-  "odds": 0,
-  "edge": null,
+  "odds": -20000,
+  "edge": -1.7,
   "result": ""
  },
  {
@@ -307,8 +307,8 @@
   "prob": 50.2,
   "tier": "Low",
   "version": "cfb-v1.1-frozen-2026-08-27",
-  "odds": 0,
-  "edge": null,
+  "odds": 155,
+  "edge": 11.0,
   "result": ""
  },
  {

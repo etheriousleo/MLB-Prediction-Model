@@ -8,8 +8,8 @@
   "prob": 84.0,
   "tier": "Low",
   "version": "cfb-v1.0-frozen-2026-08-24",
-  "odds": 255,
-  "edge": 55.8,
+  "odds": 295,
+  "edge": 58.7,
   "result": ""
  },
  {
@@ -34,8 +34,8 @@
   "prob": 82.6,
   "tier": "Moderate",
   "version": "cfb-v1.0-frozen-2026-08-24",
-  "odds": -110,
-  "edge": 30.2,
+  "odds": -118,
+  "edge": 28.5,
   "result": ""
  },
  {
@@ -47,21 +47,21 @@
   "prob": 67.9,
   "tier": "Moderate",
   "version": "cfb-v1.0-frozen-2026-08-24",
-  "odds": -220,
-  "edge": -0.8,
+  "odds": -192,
+  "edge": 2.1,
   "result": ""
  },
  {
   "date": "2026-08-29",
   "matchup": "NC State Wolfpack @ Virginia Cavaliers",
   "market": "ATS",
-  "pick": "Virginia Cavaliers -4",
-  "line": -4.0,
+  "pick": "Virginia Cavaliers -4.5",
+  "line": -4.5,
   "prob": 55.0,
   "tier": "Moderate",
   "version": "cfb-v1.0-frozen-2026-08-24",
   "odds": -110,
-  "edge": 6.4,
+  "edge": 5.1,
   "result": ""
  },
  {
@@ -73,8 +73,8 @@
   "prob": 92.2,
   "tier": "Low",
   "version": "cfb-v1.0-frozen-2026-08-24",
-  "odds": 230,
-  "edge": 61.9,
+  "odds": 225,
+  "edge": 61.4,
   "result": ""
  },
  {
@@ -99,21 +99,21 @@
   "prob": 69.4,
   "tier": "Moderate",
   "version": "cfb-v1.0-frozen-2026-08-24",
-  "odds": 152,
-  "edge": 29.7,
+  "odds": 146,
+  "edge": 28.7,
   "result": ""
  },
  {
   "date": "2026-08-29",
   "matchup": "Hawai'i Rainbow Warriors @ Stanford Cardinal",
   "market": "ATS",
-  "pick": "Hawai'i Rainbow Warriors +4",
-  "line": 4.0,
+  "pick": "Hawai'i Rainbow Warriors +3.5",
+  "line": 3.5,
   "prob": 81.0,
   "tier": "Moderate",
   "version": "cfb-v1.0-frozen-2026-08-24",
-  "odds": -110,
-  "edge": 25.9,
+  "odds": -115,
+  "edge": 23.8,
   "result": ""
  },
  {
@@ -125,21 +125,21 @@
   "prob": 76.4,
   "tier": "Moderate",
   "version": "cfb-v1.0-frozen-2026-08-24",
-  "odds": -10000,
-  "edge": -22.6,
+  "odds": -20000,
+  "edge": -23.1,
   "result": ""
  },
  {
   "date": "2026-08-29",
   "matchup": "New Mexico State Aggies @ Florida State Seminoles",
   "market": "ATS",
-  "pick": "New Mexico State Aggies +30.5",
-  "line": 30.5,
+  "pick": "New Mexico State Aggies +31.5",
+  "line": 31.5,
   "prob": 90.1,
   "tier": "Moderate",
   "version": "cfb-v1.0-frozen-2026-08-24",
-  "odds": -110,
-  "edge": 36.6,
+  "odds": -105,
+  "edge": 38.9,
   "result": ""
  },
  {
@@ -151,8 +151,8 @@
   "prob": 98.4,
   "tier": "Low",
   "version": "cfb-v1.0-frozen-2026-08-24",
-  "odds": 146,
-  "edge": 57.7,
+  "odds": 155,
+  "edge": 59.2,
   "result": ""
  },
  {

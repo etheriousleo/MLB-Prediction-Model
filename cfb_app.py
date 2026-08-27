@@ -916,12 +916,14 @@ with tab_week:
     if upcoming:
         st.subheader("💰 Price gate")
         with st.form("odds_form"):
-            st.caption("For each game: the market's HOME spread (book "
-                       "convention, negative = home favored — prefilled "
-                       "from ESPN when available), the juice on the "
-                       "model's side of that spread, and the ML price on "
-                       "the model's pick. Enter them all, then Apply once. "
-                       "Leave a field at 0 to skip that market.")
+            st.caption("For each game, enter YOUR book's numbers: the "
+                       "HOME spread (book convention, negative = home "
+                       "favored), the juice on the model's side of that "
+                       "spread, and the ML price on the model's pick. "
+                       "Then Apply once. Leave a field at 0 to skip that "
+                       "market. Fields start blank on purpose — the gate "
+                       "should judge the price you can actually bet, not "
+                       "someone else's line.")
             for g in upcoming:
                 # No-read games (non-FBS side or data gap) collect no
                 # prices: their "probabilities" come from a placeholder
@@ -940,11 +942,12 @@ with tab_week:
                         f"line: <b>{g['home']} "
                         f"{fmt_spread(g['model_line_home'])}</b></span></div>",
                         unsafe_allow_html=True)
-                # Prefill the market spread from ESPN odds when carried.
-                espn_sp = g["odds"].get("home_spread") if g.get("odds") else None
-                default_sp = float(espn_sp) if espn_sp is not None else 0.0
+                # Deliberately NOT prefilled from ESPN's carried odds:
+                # the gate must judge the number at the user's own book.
+                # ESPN's line still serves one passive role — the CLV
+                # reference captured at grading time.
                 with fc1:
-                    st.number_input("home spread", value=default_sp, step=0.5,
+                    st.number_input("home spread", value=0.0, step=0.5,
                                     key=f"sp_{mkey}", format="%.1f",
                                     help="Market spread for the HOME team")
                 with fc2:

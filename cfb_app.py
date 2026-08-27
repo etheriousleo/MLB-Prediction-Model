@@ -1267,6 +1267,22 @@ with tab_week:
         if st.button("Log this week's slate to tracker"):
             added = 0
             skipped_final = 0
+            # Supersede stale versions: UNGRADED rows from an older model
+            # version, for games still upcoming on this slate, are removed
+            # so the current frozen model can log its own read. Pre-kick,
+            # a pick isn't history yet — no result exists, so replacing it
+            # carries no look-ahead. GRADED rows are immutable forever,
+            # whatever version produced them.
+            slate_dm = {((g["kick_date"] or today_et()), matchup_key(g))
+                        for g in slate_results if not g["completed"]}
+            before = len(log)
+            log[:] = [r for r in log if not (
+                r.get("version") != MODEL_VERSION
+                and not r.get("result")
+                and (r["date"], r["matchup"]) in slate_dm)]
+            replaced = before - len(log)
+            existing_keys = {(r["date"], r["matchup"], r.get("market", "ML"))
+                             for r in log}
             for g in slate_results:
                 # Already-final games are EXCLUDED on purpose: a pick logged
                 # after the result exists is look-ahead (the model's stats
@@ -1317,6 +1333,10 @@ with tab_week:
                    if added else "This week's slate is already logged — "
                                  "prices entered above sync into it "
                                  "automatically.")
+            if replaced:
+                msg += (f" Replaced {replaced} ungraded row(s) from a "
+                        f"superseded model version with the current "
+                        f"model's reads.")
             if skipped_final:
                 msg += (f" Skipped {skipped_final} already-final game(s): "
                         f"picks can't be logged after the result exists "

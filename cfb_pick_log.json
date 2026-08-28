@@ -869,5 +869,57 @@
   "odds": 0,
   "edge": null,
   "result": ""
+ },
+ {
+  "date": "2026-08-29",
+  "matchup": "San Jos\u00e9 State Spartans @ USC Trojans",
+  "market": "ATS",
+  "pick": "USC Trojans -38.5",
+  "line": -38.5,
+  "prob": 57.7,
+  "tier": "Moderate",
+  "version": "cfb-v1.1-frozen-2026-08-27",
+  "odds": -118,
+  "edge": 3.6,
+  "result": ""
+ },
+ {
+  "date": "2026-08-29",
+  "matchup": "NC State Wolfpack @ Virginia Cavaliers",
+  "market": "ATS",
+  "pick": "Virginia Cavaliers -4.5",
+  "line": -4.5,
+  "prob": 56.0,
+  "tier": "Moderate",
+  "version": "cfb-v1.1-frozen-2026-08-27",
+  "odds": -105,
+  "edge": 4.8,
+  "result": ""
+ },
+ {
+  "date": "2026-08-29",
+  "matchup": "Hawai'i Rainbow Warriors @ Stanford Cardinal",
+  "market": "ATS",
+  "pick": "Hawai'i Rainbow Warriors +4.5",
+  "line": 4.5,
+  "prob": 58.7,
+  "tier": "Low",
+  "version": "cfb-v1.1-frozen-2026-08-27",
+  "odds": -115,
+  "edge": 5.2,
+  "result": ""
+ },
+ {
+  "date": "2026-08-29",
+  "matchup": "New Mexico State Aggies @ Florida State Seminoles",
+  "market": "ATS",
+  "pick": "New Mexico State Aggies +32.5",
+  "line": 32.5,
+  "prob": 50.6,
+  "tier": "Moderate",
+  "version": "cfb-v1.1-frozen-2026-08-27",
+  "odds": -115,
+  "edge": -2.9,
+  "result": ""
  }
 ]

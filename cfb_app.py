@@ -84,6 +84,16 @@ MODEL_VERSION = "cfb-v1.1-frozen-2026-08-27"
 # model's line disagreeing with the market by roughly 2+ points.
 GATE_THRESH_PP = 3.0
 
+# ── Reference-line ATS control rows ────────────────────────────────────────────
+# When True, games the user did NOT price still get an ATS tracker row
+# using ESPN's carried line — odds 0, no edge, no verdict, excluded from
+# units and cushion buckets. Purpose: grade the model's cover calls on the
+# FULL slate, not just the priced games. These lines auto-refresh to
+# ESPN's current number while the game is pre-kick and freeze at kickoff.
+# Set False to keep ESPN lines out of the tracker entirely (at the cost of
+# most of the ATS control group).
+REFERENCE_ATS_ROWS = True
+
 # ── Margin model constants ─────────────────────────────────────────────────────
 # HFA: college home-field advantage has measured ~2.5 points in recent
 # seasons (down from the historical ~3–3.5). Anchored to the public base
@@ -1018,32 +1028,58 @@ with tab_week:
                                   "cushion": cushion, "ev": ev,
                                   "call": call, "color": ccol}
 
-        # Auto-sync entered prices into any rows already logged today —
-        # the panel is the source of truth for the CURRENT week's prices.
+        # Auto-sync on every load: (a) prices entered in the panel flow
+        # into logged rows — the panel is the source of truth for the
+        # current week's prices; (b) reference-line ATS rows (odds 0)
+        # refresh to ESPN's CURRENT line while their game is still
+        # pre-kick, so the graded line is the last pre-kick number, not a
+        # stale midweek snapshot. User-priced rows are never touched by
+        # the refresh; live/final games freeze.
         _synced = 0
-        if gate_ml or gate_ats:
-            _log = load_pick_log()
-            for _r in _log:
-                if _r.get("version") != MODEL_VERSION or _r.get("result"):
-                    continue
-                if _r.get("market") == "ML":
-                    _gc = gate_ml.get(_r["matchup"])
-                    if _gc and _r.get("odds", 0) != _gc["odds"]:
-                        _r["odds"] = _gc["odds"]
-                        _r["edge"] = round(_gc["cushion"] * 100, 1)
-                        _synced += 1
-                elif _r.get("market") == "ATS":
-                    _gc = gate_ats.get(_r["matchup"])
-                    if _gc and (_r.get("odds", 0) != _gc["odds"]
-                                or _r.get("line") != _gc["line"]
-                                or _r.get("pick") != _gc["pick"]):
-                        _r["odds"] = _gc["odds"]
-                        _r["line"] = _gc["line"]
-                        _r["pick"] = _gc["pick"]
-                        _r["edge"] = round(_gc["cushion"] * 100, 1)
-                        _synced += 1
-            if _synced:
-                save_pick_log(_log)
+        _upcoming_by_key = {matchup_key(g): g for g in upcoming}
+        _log = load_pick_log()
+        for _r in _log:
+            if _r.get("version") != MODEL_VERSION or _r.get("result"):
+                continue
+            if _r.get("market") == "ML":
+                _gc = gate_ml.get(_r["matchup"])
+                if _gc and _r.get("odds", 0) != _gc["odds"]:
+                    _r["odds"] = _gc["odds"]
+                    _r["edge"] = round(_gc["cushion"] * 100, 1)
+                    _synced += 1
+            elif _r.get("market") == "ATS":
+                _gc = gate_ats.get(_r["matchup"])
+                if _gc and (_r.get("odds", 0) != _gc["odds"]
+                            or _r.get("line") != _gc["line"]
+                            or _r.get("pick") != _gc["pick"]):
+                    _r["odds"] = _gc["odds"]
+                    _r["line"] = _gc["line"]
+                    _r["pick"] = _gc["pick"]
+                    _r["edge"] = round(_gc["cushion"] * 100, 1)
+                    _synced += 1
+                elif (_gc is None and REFERENCE_ATS_ROWS
+                        and _r.get("odds", 0) == 0):
+                    _g = _upcoming_by_key.get(_r["matchup"])
+                    _sp = ((_g.get("odds") or {}).get("home_spread")
+                           if _g and _g["state"] == "pre" else None)
+                    if _sp is not None:
+                        _sp = float(_sp)
+                        _cph = cover_prob_home(_g["pred_margin"], _sp)
+                        if _cph >= 0.5:
+                            _side, _cp, _ln = _g["home"], _cph, _sp
+                        else:
+                            _side, _cp, _ln = _g["away"], 1 - _cph, -_sp
+                        _pick = f"{_side} {fmt_spread(_ln)}"
+                        if (_r.get("line") != _ln
+                                or _r.get("pick") != _pick):
+                            _r["line"] = _ln
+                            _r["pick"] = _pick
+                            _r["prob"] = round(_cp * 100, 1)
+                            _synced += 1
+        if _synced:
+            save_pick_log(_log)
+            st.caption(f"🔄 Updated {_synced} tracker row(s): price sync "
+                       f"and pre-kick reference-line refresh.")
 
         # Decision board — both markets, best cushion first.
         board_rows = []
@@ -1079,9 +1115,6 @@ with tab_week:
             else:
                 st.caption(f"{n_good} playable of {len(board_rows)} priced "
                            f"market(s).")
-            if _synced:
-                st.caption(f"🔄 Synced {_synced} price(s) into logged "
-                           f"tracker rows automatically.")
 
     # ── Render each game ───────────────────────────────────────────────────
     for game in slate_results:
@@ -1283,6 +1316,7 @@ with tab_week:
             replaced = before - len(log)
             existing_keys = {(r["date"], r["matchup"], r.get("market", "ML"))
                              for r in log}
+            ats_priced = ats_ref = ats_no_line = 0
             for g in slate_results:
                 # Already-final games are EXCLUDED on purpose: a pick logged
                 # after the result exists is look-ahead (the model's stats
@@ -1313,10 +1347,23 @@ with tab_week:
                         "result": "",
                     })
                     added += 1
-                # ATS row only once a market line exists — a spread pick
-                # without its line is ungradeable.
+                # ATS rows need SOME market line to grade against — a
+                # spread pick without its line is ungradeable. Two sources,
+                # strictly ranked:
+                #   1. A spread the user entered in the gate → a real,
+                #      bettable read with price, edge, and gate verdict.
+                #   2. Otherwise, ESPN's carried line → a REFERENCE row for
+                #      the control group only: odds logged as 0 (so it can
+                #      never count toward units or cushion buckets), no
+                #      edge, no verdict — it exists purely so the model's
+                #      cover call gets graded on the full slate. Entering
+                #      the user's own spread later and hitting Apply
+                #      upgrades the row in place via the price sync.
+                # ESPN's line never touches the betting form or the gate —
+                # it grades the control group, nothing else.
                 ga = gate_ats.get(matchup)
-                if ga and (row_date, matchup, "ATS") not in existing_keys:
+                akey = (row_date, matchup, "ATS")
+                if ga and akey not in existing_keys:
                     log.append({
                         "date": row_date, "matchup": matchup, "market": "ATS",
                         "pick": ga["pick"],
@@ -1328,6 +1375,32 @@ with tab_week:
                         "result": "",
                     })
                     added += 1
+                    ats_priced += 1
+                elif ga is None and REFERENCE_ATS_ROWS \
+                        and akey not in existing_keys:
+                    espn_sp = (g.get("odds") or {}).get("home_spread")
+                    if espn_sp is not None:
+                        espn_sp = float(espn_sp)
+                        cp_home = cover_prob_home(g["pred_margin"], espn_sp)
+                        if cp_home >= 0.5:
+                            side, cp, ln = g["home"], cp_home, espn_sp
+                        else:
+                            side, cp, ln = g["away"], 1 - cp_home, -espn_sp
+                        log.append({
+                            "date": row_date, "matchup": matchup,
+                            "market": "ATS",
+                            "pick": f"{side} {fmt_spread(ln)}",
+                            "line": ln,
+                            "prob": round(cp * 100, 1),
+                            "tier": g["conf_level"],
+                            "version": MODEL_VERSION,
+                            "odds": 0, "edge": None,
+                            "result": "",
+                        })
+                        added += 1
+                        ats_ref += 1
+                    else:
+                        ats_no_line += 1
             save_pick_log(log)
             msg = (f"Logged {added} new pick rows."
                    if added else "This week's slate is already logged — "
@@ -1342,8 +1415,11 @@ with tab_week:
                         f"picks can't be logged after the result exists "
                         f"(look-ahead) — only games still biddable at log "
                         f"time enter the forward record.")
-            msg += (" ATS rows appear only for games with a spread entered "
-                    "— enter spreads above and click Log again to add them.")
+            msg += (f" ATS accounting: {ats_priced} with your prices, "
+                    f"{ats_ref} reference-line control rows (odds 0 — "
+                    f"graded for calibration, never counted as bets; "
+                    f"entering your spread and applying upgrades them), "
+                    f"{ats_no_line} game(s) with no line available anywhere.")
             st.success(msg)
             st.rerun()
     with c_log3:
@@ -1558,6 +1634,9 @@ with tab_week:
                             "negative CLV on GOOD picks is an early warning "
                             "the model is chasing stale numbers.")
                     st.markdown(msg)
+            st.caption("ATS rows with odds 0 are reference-line control "
+                       "rows: they count in hit-rate calibration, never in "
+                       "units or cushion buckets. ")
             st.caption("Units use only picks with a price entered, flat 1u. "
                        "ATS hit rate must clear ~52.4% at -110 just to break "
                        "even — treat anything under 55% over a small sample "

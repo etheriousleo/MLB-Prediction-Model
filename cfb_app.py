@@ -84,15 +84,15 @@ MODEL_VERSION = "cfb-v1.1-frozen-2026-08-27"
 # model's line disagreeing with the market by roughly 2+ points.
 GATE_THRESH_PP = 3.0
 
-# ── Reference-line ATS control rows ────────────────────────────────────────────
-# When True, games the user did NOT price still get an ATS tracker row
-# using ESPN's carried line — odds 0, no edge, no verdict, excluded from
-# units and cushion buckets. Purpose: grade the model's cover calls on the
-# FULL slate, not just the priced games. These lines auto-refresh to
-# ESPN's current number while the game is pre-kick and freeze at kickoff.
-# Set False to keep ESPN lines out of the tracker entirely (at the cost of
-# most of the ATS control group).
-REFERENCE_ATS_ROWS = True
+# ── Reference-line ATS control rows — OFF by Juan's decision ──────────────────
+# False = ESPN lines never enter the tracker; every ATS row exists only
+# because the user entered that game's spread by hand. Accepted trade-off,
+# noted for the record: ATS calibration is then measured only on
+# user-priced games, a smaller and self-selected sample. When False, any
+# leftover ungraded reference rows (odds 0) are purged on the next Log
+# click. Set True to have unpriced games logged against ESPN's carried
+# line (odds 0, control-group only, auto-refreshed until kickoff).
+REFERENCE_ATS_ROWS = False
 
 # ── Margin model constants ─────────────────────────────────────────────────────
 # HFA: college home-field advantage has measured ~2.5 points in recent
@@ -1314,6 +1314,13 @@ with tab_week:
                 and not r.get("result")
                 and (r["date"], r["matchup"]) in slate_dm)]
             replaced = before - len(log)
+            purged_refs = 0
+            if not REFERENCE_ATS_ROWS:
+                b2 = len(log)
+                log[:] = [r for r in log if not (
+                    r.get("market") == "ATS" and r.get("odds", 0) == 0
+                    and not r.get("result"))]
+                purged_refs = b2 - len(log)
             existing_keys = {(r["date"], r["matchup"], r.get("market", "ML"))
                              for r in log}
             ats_priced = ats_ref = ats_no_line = 0
@@ -1415,11 +1422,18 @@ with tab_week:
                         f"picks can't be logged after the result exists "
                         f"(look-ahead) — only games still biddable at log "
                         f"time enter the forward record.")
-            msg += (f" ATS accounting: {ats_priced} with your prices, "
-                    f"{ats_ref} reference-line control rows (odds 0 — "
-                    f"graded for calibration, never counted as bets; "
-                    f"entering your spread and applying upgrades them), "
-                    f"{ats_no_line} game(s) with no line available anywhere.")
+            if REFERENCE_ATS_ROWS:
+                msg += (f" ATS accounting: {ats_priced} with your prices, "
+                        f"{ats_ref} reference-line control rows (odds 0 — "
+                        f"graded for calibration, never counted as bets), "
+                        f"{ats_no_line} game(s) with no line available.")
+            else:
+                msg += (f" ATS rows: {ats_priced} — one per game you "
+                        f"priced. Enter more spreads above and click Log "
+                        f"again to add the rest.")
+                if purged_refs:
+                    msg += (f" Purged {purged_refs} leftover reference-line "
+                            f"row(s).")
             st.success(msg)
             st.rerun()
     with c_log3:

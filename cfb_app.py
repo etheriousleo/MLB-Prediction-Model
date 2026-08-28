@@ -505,6 +505,46 @@ def unit_profit(odds: float) -> float:
     return odds / 100.0
 
 
+PENDING_ATS_PICK = "— enter HOME spread in line —"
+
+
+def resolve_ats_rows(rows: list) -> int:
+    """
+    Resolve pending ATS rows once the user has typed a line into the
+    tracker. A pending row carries the model's projected HOME margin,
+    PRE-REGISTERED at log time — so when a HOME spread appears in its
+    line column, the model's side follows mechanically (no judgment, no
+    look-ahead possible): home covers iff margin beats the number.
+    The line is then restated for the pick side (grading convention).
+    Returns how many rows changed. Graded rows are never touched.
+    """
+    changed = 0
+    for r in rows:
+        if (r.get("market") == "ATS" and not r.get("result")
+                and r.get("pick") == PENDING_ATS_PICK
+                and r.get("line") is not None
+                and r.get("margin") is not None):
+            try:
+                home_sp = float(r["line"])
+                margin = float(r["margin"])
+            except (TypeError, ValueError):
+                continue
+            away, home = r["matchup"].split(" @ ", 1)
+            cp_home = cover_prob_home(margin, home_sp)
+            if cp_home >= 0.5:
+                side, cp, ln = home, cp_home, home_sp
+            else:
+                side, cp, ln = away, 1 - cp_home, -home_sp
+            r["pick"] = f"{side} {fmt_spread(ln)}"
+            r["line"] = ln
+            r["prob"] = round(cp * 100, 1)
+            odds = r.get("odds", 0) or 0
+            if abs(odds) >= 100:
+                r["edge"] = round((cp - breakeven_prob(odds)) * 100, 1)
+            changed += 1
+    return changed
+
+
 def matchup_key(g: dict) -> str:
     """Unique, human-readable identity for a game. No doubleheaders in
     CFB, so away @ home is already unique within a date."""
@@ -928,12 +968,11 @@ with tab_week:
         with st.form("odds_form"):
             st.caption("For each game, enter YOUR book's numbers: the "
                        "HOME spread (book convention, negative = home "
-                       "favored), the juice on the model's side of that "
-                       "spread, and the ML price on the model's pick. "
-                       "Then Apply once. Leave a field at 0 to skip that "
-                       "market. Fields start blank on purpose — the gate "
-                       "should judge the price you can actually bet, not "
-                       "someone else's line.")
+                       "favored) AND its juice (e.g. -110), plus the ML "
+                       "price on the model's pick. Then Apply once. A "
+                       "market only counts as priced when its fields are "
+                       "explicitly filled — everything left at 0 is "
+                       "skipped. Nothing is ever prefilled.")
             for g in upcoming:
                 # No-read games (non-FBS side or data gap) collect no
                 # prices: their "probabilities" come from a placeholder
@@ -956,18 +995,27 @@ with tab_week:
                 # the gate must judge the number at the user's own book.
                 # ESPN's line still serves one passive role — the CLV
                 # reference captured at grading time.
+                # Widget keys use the "2" namespace on purpose: an earlier
+                # build prefilled these fields from ESPN, and Streamlit
+                # preserves session state across code updates — so stale
+                # prefill values survived in the OLD keys and were being
+                # logged as if the user had typed them. New namespace =
+                # those ghosts are unreachable forever.
                 with fc1:
                     st.number_input("home spread", value=0.0, step=0.5,
-                                    key=f"sp_{mkey}", format="%.1f",
+                                    key=f"sp2_{mkey}", format="%.1f",
                                     help="Market spread for the HOME team")
                 with fc2:
-                    st.number_input("spread juice", value=-110, step=5,
-                                    key=f"spj_{mkey}",
+                    st.number_input("spread juice", value=0, step=5,
+                                    key=f"spj2_{mkey}",
                                     help="Price on the model's side of the "
-                                         "spread (usually -110)")
+                                         "spread (usually -110). Must be "
+                                         "typed — a game only counts as "
+                                         "priced when BOTH spread and "
+                                         "juice are entered.")
                 with fc3:
                     st.number_input("ML price", value=0, step=5,
-                                    key=f"mlpick_{mkey}",
+                                    key=f"mlpick2_{mkey}",
                                     help="Price on the model's ML pick")
             st.form_submit_button("Apply odds")
 
@@ -977,7 +1025,7 @@ with tab_week:
             mkey = matchup_key(g)
 
             # ML gate — identical math to the MLB app.
-            ml_price = st.session_state.get(f"mlpick_{mkey}", 0)
+            ml_price = st.session_state.get(f"mlpick2_{mkey}", 0)
             if abs(ml_price) >= 100:
                 pick_p = (g["home_pct"] if g["prob_pick"] == g["home"]
                           else g["away_pct"]) / 100.0
@@ -996,8 +1044,8 @@ with tab_week:
                                  "call": call, "color": ccol}
 
             # ATS gate — needs a real market spread entered.
-            mkt_sp = st.session_state.get(f"sp_{mkey}", 0.0) or 0.0
-            sp_juice = st.session_state.get(f"spj_{mkey}", -110)
+            mkt_sp = st.session_state.get(f"sp2_{mkey}", 0.0) or 0.0
+            sp_juice = st.session_state.get(f"spj2_{mkey}", -110)
             has_line = (abs(mkt_sp) >= 0.25 or
                         # PK is a legitimate line but indistinguishable from
                         # "not entered" at exactly 0.0 — require the ESPN
@@ -1292,10 +1340,12 @@ with tab_week:
                    "to persist (see comment above _gh_cfg in the code).")
 
     log = load_pick_log()
+    if resolve_ats_rows(log):
+        save_pick_log(log)
     existing_keys = {(r["date"], r["matchup"], r.get("market", "ML"))
                      for r in log}
 
-    c_log1, c_log3, c_log2 = st.columns([1, 1, 1.4])
+    c_log1, c_log3, c_logr, c_log2 = st.columns([1, 1, 1, 1.1])
     with c_log1:
         if st.button("Log this week's slate to tracker"):
             added = 0
@@ -1316,10 +1366,13 @@ with tab_week:
             replaced = before - len(log)
             purged_refs = 0
             if not REFERENCE_ATS_ROWS:
+                # One-time cleanup of legacy ESPN reference rows: those
+                # have odds 0, a line, and NO pre-registered margin.
+                # Pending rows (which have "margin") are never purged.
                 b2 = len(log)
                 log[:] = [r for r in log if not (
                     r.get("market") == "ATS" and r.get("odds", 0) == 0
-                    and not r.get("result"))]
+                    and not r.get("result") and "margin" not in r)]
                 purged_refs = b2 - len(log)
             existing_keys = {(r["date"], r["matchup"], r.get("market", "ML"))
                              for r in log}
@@ -1379,35 +1432,54 @@ with tab_week:
                         "tier": g["conf_level"], "version": MODEL_VERSION,
                         "odds": ga["odds"],
                         "edge": round(ga["cushion"] * 100, 1),
+                        "margin": round(g["pred_margin"], 1),
                         "result": "",
                     })
                     added += 1
                     ats_priced += 1
                 elif ga is None and REFERENCE_ATS_ROWS \
-                        and akey not in existing_keys:
-                    espn_sp = (g.get("odds") or {}).get("home_spread")
-                    if espn_sp is not None:
-                        espn_sp = float(espn_sp)
-                        cp_home = cover_prob_home(g["pred_margin"], espn_sp)
-                        if cp_home >= 0.5:
-                            side, cp, ln = g["home"], cp_home, espn_sp
-                        else:
-                            side, cp, ln = g["away"], 1 - cp_home, -espn_sp
-                        log.append({
-                            "date": row_date, "matchup": matchup,
-                            "market": "ATS",
-                            "pick": f"{side} {fmt_spread(ln)}",
-                            "line": ln,
-                            "prob": round(cp * 100, 1),
-                            "tier": g["conf_level"],
-                            "version": MODEL_VERSION,
-                            "odds": 0, "edge": None,
-                            "result": "",
-                        })
-                        added += 1
-                        ats_ref += 1
+                        and akey not in existing_keys \
+                        and (g.get("odds") or {}).get("home_spread") is not None:
+                    espn_sp = float(g["odds"]["home_spread"])
+                    cp_home = cover_prob_home(g["pred_margin"], espn_sp)
+                    if cp_home >= 0.5:
+                        side, cp, ln = g["home"], cp_home, espn_sp
                     else:
-                        ats_no_line += 1
+                        side, cp, ln = g["away"], 1 - cp_home, -espn_sp
+                    log.append({
+                        "date": row_date, "matchup": matchup,
+                        "market": "ATS",
+                        "pick": f"{side} {fmt_spread(ln)}",
+                        "line": ln,
+                        "prob": round(cp * 100, 1),
+                        "tier": g["conf_level"],
+                        "version": MODEL_VERSION,
+                        "odds": 0, "edge": None,
+                        "margin": round(g["pred_margin"], 1),
+                        "result": "",
+                    })
+                    added += 1
+                    ats_ref += 1
+                elif ga is None and akey not in existing_keys:
+                    # PENDING ATS row — one for EVERY readable game. The
+                    # model's projected home margin is pre-registered here,
+                    # before kickoff; the user types the HOME spread into
+                    # the tracker's line column whenever convenient, and
+                    # resolve_ats_rows turns it into the model's side.
+                    # Fully manual lines, full-slate ATS coverage.
+                    log.append({
+                        "date": row_date, "matchup": matchup,
+                        "market": "ATS",
+                        "pick": PENDING_ATS_PICK,
+                        "line": None, "prob": None,
+                        "tier": g["conf_level"],
+                        "version": MODEL_VERSION,
+                        "odds": 0, "edge": None,
+                        "margin": round(g["pred_margin"], 1),
+                        "result": "",
+                    })
+                    added += 1
+                    ats_no_line += 1
             save_pick_log(log)
             msg = (f"Logged {added} new pick rows."
                    if added else "This week's slate is already logged — "
@@ -1428,9 +1500,11 @@ with tab_week:
                         f"graded for calibration, never counted as bets), "
                         f"{ats_no_line} game(s) with no line available.")
             else:
-                msg += (f" ATS rows: {ats_priced} — one per game you "
-                        f"priced. Enter more spreads above and click Log "
-                        f"again to add the rest.")
+                msg += (f" ATS rows: {ats_priced} priced via the gate, "
+                        f"{ats_no_line} pending your line — type each "
+                        f"game's HOME spread into the tracker's line "
+                        f"column and Save; the model's side resolves "
+                        f"automatically from its pre-registered margin.")
                 if purged_refs:
                     msg += (f" Purged {purged_refs} leftover reference-line "
                             f"row(s).")
@@ -1515,6 +1589,38 @@ with tab_week:
                 st.rerun()
             else:
                 st.info("Nothing new to grade yet.")
+    with c_logr:
+        # Decontamination: strips every UNGRADED ATS row of the current
+        # model version back to pending — line, price, and edge cleared,
+        # pre-registered margin kept — so any value that got in without
+        # the user typing it can be wiped and re-entered by hand. Rows
+        # from before margins existed can't resolve, so they're deleted
+        # and re-created as pending on the next Log. Graded rows are
+        # untouchable, as always.
+        if st.button("🧹 Reset ungraded ATS lines"):
+            n_reset = n_dropped = 0
+            keep = []
+            for r in log:
+                if (r.get("market") == "ATS" and not r.get("result")
+                        and r.get("version") == MODEL_VERSION):
+                    if r.get("margin") is not None:
+                        r["pick"] = PENDING_ATS_PICK
+                        r["line"] = None
+                        r["prob"] = None
+                        r["odds"] = 0
+                        r["edge"] = None
+                        n_reset += 1
+                        keep.append(r)
+                    else:
+                        n_dropped += 1
+                else:
+                    keep.append(r)
+            save_pick_log(keep)
+            st.success(f"Reset {n_reset} ATS row(s) to pending, removed "
+                       f"{n_dropped} legacy row(s) (re-log to recreate "
+                       f"them as pending). Type your lines into the "
+                       f"tracker and Save.")
+            st.rerun()
     with c_log2:
         st.caption("Weekly loop: enter prices in the panel, log the slate "
                    "(2 rows per priced game — ML and ATS), auto-grade "
@@ -1540,8 +1646,14 @@ with tab_week:
                 "market":  st.column_config.TextColumn(disabled=True),
                 "pick":    st.column_config.TextColumn(disabled=True),
                 "line":    st.column_config.NumberColumn(
-                    "line", help="Logged market spread for the pick side "
-                    "(ATS rows only) — grading uses THIS number", step=0.5),
+                    "line", help="ATS rows only. For a pending row, type "
+                    "the HOME spread (negative = home favored); on Save "
+                    "the model's side resolves and the line restates for "
+                    "the pick side. Grading uses THIS number.", step=0.5),
+                "margin":  st.column_config.NumberColumn(
+                    "margin", help="Model's projected HOME margin, "
+                    "pre-registered at log time — drives the ATS side "
+                    "once a line exists", disabled=True),
                 "prob":    st.column_config.NumberColumn(disabled=True),
                 "tier":    st.column_config.TextColumn(disabled=True),
                 "version": st.column_config.TextColumn(disabled=True),
@@ -1559,8 +1671,16 @@ with tab_week:
             num_rows="dynamic",
             hide_index=True, width="stretch", height=300)
         if st.button("Save grades"):
-            save_pick_log(edited.to_dict("records"))
-            st.success("Saved.")
+            rows_out = edited.to_dict("records")
+            # NaN from the editor → None so pending detection stays clean.
+            for r in rows_out:
+                for k, v in list(r.items()):
+                    if isinstance(v, float) and math.isnan(v):
+                        r[k] = None
+            n_res = resolve_ats_rows(rows_out)
+            save_pick_log(rows_out)
+            st.success(f"Saved. Resolved {n_res} ATS pick(s) from newly "
+                       f"entered lines." if n_res else "Saved.")
             st.rerun()
 
         # Summary — current model version only, graded picks only,

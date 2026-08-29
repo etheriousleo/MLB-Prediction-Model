@@ -3273,8 +3273,8 @@
   "prob": 52,
   "tier": "Low",
   "version": "v3.0-frozen-2026-08-06",
-  "odds": 0,
-  "edge": null,
+  "odds": 124,
+  "edge": 5.4,
   "result": ""
  },
  {
@@ -3284,8 +3284,8 @@
   "prob": 52,
   "tier": "Low",
   "version": "v3.0-frozen-2026-08-06",
-  "odds": 0,
-  "edge": null,
+  "odds": 105,
+  "edge": 3.2,
   "result": ""
  },
  {
@@ -3295,8 +3295,8 @@
   "prob": 52,
   "tier": "Low",
   "version": "v3.0-frozen-2026-08-06",
-  "odds": 0,
-  "edge": null,
+  "odds": 110,
+  "edge": 4.4,
   "result": ""
  },
  {

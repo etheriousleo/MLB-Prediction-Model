@@ -1256,7 +1256,7 @@
   "version": "cfb-v1.1-frozen-2026-08-27",
   "odds": -192,
   "edge": -13.1,
-  "result": "",
+  "result": "W",
   "margin": null
  },
  {
@@ -1270,7 +1270,7 @@
   "version": "cfb-v1.1-frozen-2026-08-27",
   "odds": -10000,
   "edge": -1.2,
-  "result": "",
+  "result": "W",
   "margin": null
  },
  {
@@ -1284,7 +1284,7 @@
   "version": "cfb-v1.1-frozen-2026-08-27",
   "odds": 155,
   "edge": 11.0,
-  "result": "",
+  "result": "W",
   "margin": null
  },
  {
@@ -1340,7 +1340,7 @@
   "version": "cfb-v1.1-frozen-2026-08-27",
   "odds": -115,
   "edge": 5.2,
-  "result": "",
+  "result": "L",
   "margin": 1.1
  },
  {
@@ -1354,7 +1354,7 @@
   "version": "cfb-v1.1-frozen-2026-08-27",
   "odds": -105,
   "edge": 0.7,
-  "result": "",
+  "result": "L",
   "margin": 32.3
  },
  {
@@ -1368,7 +1368,7 @@
   "version": "cfb-v1.1-frozen-2026-08-27",
   "odds": -115,
   "edge": 8.1,
-  "result": "",
+  "result": "W",
   "margin": -0.1
  }
 ]

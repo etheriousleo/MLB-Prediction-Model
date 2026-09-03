@@ -3947,5 +3947,104 @@
   "odds": 120,
   "edge": 6.5,
   "result": "L"
+ },
+ {
+  "date": "2026-09-03",
+  "matchup": "St. Louis Cardinals @ Los Angeles Dodgers",
+  "pick": "Los Angeles Dodgers",
+  "prob": 65,
+  "tier": "Moderate",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
+ },
+ {
+  "date": "2026-09-03",
+  "matchup": "Oakland Athletics @ Seattle Mariners",
+  "pick": "Seattle Mariners",
+  "prob": 57,
+  "tier": "Moderate",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
+ },
+ {
+  "date": "2026-09-03",
+  "matchup": "San Francisco Giants @ Pittsburgh Pirates",
+  "pick": "Pittsburgh Pirates",
+  "prob": 56,
+  "tier": "Moderate",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
+ },
+ {
+  "date": "2026-09-03",
+  "matchup": "Toronto Blue Jays @ Cleveland Guardians",
+  "pick": "Cleveland Guardians",
+  "prob": 55,
+  "tier": "Moderate",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
+ },
+ {
+  "date": "2026-09-03",
+  "matchup": "Tampa Bay Rays @ Texas Rangers",
+  "pick": "Tampa Bay Rays",
+  "prob": 52,
+  "tier": "Low",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
+ },
+ {
+  "date": "2026-09-03",
+  "matchup": "Miami Marlins @ Kansas City Royals",
+  "pick": "Kansas City Royals",
+  "prob": 51,
+  "tier": "Low",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
+ },
+ {
+  "date": "2026-09-03",
+  "matchup": "Boston Red Sox @ Baltimore Orioles",
+  "pick": "Boston Red Sox",
+  "prob": 52,
+  "tier": "Conflicted",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
+ },
+ {
+  "date": "2026-09-03",
+  "matchup": "Milwaukee Brewers @ Chicago Cubs",
+  "pick": "Milwaukee Brewers",
+  "prob": 51,
+  "tier": "Conflicted",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
+ },
+ {
+  "date": "2026-09-03",
+  "matchup": "Chicago White Sox @ Houston Astros",
+  "pick": "Chicago White Sox",
+  "prob": 50,
+  "tier": "Conflicted",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
  }
 ]

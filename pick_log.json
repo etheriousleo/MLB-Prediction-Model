@@ -4387,5 +4387,170 @@
   "odds": -110,
   "edge": -0.4,
   "result": "L"
+ },
+ {
+  "date": "2026-09-06",
+  "matchup": "Milwaukee Brewers @ Cincinnati Reds",
+  "pick": "Milwaukee Brewers",
+  "prob": 62,
+  "tier": "High",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": -164,
+  "edge": -0.1,
+  "result": ""
+ },
+ {
+  "date": "2026-09-06",
+  "matchup": "Los Angeles Angels @ Pittsburgh Pirates",
+  "pick": "Pittsburgh Pirates",
+  "prob": 60,
+  "tier": "High",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": -196,
+  "edge": -6.2,
+  "result": ""
+ },
+ {
+  "date": "2026-09-06",
+  "matchup": "Washington Nationals @ Los Angeles Dodgers",
+  "pick": "Los Angeles Dodgers",
+  "prob": 61,
+  "tier": "Moderate",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": -215,
+  "edge": -7.3,
+  "result": ""
+ },
+ {
+  "date": "2026-09-06",
+  "matchup": "Detroit Tigers @ Cleveland Guardians",
+  "pick": "Cleveland Guardians",
+  "prob": 57,
+  "tier": "Moderate",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": -168,
+  "edge": -5.7,
+  "result": ""
+ },
+ {
+  "date": "2026-09-06",
+  "matchup": "Chicago Cubs @ Miami Marlins",
+  "pick": "Chicago Cubs",
+  "prob": 57,
+  "tier": "Moderate",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": -146,
+  "edge": -2.3,
+  "result": ""
+ },
+ {
+  "date": "2026-09-06",
+  "matchup": "Oakland Athletics @ Seattle Mariners",
+  "pick": "Seattle Mariners",
+  "prob": 56,
+  "tier": "Moderate",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": -205,
+  "edge": -11.2,
+  "result": ""
+ },
+ {
+  "date": "2026-09-06",
+  "matchup": "New York Yankees @ San Diego Padres",
+  "pick": "New York Yankees",
+  "prob": 55,
+  "tier": "Moderate",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": -110,
+  "edge": 2.6,
+  "result": ""
+ },
+ {
+  "date": "2026-09-06",
+  "matchup": "Tampa Bay Rays @ Texas Rangers",
+  "pick": "Tampa Bay Rays",
+  "prob": 54,
+  "tier": "Moderate",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 125,
+  "edge": 9.6,
+  "result": ""
+ },
+ {
+  "date": "2026-09-06",
+  "matchup": "Minnesota Twins @ Chicago White Sox",
+  "pick": "Chicago White Sox",
+  "prob": 54,
+  "tier": "Moderate",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": -152,
+  "edge": -6.3,
+  "result": ""
+ },
+ {
+  "date": "2026-09-06",
+  "matchup": "Boston Red Sox @ Baltimore Orioles",
+  "pick": "Boston Red Sox",
+  "prob": 53,
+  "tier": "Low",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": -138,
+  "edge": -5.0,
+  "result": ""
+ },
+ {
+  "date": "2026-09-06",
+  "matchup": "St. Louis Cardinals @ Colorado Rockies",
+  "pick": "St. Louis Cardinals",
+  "prob": 53,
+  "tier": "Low",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": -134,
+  "edge": -4.3,
+  "result": ""
+ },
+ {
+  "date": "2026-09-06",
+  "matchup": "Arizona Diamondbacks @ Houston Astros",
+  "pick": "Arizona Diamondbacks",
+  "prob": 51,
+  "tier": "Low",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": -106,
+  "edge": -0.5,
+  "result": ""
+ },
+ {
+  "date": "2026-09-06",
+  "matchup": "Toronto Blue Jays @ Kansas City Royals",
+  "pick": "Kansas City Royals",
+  "prob": 51,
+  "tier": "Low",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 104,
+  "edge": 2.0,
+  "result": ""
+ },
+ {
+  "date": "2026-09-06",
+  "matchup": "San Francisco Giants @ New York Mets",
+  "pick": "New York Mets",
+  "prob": 52,
+  "tier": "Conflicted",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": -158,
+  "edge": -9.2,
+  "result": ""
+ },
+ {
+  "date": "2026-09-06",
+  "matchup": "Atlanta Braves @ Philadelphia Phillies",
+  "pick": "Philadelphia Phillies",
+  "prob": 50,
+  "tier": "Conflicted",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": -110,
+  "edge": -2.4,
+  "result": ""
  }
 ]

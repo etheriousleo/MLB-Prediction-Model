@@ -8,8 +8,8 @@
   "prob": 50.9,
   "tier": "Low",
   "version": "cfb-v1.1-frozen-2026-08-27",
-  "odds": 125,
-  "edge": 6.2,
+  "odds": 120,
+  "edge": 5.0,
   "result": "",
   "margin": null
  },
@@ -22,8 +22,8 @@
   "prob": null,
   "tier": "Low",
   "version": "cfb-v1.1-frozen-2026-08-27",
-  "odds": 100,
-  "edge": 7.0,
+  "odds": -105,
+  "edge": 5.7,
   "result": "",
   "margin": 0.4
  },

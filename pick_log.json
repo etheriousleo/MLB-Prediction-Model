@@ -4562,7 +4562,7 @@
   "version": "v3.0-frozen-2026-08-06",
   "odds": -174,
   "edge": -3.5,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-09-07",
@@ -4595,7 +4595,7 @@
   "version": "v3.0-frozen-2026-08-06",
   "odds": -130,
   "edge": -1.5,
-  "result": ""
+  "result": "L"
  },
  {
   "date": "2026-09-07",
@@ -4606,7 +4606,7 @@
   "version": "v3.0-frozen-2026-08-06",
   "odds": -124,
   "edge": -1.4,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-09-07",
@@ -4628,7 +4628,7 @@
   "version": "v3.0-frozen-2026-08-06",
   "odds": -184,
   "edge": -12.8,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-09-07",
@@ -4639,7 +4639,7 @@
   "version": "v3.0-frozen-2026-08-06",
   "odds": -136,
   "edge": -5.6,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-09-07",
@@ -4650,7 +4650,7 @@
   "version": "v3.0-frozen-2026-08-06",
   "odds": -112,
   "edge": -0.8,
-  "result": ""
+  "result": "L"
  },
  {
   "date": "2026-09-07",
@@ -4672,6 +4672,6 @@
   "version": "v3.0-frozen-2026-08-06",
   "odds": -120,
   "edge": -2.5,
-  "result": ""
+  "result": "W"
  }
 ]

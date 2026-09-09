@@ -1380,8 +1380,8 @@
   "prob": 67.4,
   "tier": "Moderate",
   "version": "cfb-v1.1-frozen-2026-08-27",
-  "odds": 146,
-  "edge": 26.7,
+  "odds": 122,
+  "edge": 22.4,
   "result": ""
  },
  {
@@ -1393,8 +1393,8 @@
   "prob": 75.5,
   "tier": "Moderate",
   "version": "cfb-v1.1-frozen-2026-08-27",
-  "odds": -110,
-  "edge": 23.2,
+  "odds": -122,
+  "edge": 20.6,
   "margin": -7.2,
   "result": ""
  },

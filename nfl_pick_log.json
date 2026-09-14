@@ -280,7 +280,7 @@
   "version": "nfl-v1.0-frozen-2026-09-04",
   "odds": -164,
   "edge": -5.1,
-  "result": ""
+  "result": "L"
  },
  {
   "date": "2026-09-13",
@@ -294,7 +294,7 @@
   "odds": -108,
   "edge": 13.3,
   "margin": -2.5,
-  "result": ""
+  "result": "L"
  },
  {
   "date": "2026-09-13",
@@ -307,7 +307,7 @@
   "version": "nfl-v1.0-frozen-2026-09-04",
   "odds": -126,
   "edge": -2.3,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-09-13",
@@ -321,7 +321,7 @@
   "odds": -110,
   "edge": -1.6,
   "margin": 1.2,
-  "result": ""
+  "result": "L"
  },
  {
   "date": "2026-09-13",
@@ -334,7 +334,7 @@
   "version": "nfl-v1.0-frozen-2026-09-04",
   "odds": -250,
   "edge": 3.3,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-09-13",
@@ -348,7 +348,7 @@
   "odds": -110,
   "edge": 8.4,
   "margin": 9.3,
-  "result": ""
+  "result": "L"
  },
  {
   "date": "2026-09-13",
@@ -361,7 +361,7 @@
   "version": "nfl-v1.0-frozen-2026-09-04",
   "odds": -164,
   "edge": 7.4,
-  "result": ""
+  "result": "L"
  },
  {
   "date": "2026-09-13",
@@ -375,7 +375,7 @@
   "odds": -115,
   "edge": 3.2,
   "margin": 7.1,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-09-13",
@@ -388,7 +388,7 @@
   "version": "nfl-v1.0-frozen-2026-09-04",
   "odds": 134,
   "edge": 11.6,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-09-13",
@@ -402,7 +402,7 @@
   "odds": -112,
   "edge": 9.8,
   "margin": 1.5,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-09-14",

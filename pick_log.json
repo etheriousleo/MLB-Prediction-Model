@@ -5946,8 +5946,8 @@
   "prob": 68,
   "tier": "High",
   "version": "v3.0-frozen-2026-08-06",
-  "odds": 0,
-  "edge": null,
+  "odds": -260,
+  "edge": -4.2,
   "result": ""
  },
  {
@@ -5957,8 +5957,8 @@
   "prob": 67,
   "tier": "High",
   "version": "v3.0-frozen-2026-08-06",
-  "odds": 0,
-  "edge": null,
+  "odds": -166,
+  "edge": 4.6,
   "result": ""
  },
  {
@@ -5968,8 +5968,8 @@
   "prob": 60,
   "tier": "Moderate",
   "version": "v3.0-frozen-2026-08-06",
-  "odds": 0,
-  "edge": null,
+  "odds": -190,
+  "edge": -5.5,
   "result": ""
  },
  {
@@ -5979,8 +5979,8 @@
   "prob": 55,
   "tier": "Moderate",
   "version": "v3.0-frozen-2026-08-06",
-  "odds": 0,
-  "edge": null,
+  "odds": -142,
+  "edge": -3.7,
   "result": ""
  },
  {
@@ -5990,8 +5990,8 @@
   "prob": 54,
   "tier": "Moderate",
   "version": "v3.0-frozen-2026-08-06",
-  "odds": 0,
-  "edge": null,
+  "odds": -154,
+  "edge": -6.6,
   "result": ""
  },
  {
@@ -6001,8 +6001,8 @@
   "prob": 54,
   "tier": "Moderate",
   "version": "v3.0-frozen-2026-08-06",
-  "odds": 0,
-  "edge": null,
+  "odds": -104,
+  "edge": 3.0,
   "result": ""
  },
  {
@@ -6012,8 +6012,8 @@
   "prob": 53,
   "tier": "Low",
   "version": "v3.0-frozen-2026-08-06",
-  "odds": 0,
-  "edge": null,
+  "odds": -134,
+  "edge": -4.3,
   "result": ""
  },
  {
@@ -6023,8 +6023,8 @@
   "prob": 51,
   "tier": "Low",
   "version": "v3.0-frozen-2026-08-06",
-  "odds": 0,
-  "edge": null,
+  "odds": -104,
+  "edge": 0.0,
   "result": ""
  },
  {
@@ -6034,8 +6034,8 @@
   "prob": 52,
   "tier": "Conflicted",
   "version": "v3.0-frozen-2026-08-06",
-  "odds": 0,
-  "edge": null,
+  "odds": -130,
+  "edge": -4.5,
   "result": ""
  }
 ]

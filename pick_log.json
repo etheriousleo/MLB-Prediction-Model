@@ -5938,5 +5938,104 @@
   "odds": -110,
   "edge": -0.4,
   "result": "L"
+ },
+ {
+  "date": "2026-09-17",
+  "matchup": "Oakland Athletics @ Tampa Bay Rays",
+  "pick": "Tampa Bay Rays",
+  "prob": 68,
+  "tier": "High",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
+ },
+ {
+  "date": "2026-09-17",
+  "matchup": "Los Angeles Dodgers @ Cincinnati Reds",
+  "pick": "Los Angeles Dodgers",
+  "prob": 67,
+  "tier": "High",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
+ },
+ {
+  "date": "2026-09-17",
+  "matchup": "San Diego Padres @ Colorado Rockies",
+  "pick": "San Diego Padres",
+  "prob": 60,
+  "tier": "Moderate",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
+ },
+ {
+  "date": "2026-09-17",
+  "matchup": "Milwaukee Brewers @ Pittsburgh Pirates",
+  "pick": "Milwaukee Brewers",
+  "prob": 55,
+  "tier": "Moderate",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
+ },
+ {
+  "date": "2026-09-17",
+  "matchup": "Kansas City Royals @ Houston Astros",
+  "pick": "Houston Astros",
+  "prob": 54,
+  "tier": "Moderate",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
+ },
+ {
+  "date": "2026-09-17",
+  "matchup": "Minnesota Twins @ Los Angeles Angels",
+  "pick": "Los Angeles Angels",
+  "prob": 54,
+  "tier": "Moderate",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
+ },
+ {
+  "date": "2026-09-17",
+  "matchup": "Philadelphia Phillies @ New York Mets",
+  "pick": "New York Mets",
+  "prob": 53,
+  "tier": "Low",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
+ },
+ {
+  "date": "2026-09-17",
+  "matchup": "Detroit Tigers @ Chicago White Sox",
+  "pick": "Detroit Tigers",
+  "prob": 51,
+  "tier": "Low",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
+ },
+ {
+  "date": "2026-09-17",
+  "matchup": "Boston Red Sox @ Texas Rangers",
+  "pick": "Boston Red Sox",
+  "prob": 52,
+  "tier": "Conflicted",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 0,
+  "edge": null,
+  "result": ""
  }
 ]

@@ -1,5 +1,38 @@
 [
  {
+  "date": "2026-09-21",
+  "matchup": "Washington Nationals @ Detroit Tigers",
+  "pick": "Detroit Tigers",
+  "prob": 57,
+  "tier": "Moderate",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": -134,
+  "edge": -0.3,
+  "result": "W"
+ },
+ {
+  "date": "2026-09-21",
+  "matchup": "Toronto Blue Jays @ Baltimore Orioles",
+  "pick": "Baltimore Orioles",
+  "prob": 51,
+  "tier": "Low",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": -112,
+  "edge": -1.8,
+  "result": "W"
+ },
+ {
+  "date": "2026-09-21",
+  "matchup": "Minnesota Twins @ San Francisco Giants",
+  "pick": "San Francisco Giants",
+  "prob": 51,
+  "tier": "Low",
+  "version": "v3.0-frozen-2026-08-06",
+  "odds": 104,
+  "edge": 2.0,
+  "result": "W"
+ },
+ {
   "date": "2026-09-20",
   "matchup": "San Francisco Giants @ Los Angeles Dodgers",
   "pick": "Los Angeles Dodgers",
@@ -6532,38 +6565,5 @@
   "odds": -110,
   "edge": -0.4,
   "result": "L"
- },
- {
-  "date": "2026-09-21",
-  "matchup": "Washington Nationals @ Detroit Tigers",
-  "pick": "Detroit Tigers",
-  "prob": 57,
-  "tier": "Moderate",
-  "version": "v3.0-frozen-2026-08-06",
-  "odds": -134,
-  "edge": -0.3,
-  "result": "W"
- },
- {
-  "date": "2026-09-21",
-  "matchup": "Toronto Blue Jays @ Baltimore Orioles",
-  "pick": "Baltimore Orioles",
-  "prob": 51,
-  "tier": "Low",
-  "version": "v3.0-frozen-2026-08-06",
-  "odds": -112,
-  "edge": -1.8,
-  "result": "W"
- },
- {
-  "date": "2026-09-21",
-  "matchup": "Minnesota Twins @ San Francisco Giants",
-  "pick": "San Francisco Giants",
-  "prob": 51,
-  "tier": "Low",
-  "version": "v3.0-frozen-2026-08-06",
-  "odds": 104,
-  "edge": 2.0,
-  "result": "W"
  }
 ]

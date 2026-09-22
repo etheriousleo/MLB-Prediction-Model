@@ -6542,7 +6542,7 @@
   "version": "v3.0-frozen-2026-08-06",
   "odds": -134,
   "edge": -0.3,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-09-21",
@@ -6553,7 +6553,7 @@
   "version": "v3.0-frozen-2026-08-06",
   "odds": -112,
   "edge": -1.8,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-09-21",
@@ -6564,6 +6564,6 @@
   "version": "v3.0-frozen-2026-08-06",
   "odds": 104,
   "edge": 2.0,
-  "result": ""
+  "result": "W"
  }
 ]

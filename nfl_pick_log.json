@@ -863,7 +863,7 @@
   "version": "nfl-v1.0-frozen-2026-09-04",
   "odds": -330,
   "edge": 4.6,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-09-21",
@@ -877,6 +877,6 @@
   "odds": 100,
   "edge": 13.8,
   "margin": 12.5,
-  "result": ""
+  "result": "W"
  }
 ]

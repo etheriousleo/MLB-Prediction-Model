@@ -6575,7 +6575,7 @@
   "version": "v3.0-frozen-2026-08-06",
   "odds": -184,
   "edge": 2.2,
-  "result": ""
+  "result": "L"
  },
  {
   "date": "2026-09-22",
@@ -6586,7 +6586,7 @@
   "version": "v3.0-frozen-2026-08-06",
   "odds": -215,
   "edge": -7.3,
-  "result": ""
+  "result": "L"
  },
  {
   "date": "2026-09-22",
@@ -6597,7 +6597,7 @@
   "version": "v3.0-frozen-2026-08-06",
   "odds": -154,
   "edge": -1.6,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-09-22",
@@ -6608,7 +6608,7 @@
   "version": "v3.0-frozen-2026-08-06",
   "odds": -158,
   "edge": 0.8,
-  "result": ""
+  "result": "L"
  },
  {
   "date": "2026-09-22",
@@ -6619,7 +6619,7 @@
   "version": "v3.0-frozen-2026-08-06",
   "odds": -188,
   "edge": -5.3,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-09-22",
@@ -6630,7 +6630,7 @@
   "version": "v3.0-frozen-2026-08-06",
   "odds": -120,
   "edge": 5.5,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-09-22",
@@ -6641,7 +6641,7 @@
   "version": "v3.0-frozen-2026-08-06",
   "odds": -148,
   "edge": -1.7,
-  "result": ""
+  "result": "L"
  },
  {
   "date": "2026-09-22",
@@ -6652,7 +6652,7 @@
   "version": "v3.0-frozen-2026-08-06",
   "odds": 120,
   "edge": 9.5,
-  "result": ""
+  "result": "L"
  },
  {
   "date": "2026-09-22",
@@ -6685,7 +6685,7 @@
   "version": "v3.0-frozen-2026-08-06",
   "odds": -134,
   "edge": -5.3,
-  "result": ""
+  "result": "L"
  },
  {
   "date": "2026-09-22",
@@ -6707,7 +6707,7 @@
   "version": "v3.0-frozen-2026-08-06",
   "odds": -118,
   "edge": -2.1,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-09-22",
@@ -6718,7 +6718,7 @@
   "version": "v3.0-frozen-2026-08-06",
   "odds": -144,
   "edge": -7.0,
-  "result": ""
+  "result": "L"
  },
  {
   "date": "2026-09-22",
@@ -6729,7 +6729,7 @@
   "version": "v3.0-frozen-2026-08-06",
   "odds": 114,
   "edge": 5.3,
-  "result": ""
+  "result": "L"
  },
  {
   "date": "2026-09-22",
@@ -6740,6 +6740,6 @@
   "version": "v3.0-frozen-2026-08-06",
   "odds": -130,
   "edge": -5.5,
-  "result": ""
+  "result": "L"
  }
 ]

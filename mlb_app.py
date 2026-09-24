@@ -2137,11 +2137,36 @@ with tab_today:
             st.success("Saved.")
             st.rerun()
 
-        # Summary — current model version only, graded picks only
-        cur = edited[(edited["version"] == MODEL_VERSION) &
+        # Summary — ONE model version at a time, graded picks only. Versions
+        # are never pooled (CLAUDE.md: datasets never mix), but the summary
+        # used to key on MODEL_VERSION alone, so the day v4.0 shipped every
+        # table below vanished: the log held 629 graded v3.0 picks and zero
+        # v4.0 ones. Default to the newest version that actually has graded
+        # picks; the current version takes over as soon as it has any.
+        graded_all = edited[edited["result"].isin(["W", "L"])]
+        versions = list(dict.fromkeys(
+            [MODEL_VERSION] + sorted(graded_all["version"].dropna().unique(),
+                                     reverse=True)))
+        with_data = [v for v in versions if (graded_all["version"] == v).any()]
+        default_v = MODEL_VERSION if MODEL_VERSION in with_data else \
+                    (with_data[0] if with_data else MODEL_VERSION)
+        sum_version = st.selectbox(
+            "Summary for model version", versions,
+            index=versions.index(default_v),
+            help="Each version is a separate dataset and is never pooled "
+                 "with another. Closed versions are read-only history; "
+                 "their verdicts live in the season verdict file.")
+        if sum_version != MODEL_VERSION:
+            st.caption(f"**{MODEL_VERSION}** (current) has no graded picks "
+                       f"yet — showing the closed **{sum_version}** dataset. "
+                       "Its verdict is final and is not re-litigated here.")
+        cur = edited[(edited["version"] == sum_version) &
                      (edited["result"].isin(["W", "L"]))]
+        if not len(cur):
+            st.info(f"No graded picks for {sum_version} yet. Auto-grade "
+                    "after the first slate's games finish.")
         if len(cur):
-            st.markdown(f"**{MODEL_VERSION}** — graded picks: {len(cur)}")
+            st.markdown(f"**{sum_version}** — graded picks: {len(cur)}")
             sum_rows = []
             for tier in ["High", "Moderate", "Low", "Conflicted"]:
                 t = cur[cur["tier"] == tier]
@@ -2234,7 +2259,7 @@ with tab_today:
             # got a better price than the market's final opinion. Sharp
             # bettors beat the close consistently; recreational ones don't.
             if "closing" in edited.columns:
-                cl = edited[(edited["version"] == MODEL_VERSION)
+                cl = edited[(edited["version"] == sum_version)
                             & (edited["odds"] != 0)
                             & (pd.to_numeric(edited["closing"], errors="coerce").fillna(0) != 0)]
                 if len(cl):

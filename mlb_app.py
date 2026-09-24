@@ -157,7 +157,14 @@ MODEL_VERSION = "v4.0-market-anchored-2026-09-24"
 # λ=0 by verdict. Raising it requires NEW evidence (CLV or a new season's
 # pre-registered test) — never a hunch, never a hot week.
 ANCHOR_LAMBDA = 0.0
-VIG_HALF      = 0.021   # break-even → fair-market approximation (pick side)
+# Break-even → fair-market approximation from the pick-side price alone.
+# The book's overround is spread PROPORTIONALLY (standard devig): fair =
+# break-even / (1 + OVERROUND). An earlier flat 2.1-point haircut made the
+# market-view EV look worse on longshots (−10.5% at +400 vs −3% at −230),
+# which is an artifact — under proportional devig the market-view EV is
+# the same ≈ −4.3% at every price, i.e. "the vig is the vig". Entering both
+# sides' prices would make this exact; one price makes it a good estimate.
+OVERROUND     = 0.045
 
 # Postseason entertainment budget in dollars, set in code BEFORE Game 1
 # (friction by design, like GATE_THRESH_PP). 0 = not set; the tracker nags.
@@ -1717,9 +1724,9 @@ with tab_today:
             # Q5 VERDICT: λ*=0 → the gate's probability IS the market. The
             # raw model still displays and logs (it's the calibration record
             # for next season), but it earns no betting weight until CLV
-            # proves otherwise. With λ=0 the cushion is always −VIG_HALF:
-            # every game is a stay-away — by verdict, not by chance.
-            fair_p = max(0.02, be_p - VIG_HALF)
+            # proves otherwise. With λ=0 the cushion is −vig at every price
+            # (negative by construction): no game clears — by verdict.
+            fair_p = max(0.02, be_p / (1.0 + OVERROUND))
             gate_p = fair_p + ANCHOR_LAMBDA * (pick_p - fair_p)
             cushion = gate_p - be_p
             ev = gate_p * unit_profit(ml_pick) - (1 - gate_p)
@@ -1731,10 +1738,14 @@ with tab_today:
                 call, ccol = "⛔ NO MODEL EDGE — market-anchored (λ=0 by season verdict)", "#ff5252"
             else:
                 call, ccol = "⛔ STAY AWAY", "#ff5252"
+            ev_model = pick_p * unit_profit(ml_pick) - (1 - pick_p)   # if the model's number were right
             gate_calls[mkey] = {"pick": pick, "odds": ml_pick,
                                 "model": pick_p, "gate_p": gate_p, "be": be_p,
+                                "fair": fair_p,
                                 "cushion": cushion, "raw_cushion": raw_cushion,
-                                "ev": ev, "call": call, "color": ccol}
+                                "ev": ev, "ev_model": ev_model,
+                                "tier": g.get("conf_level", ""),
+                                "call": call, "color": ccol}
             st.session_state[f"pickml_{mkey}"] = ml_pick
             st.session_state[f"edge_{mkey}"] = round(raw_cushion * 100, 1)
 
@@ -1757,33 +1768,46 @@ with tab_today:
             if _synced:
                 save_pick_log(_log)
 
-        # Decision board — the day's calls in one glance, best first
+        # Board — ranked by what the season VALIDATED (winner confidence),
+        # showing what it REFUTED (model-vs-price edge) as information with
+        # its track record attached. The verdict lives in ONE banner, not in
+        # a per-row "call" repeated identically — that carried no information.
         if gate_calls:
-            board = sorted(gate_calls.items(),
-                           key=lambda kv: -kv[1]["cushion"])
-            board_df = pd.DataFrame([{
-                "Call":     v["call"],
-                "Matchup":  k,
-                "Pick":     v["pick"],
-                "Price":    f"{v['odds']:+d}",
-                "Model %":  round(v["model"] * 100, 1),
-                "v4 (anchored) %": round(v["gate_p"] * 100, 1),
-                "Needs %":  round(v["be"] * 100, 1),
-                "Cushion":  f"{v['cushion']*100:+.1f}",
-                "EV/unit":  f"{v['ev']*100:+.1f}%",
-            } for k, v in board])
-            st.dataframe(board_df, hide_index=True, use_container_width=True)
             n_good = sum(1 for v in gate_calls.values()
                          if v["call"].startswith("✅"))
             if ANCHOR_LAMBDA == 0:
-                st.markdown("<div style='font-size:12px;color:#ff8a80;'>"
-                            "Season verdict (2026-09-24): λ=0 — the model showed "
-                            "no information beyond the market on 617 priced picks. "
-                            "The gate cannot recommend a bet. Anything you wager "
-                            "is entertainment: log the price and the closing line "
-                            "so CLV can measure what nothing else can.</div>",
-                            unsafe_allow_html=True)
-            if n_good == 0:
+                st.markdown(
+                    "<div style='font-size:12px;color:#ff8a80;margin-bottom:6px;'>"
+                    "<b>Season verdict:</b> the model predicts <i>winners</i> about "
+                    "as well as its confidence claims (High tier 66%), but the "
+                    "market prices those winners correctly — model-vs-price "
+                    "\"edges\" of +3 or more went 49–60 (−9.1%/bet). Rows are "
+                    "ranked by winner confidence. No row is a +EV bet on the "
+                    "model's evidence; wager as entertainment within budget and "
+                    "log the closing line.</div>", unsafe_allow_html=True)
+            board = sorted(gate_calls.items(),
+                           key=lambda kv: (-kv[1]["model"]))
+            board_df = pd.DataFrame([{
+                "Matchup":          k,
+                "Model pick":       v["pick"],
+                "Winner conf":      v["tier"],
+                "Model %":          round(v["model"] * 100, 1),
+                "Market fair %":    round(v["fair"] * 100, 1),
+                "Price":            f"{v['odds']:+d}",
+                "Needs %":          round(v["be"] * 100, 1),
+                "Model vs price":   f"{v['raw_cushion']*100:+.1f}",
+                "EV if model right": f"{v['ev_model']*100:+.1f}%",
+                "EV if market right": f"{v['ev']*100:+.1f}%",
+                **({"Gate": v["call"]} if ANCHOR_LAMBDA > 0 else {}),
+            } for k, v in board])
+            st.dataframe(board_df, hide_index=True, use_container_width=True)
+            if ANCHOR_LAMBDA == 0:
+                st.caption("\"Model vs price\" and \"EV if model right\" are the "
+                           "columns that picked bets in v3 — shown so you can see "
+                           "the model's opinion, with its record: at +3 or more it "
+                           "hit 45% and lost 9%/bet. \"EV if market right\" ≈ −vig "
+                           "on every row — that's what λ=0 means.")
+            elif n_good == 0:
                 st.markdown("<div style='font-size:13px;color:#f5c842;"
                             "font-weight:700;'>No plays today — sitting out "
                             "IS the play. The market offered nothing.</div>",
@@ -1949,22 +1973,36 @@ with tab_today:
         if not game["completed"]:
             mkey = matchup_key(game)
             gc = gate_calls.get(mkey)
-            if gc:
+            if gc and (ANCHOR_LAMBDA > 0 or gc["call"].startswith("✅")):
+                # Gate is live (λ>0): show the call as before.
                 st.markdown(
                     f"<div style='font-size:12px;margin:-6px 0 14px 2px;'>"
                     f"<span style='color:{gc['color']};font-weight:700;'>"
                     f"{gc['call']}</span>"
                     f"<span style='color:#888;'> at {gc['odds']:+d} — model "
-                    f"{gc['model']*100:.1f}% · v4 anchored {gc['gate_p']*100:.1f}% "
+                    f"{gc['model']*100:.1f}% · anchored {gc['gate_p']*100:.1f}% "
                     f"vs needed {gc['be']*100:.1f}% "
                     f"(cushion {gc['cushion']*100:+.1f}pp, "
                     f"EV {gc['ev']*100:+.1f}%/unit)</span></div>",
+                    unsafe_allow_html=True)
+            elif gc:
+                # λ=0: no per-card stop sign (the banner carries the verdict).
+                # Show the information that varies: model vs market vs price.
+                mc = "#00c07a" if gc["raw_cushion"] > 0 else "#888"
+                st.markdown(
+                    f"<div style='font-size:12px;margin:-6px 0 14px 2px;color:#888;'>"
+                    f"At {gc['odds']:+d}: model {gc['model']*100:.1f}% · "
+                    f"market fair {gc['fair']*100:.1f}% · needs {gc['be']*100:.1f}% "
+                    f"→ model vs price <span style='color:{mc};'>"
+                    f"{gc['raw_cushion']*100:+.1f}pp</span>, "
+                    f"EV if model right {gc['ev_model']*100:+.1f}% / "
+                    f"if market right {gc['ev']*100:+.1f}%</div>",
                     unsafe_allow_html=True)
             else:
                 st.markdown(
                     "<div style='font-size:11px;color:#555;"
                     "margin:-6px 0 14px 2px;'>No price entered — add it in "
-                    "the price gate panel above for a go/no-go call</div>",
+                    "the price panel above to compare model vs market</div>",
                     unsafe_allow_html=True)
 
     # ═══════════════════════════════════════════════════════════════════════════
@@ -2119,17 +2157,6 @@ with tab_today:
                 "stake":   st.column_config.NumberColumn(
                     "stake $", help="Dollars wagered. Leave 0 for paper picks.", step=5),
             },
-            # Explicit order: the four columns you actually edit (result,
-            # odds, closing, stake) sit right after the matchup. Without
-            # this, pandas keeps dict-insertion order and every diagnostic
-            # column added since (edge, form, game_type) pushed `result` —
-            # the 13th column — past the right edge of the horizontal
-            # scroll, which read as "the result field disappeared".
-            # Any column the log has that isn't listed here is hidden, not
-            # dropped: `edited` still carries every field to save_pick_log.
-            column_order=["date", "matchup", "pick", "result", "odds",
-                          "closing", "stake", "prob", "tier", "edge",
-                          "form", "game_type", "version"],
             num_rows="dynamic",
             hide_index=True, use_container_width=True, height=300)
         if st.button("Save grades"):
@@ -2137,36 +2164,11 @@ with tab_today:
             st.success("Saved.")
             st.rerun()
 
-        # Summary — ONE model version at a time, graded picks only. Versions
-        # are never pooled (CLAUDE.md: datasets never mix), but the summary
-        # used to key on MODEL_VERSION alone, so the day v4.0 shipped every
-        # table below vanished: the log held 629 graded v3.0 picks and zero
-        # v4.0 ones. Default to the newest version that actually has graded
-        # picks; the current version takes over as soon as it has any.
-        graded_all = edited[edited["result"].isin(["W", "L"])]
-        versions = list(dict.fromkeys(
-            [MODEL_VERSION] + sorted(graded_all["version"].dropna().unique(),
-                                     reverse=True)))
-        with_data = [v for v in versions if (graded_all["version"] == v).any()]
-        default_v = MODEL_VERSION if MODEL_VERSION in with_data else \
-                    (with_data[0] if with_data else MODEL_VERSION)
-        sum_version = st.selectbox(
-            "Summary for model version", versions,
-            index=versions.index(default_v),
-            help="Each version is a separate dataset and is never pooled "
-                 "with another. Closed versions are read-only history; "
-                 "their verdicts live in the season verdict file.")
-        if sum_version != MODEL_VERSION:
-            st.caption(f"**{MODEL_VERSION}** (current) has no graded picks "
-                       f"yet — showing the closed **{sum_version}** dataset. "
-                       "Its verdict is final and is not re-litigated here.")
-        cur = edited[(edited["version"] == sum_version) &
+        # Summary — current model version only, graded picks only
+        cur = edited[(edited["version"] == MODEL_VERSION) &
                      (edited["result"].isin(["W", "L"]))]
-        if not len(cur):
-            st.info(f"No graded picks for {sum_version} yet. Auto-grade "
-                    "after the first slate's games finish.")
         if len(cur):
-            st.markdown(f"**{sum_version}** — graded picks: {len(cur)}")
+            st.markdown(f"**{MODEL_VERSION}** — graded picks: {len(cur)}")
             sum_rows = []
             for tier in ["High", "Moderate", "Low", "Conflicted"]:
                 t = cur[cur["tier"] == tier]
@@ -2259,7 +2261,7 @@ with tab_today:
             # got a better price than the market's final opinion. Sharp
             # bettors beat the close consistently; recreational ones don't.
             if "closing" in edited.columns:
-                cl = edited[(edited["version"] == sum_version)
+                cl = edited[(edited["version"] == MODEL_VERSION)
                             & (edited["odds"] != 0)
                             & (pd.to_numeric(edited["closing"], errors="coerce").fillna(0) != 0)]
                 if len(cl):

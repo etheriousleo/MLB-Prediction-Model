@@ -2119,6 +2119,17 @@ with tab_today:
                 "stake":   st.column_config.NumberColumn(
                     "stake $", help="Dollars wagered. Leave 0 for paper picks.", step=5),
             },
+            # Explicit order: the four columns you actually edit (result,
+            # odds, closing, stake) sit right after the matchup. Without
+            # this, pandas keeps dict-insertion order and every diagnostic
+            # column added since (edge, form, game_type) pushed `result` —
+            # the 13th column — past the right edge of the horizontal
+            # scroll, which read as "the result field disappeared".
+            # Any column the log has that isn't listed here is hidden, not
+            # dropped: `edited` still carries every field to save_pick_log.
+            column_order=["date", "matchup", "pick", "result", "odds",
+                          "closing", "stake", "prob", "tier", "edge",
+                          "form", "game_type", "version"],
             num_rows="dynamic",
             hide_index=True, use_container_width=True, height=300)
         if st.button("Save grades"):

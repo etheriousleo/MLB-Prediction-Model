@@ -135,13 +135,34 @@ def today_et(fmt: str = "%Y-%m-%d") -> str:
 
 SEASON     = now_et().year
 
-# ── MODEL FREEZE ───────────────────────────────────────────────────────────────
-# This version is FROZEN for forward measurement. Every logged pick is tagged
-# with this string so results can be attributed to exactly one model. The past
-# stretch was unmeasurable partly because picks spanned three model versions.
-# No parameter/formula changes until the pick tracker holds ≥100 graded picks
-# for this version. Change the string if the model ever changes again.
-MODEL_VERSION = "v3.0-frozen-2026-08-06"
+# ── MODEL VERSION & SEASON VERDICT ─────────────────────────────────────────────
+# v3.0 was frozen 2026-08-06 and forward-measured on 617 priced, graded picks.
+# The pre-registered workup (season_analysis.py, criteria locked 2026-09-15,
+# run 2026-09-24) returned:
+#   Q1 GOOD bucket (cushion ≥ +3pp): 49–60, 45.0%, −9.9u (−9.1%/bet) → NOT an
+#      edge. Stay-aways 235–154 (60.4%) still lost 1.6%/bet — the vig grind.
+#   Q2 Calibration: honest-to-UNDERconfident marginally; fails only where it
+#      disagrees with the market (under-dispersed → false dog edges).
+#   Q3 High vs Moderate: +6.4pp, p=0.11 vs bar 0.10 → MERGED.
+#   Q4 Form component: diagnostic never deployed → inconclusive → shrunk by
+#      half + double-count fixed + diagnostic now live.
+#   Q5 λ* = 0.00 (5/5 folds). Market Brier .2362 vs model .2422; joint
+#      logistic: market β=+6.6 (p≈0), model β=−0.2 (p=.93).
+# VERDICT: at FanDuel prices this model carries no information the market
+# lacks. v4 is market-anchored; the gate cannot recommend a bet until
+# closing-line value (CLV) earns λ > 0. See season_verdict_2026.md.
+MODEL_VERSION = "v4.0-market-anchored-2026-09-24"
+
+# λ anchor from the registered v4 rule: p_gate = market_fair + λ·(model − market_fair).
+# λ=0 by verdict. Raising it requires NEW evidence (CLV or a new season's
+# pre-registered test) — never a hunch, never a hot week.
+ANCHOR_LAMBDA = 0.0
+VIG_HALF      = 0.021   # break-even → fair-market approximation (pick side)
+
+# Postseason entertainment budget in dollars, set in code BEFORE Game 1
+# (friction by design, like GATE_THRESH_PP). 0 = not set; the tracker nags.
+PLAYOFF_BUDGET = 0
+POSTSEASON_TYPES = {"F", "D", "L", "W"}   # Wild Card, Division, LCS, World Series
 
 # ── GATE THRESHOLD — deliberately NOT adjustable in the UI ─────────────────────
 # Juan's explicit request: no in-app knob, so in-the-moment eagerness to bet
@@ -638,7 +659,9 @@ def fetch_todays_games(date_mmdd: str) -> tuple[list, str]:
     a cached slate can never survive across the ET day boundary."""
     try:
         games = statsapi.schedule(date=date_mmdd, sportId=1)
-        return [g for g in games if g.get("game_type", "") == "R"], ""
+        return [g for g in games
+                if g.get("game_type", "") == "R"
+                or g.get("game_type", "") in POSTSEASON_TYPES], ""
     except Exception as e:
         return [], str(e)
 
@@ -769,6 +792,17 @@ def blend_stats(season_s: dict, recent_s: dict, w_season: float, w_recent: float
     recent_games = float(recent_s.get("G", 0) or recent_s.get("g", 0) or 0)
     if recent_games < 1:
         return season_s
+    # DOUBLE-COUNT FIX: the season stats already CONTAIN the recent window's
+    # games. Blending season (which includes them) with recent again gave the
+    # last ~13 games an effective weight of w_recent + (1−w_recent)·share —
+    # ~43% at the old 35% slider. Solve for the internal weight that makes
+    # the stated w_recent the true effective weight:
+    #   w_eff_target = w_int + (1 − w_int)·share  →  w_int = (w_recent − share)/(1 − share)
+    season_games = float(season_s.get("G", 0) or 0)
+    if season_games > recent_games:
+        share = recent_games / season_games
+        w_recent = max(0.0, (w_recent - share) / (1.0 - share))
+        w_season = 1.0 - w_recent
     blended = dict(season_s)
     for key in ("runs_pg", "avg", "obp", "slg", "ops", "hr_pg",
                 "bb_pct", "k_pct", "rd_pg",
@@ -1221,11 +1255,12 @@ def calc_confidence(sa, sb, pct_h, pct_a, margin_winner, prob_winner,
         (sp_h_score > sp_a_score) != (pct_h > pct_a)
     )
 
-    if (models_agree and prob_strength == "strong"
-            and not form_split and not sp_conflict):
+    # Q3 VERDICT (2026-09-24): High vs Moderate gap +6.4pp, p=0.11 against a
+    # pre-registered bar of 0.10 → MERGED. One agreement tier now; form_split
+    # no longer demotes (it was the old High/Moderate distinction).
+    if (models_agree and prob_strength in ("strong", "moderate")
+            and not sp_conflict):
         level, emoji, color = "High",       "🟢", "#00c07a"
-    elif models_agree and prob_strength in ("strong", "moderate") and not sp_conflict:
-        level, emoji, color = "Moderate",   "🟡", "#f5c842"
     elif models_agree:
         level, emoji, color = "Low",        "🟠", "#f5a623"
     else:
@@ -1288,9 +1323,13 @@ with st.sidebar:
     # Previously two independent 0-100 sliders were normalized after the fact, so
     # setting season=65 while recent sat at its default 50 silently produced
     # 56.5/43.5 — not 65/35. One slider makes the ratio exact.
+    # Q4 VERDICT: diagnostic never deployed → inconclusive → pre-registered
+    # default is SHRINK BY HALF (35 → ~17.5; slider step lands on 15). The
+    # stated weight is now the TRUE effective weight — see blend_stats.
     w_recent_pct = st.slider(
-        "Recent-form weight (%)", 0, 100, 35, step=5,
-        help="Season weight is the remainder. 35 → 65% season / 35% recent.")
+        "Recent-form weight (%)", 0, 100, 15, step=5,
+        help="Season weight is the remainder. This is the EFFECTIVE weight on "
+             "the recent window — blend_stats removes the double count.")
     w_season_pct = 100 - w_recent_pct
     w_season = w_season_pct / 100
     w_recent = w_recent_pct / 100
@@ -1484,7 +1523,16 @@ with tab_today:
         ph, pa = calc_prob(s_h, s_a, home_flag, w_off, w_def, w_rec,
                            r_h, r_a, w_season, w_recent, sp_h_score, sp_a_score,
                            park_factor=park_factor)
+        # DIAGNOSTIC (model unchanged): same calculation with the recent-form
+        # blend zeroed out. form_delta = how many pp the 14-day form
+        # component moved the PICK's probability. Logged with each pick so
+        # the tracker can eventually answer whether form-driven
+        # disagreements with the market underperform flat ones.
+        ph0, pa0 = calc_prob(s_h, s_a, home_flag, w_off, w_def, w_rec,
+                             r_h, r_a, 1.0, 0.0, sp_h_score, sp_a_score,
+                             park_factor=park_factor)
         prob_pick = s_h["name"] if ph >= pa else s_a["name"]
+        form_delta = round(((ph - ph0) if ph >= pa else (pa - pa0)) * 100, 1)
         home_pct  = round(ph * 100)
         away_pct  = round(pa * 100)
 
@@ -1538,6 +1586,8 @@ with tab_today:
             # form with StreamlitDuplicateElementKey and would have merged
             # two games into one tracker row.
             "game_id":       game.get("game_id"),
+            "game_type":     game.get("game_type", "R"),
+            "form_delta":    form_delta,
             "game_num":      game.get("game_num", 1),
             "doubleheader":  game.get("doubleheader", "N"),
             "home_record":   f"{s_h['w']}–{s_h['l']}",
@@ -1663,20 +1713,30 @@ with tab_today:
             pick_p = (g["home_pct"] if pick == g["home"]
                       else g["away_pct"]) / 100.0
             be_p = breakeven_prob(ml_pick)
-            cushion = pick_p - be_p
-            ev = pick_p * unit_profit(ml_pick) - (1 - pick_p)
+            raw_cushion = pick_p - be_p          # raw model vs price (logged, for continuity)
+            # Q5 VERDICT: λ*=0 → the gate's probability IS the market. The
+            # raw model still displays and logs (it's the calibration record
+            # for next season), but it earns no betting weight until CLV
+            # proves otherwise. With λ=0 the cushion is always −VIG_HALF:
+            # every game is a stay-away — by verdict, not by chance.
+            fair_p = max(0.02, be_p - VIG_HALF)
+            gate_p = fair_p + ANCHOR_LAMBDA * (pick_p - fair_p)
+            cushion = gate_p - be_p
+            ev = gate_p * unit_profit(ml_pick) - (1 - gate_p)
             if cushion >= GATE_THRESH_PP / 100.0:
                 call, ccol = "✅ GOOD PICK", "#00c07a"
             elif cushion >= 0:
                 call, ccol = "🟡 THIN — NO BET (edge inside model error)", "#f5c842"
+            elif ANCHOR_LAMBDA == 0:
+                call, ccol = "⛔ NO MODEL EDGE — market-anchored (λ=0 by season verdict)", "#ff5252"
             else:
                 call, ccol = "⛔ STAY AWAY", "#ff5252"
             gate_calls[mkey] = {"pick": pick, "odds": ml_pick,
-                                "model": pick_p, "be": be_p,
-                                "cushion": cushion, "ev": ev,
-                                "call": call, "color": ccol}
+                                "model": pick_p, "gate_p": gate_p, "be": be_p,
+                                "cushion": cushion, "raw_cushion": raw_cushion,
+                                "ev": ev, "call": call, "color": ccol}
             st.session_state[f"pickml_{mkey}"] = ml_pick
-            st.session_state[f"edge_{mkey}"] = round(cushion * 100, 1)
+            st.session_state[f"edge_{mkey}"] = round(raw_cushion * 100, 1)
 
         # Auto-sync: the panel is the source of truth for TODAY's prices.
         # Any rows already logged today get their odds/cushion updated from
@@ -1692,7 +1752,7 @@ with tab_today:
                         and _r.get("version") == MODEL_VERSION
                         and _r.get("odds", 0) != _gc["odds"]):
                     _r["odds"] = _gc["odds"]
-                    _r["edge"] = round(_gc["cushion"] * 100, 1)
+                    _r["edge"] = round(_gc["raw_cushion"] * 100, 1)
                     _synced += 1
             if _synced:
                 save_pick_log(_log)
@@ -1707,6 +1767,7 @@ with tab_today:
                 "Pick":     v["pick"],
                 "Price":    f"{v['odds']:+d}",
                 "Model %":  round(v["model"] * 100, 1),
+                "v4 (anchored) %": round(v["gate_p"] * 100, 1),
                 "Needs %":  round(v["be"] * 100, 1),
                 "Cushion":  f"{v['cushion']*100:+.1f}",
                 "EV/unit":  f"{v['ev']*100:+.1f}%",
@@ -1714,6 +1775,14 @@ with tab_today:
             st.dataframe(board_df, hide_index=True, use_container_width=True)
             n_good = sum(1 for v in gate_calls.values()
                          if v["call"].startswith("✅"))
+            if ANCHOR_LAMBDA == 0:
+                st.markdown("<div style='font-size:12px;color:#ff8a80;'>"
+                            "Season verdict (2026-09-24): λ=0 — the model showed "
+                            "no information beyond the market on 617 priced picks. "
+                            "The gate cannot recommend a bet. Anything you wager "
+                            "is entertainment: log the price and the closing line "
+                            "so CLV can measure what nothing else can.</div>",
+                            unsafe_allow_html=True)
             if n_good == 0:
                 st.markdown("<div style='font-size:13px;color:#f5c842;"
                             "font-weight:700;'>No plays today — sitting out "
@@ -1813,7 +1882,13 @@ with tab_today:
             f'</span> {status_badge} {cover_badge}</div>'
             f'<div style="margin-top:4px;">{blend_note}</div>'
             f'<span style="font-size:13px;font-weight:700;color:{color};">'
-            f'{conf_emoji} {conf_level} confidence</span></div>'
+            f'{conf_emoji} {conf_level} confidence</span>'
+            + ('<span style="margin-left:10px;padding:2px 8px;border-radius:6px;'
+               'background:#3a2a5e;color:#d9c8ff;font-size:11px;font-weight:700;">'
+               'POSTSEASON · out-of-distribution: model built on regular-season '
+               'stats; rotations, bullpens, and rest patterns differ</span>'
+               if game.get("game_type", "R") != "R" else "")
+            + '</div>'
 
             # Stats grid
             f'<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px;margin-bottom:14px;">'
@@ -1880,7 +1955,8 @@ with tab_today:
                     f"<span style='color:{gc['color']};font-weight:700;'>"
                     f"{gc['call']}</span>"
                     f"<span style='color:#888;'> at {gc['odds']:+d} — model "
-                    f"{gc['model']*100:.1f}% vs needed {gc['be']*100:.1f}% "
+                    f"{gc['model']*100:.1f}% · v4 anchored {gc['gate_p']*100:.1f}% "
+                    f"vs needed {gc['be']*100:.1f}% "
                     f"(cushion {gc['cushion']*100:+.1f}pp, "
                     f"EV {gc['ev']*100:+.1f}%/unit)</span></div>",
                     unsafe_allow_html=True)
@@ -1933,6 +2009,10 @@ with tab_today:
                     # overwrite at grading time if the price you got differs.
                     "odds":    st.session_state.get(f"pickml_{matchup}", 0),
                     "edge":    st.session_state.get(f"edge_{matchup}", None),
+                    "form":    g.get("form_delta"),
+                    "game_type": g.get("game_type", "R"),
+                    "closing": 0,      # closing price on the pick — enter at grade time
+                    "stake":   0,      # dollars actually wagered (0 = paper)
                     "result":  "",     # W / L / Push
                 })
                 added += 1
@@ -2027,6 +2107,17 @@ with tab_today:
                 "edge":    st.column_config.NumberColumn(
                     "edge", help="Cushion: model prob − break-even prob of the logged price (pp)",
                     disabled=True),
+                "form":    st.column_config.NumberColumn(
+                    "form", help="pp the 14-day form component moved the pick's probability at log time",
+                    disabled=True),
+                "game_type": st.column_config.TextColumn(
+                    "type", help="R = regular season; F/D/L/W = postseason rounds",
+                    disabled=True),
+                "closing": st.column_config.NumberColumn(
+                    "closing", help="Closing moneyline on the pick side, at first pitch. "
+                                    "CLV = did you beat the close?", step=5),
+                "stake":   st.column_config.NumberColumn(
+                    "stake $", help="Dollars wagered. Leave 0 for paper picks.", step=5),
             },
             num_rows="dynamic",
             hide_index=True, use_container_width=True, height=300)
@@ -2099,6 +2190,73 @@ with tab_today:
                                 "is overconfidence in that zone.")
                     st.dataframe(pd.DataFrame(brows), hide_index=True,
                                  use_container_width=True)
+            # Form diagnostic: picks the 14-day component moved ≥2pp vs
+            # picks it barely touched. If the moved group persistently
+            # underperforms at ~100 graded, the form window (14d @ ~43%
+            # effective weight) is manufacturing false edges.
+            if "form" in cur.columns:
+                fp = cur[(cur["odds"] != 0) & cur["form"].notna()]
+                if len(fp) >= 10:
+                    frows = []
+                    for label, mask in [("form moved pick ≥ 2pp",
+                                         fp["form"].abs() >= 2.0),
+                                        ("form moved pick < 2pp",
+                                         fp["form"].abs() < 2.0)]:
+                        b = fp[mask]
+                        if not len(b):
+                            continue
+                        w = int((b["result"] == "W").sum())
+                        l = int((b["result"] == "L").sum())
+                        u = sum(unit_profit(r["odds"]) if r["result"] == "W"
+                                else -1.0 for _, r in b.iterrows())
+                        frows.append({"picks": label, "record": f"{w}–{l}",
+                                      "hit %": round(w/(w+l)*100, 1) if w+l else 0,
+                                      "units": round(u, 2),
+                                      "toward 100": f"{w+l}/100"})
+                    if frows:
+                        st.markdown("**Recent-form diagnostic** — does the "
+                                    "14-day window earn its weight?")
+                        st.dataframe(pd.DataFrame(frows), hide_index=True,
+                                     use_container_width=True)
+            # ── CLV: the only instrument that can measure skill at this scale ──
+            # clv_pp = break-even(closing) − break-even(taken); positive = you
+            # got a better price than the market's final opinion. Sharp
+            # bettors beat the close consistently; recreational ones don't.
+            if "closing" in edited.columns:
+                cl = edited[(edited["version"] == MODEL_VERSION)
+                            & (edited["odds"] != 0)
+                            & (pd.to_numeric(edited["closing"], errors="coerce").fillna(0) != 0)]
+                if len(cl):
+                    clv = [(breakeven_prob(float(r["closing"])) - breakeven_prob(float(r["odds"]))) * 100
+                           for _, r in cl.iterrows()]
+                    beat = sum(1 for c in clv if c > 0)
+                    st.markdown(f"**Closing-line value** — {len(cl)} picks with a "
+                                f"closing price: beat the close {beat}/{len(cl)} "
+                                f"({beat/len(cl)*100:.0f}%), avg CLV "
+                                f"{sum(clv)/len(clv):+.2f}pp. Consistently positive "
+                                f"CLV is the ONLY evidence that could ever raise λ.")
+            # ── Entertainment budget guard ──
+            if "stake" in edited.columns:
+                bets = edited[(edited["version"] == MODEL_VERSION)
+                              & (pd.to_numeric(edited["stake"], errors="coerce").fillna(0) > 0)]
+                if len(bets) or PLAYOFF_BUDGET > 0:
+                    spent = float(pd.to_numeric(bets["stake"], errors="coerce").fillna(0).sum())
+                    pl = sum((float(r["stake"]) * unit_profit(float(r["odds"])) if r["result"] == "W"
+                              else (-float(r["stake"]) if r["result"] == "L" else 0.0))
+                             for _, r in bets.iterrows() if r["odds"] != 0)
+                    if PLAYOFF_BUDGET > 0:
+                        left = PLAYOFF_BUDGET - spent
+                        col = "#00c07a" if left > 0 else "#ff5252"
+                        st.markdown(f"**Playoff budget** — staked ${spent:,.0f} of "
+                                    f"${PLAYOFF_BUDGET:,.0f} (<span style='color:{col};'>"
+                                    f"${left:,.0f} remaining</span>) · P/L ${pl:+,.0f}",
+                                    unsafe_allow_html=True)
+                        if left <= 0:
+                            st.error("Budget spent. No reload — that was the deal you "
+                                     "made with yourself before Game 1.")
+                    else:
+                        st.warning(f"Real stakes logged (${spent:,.0f}) but PLAYOFF_BUDGET "
+                                   f"is 0. Set it in code before the next bet.")
             st.caption("Units use only picks with a price entered, flat 1u. "
                        "Hit rate without the price you paid says nothing about "
                        "profit — a 60% tier loses money at worse than -150.")

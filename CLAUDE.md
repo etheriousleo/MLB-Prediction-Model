@@ -8,12 +8,16 @@ secrets configured in Streamlit Cloud. Never commit tokens. Never commit
 the log to `main` (commits to `main` reboot the app).
 
 ## Current state (2026-09-24)
-- `MODEL_VERSION = v4.0-market-anchored-2026-09-24`.
+- `MODEL_VERSION = v4.1-picker-2026-09-24`.
 - The 2026 season verdict is in `season_verdict_2026.md`. It is BINDING.
   Do not re-litigate it on 2026 data, and do not fit new parameters to it.
-- `ANCHOR_LAMBDA = 0`: the gate cannot recommend a bet. Only sustained
-  positive closing-line value or a new season's pre-registered test can
-  raise it. Not a hot week. Not a hunch.
+- `ANCHOR_LAMBDA = 1.0` by OWNER DECISION (2026-09-24), not by evidence:
+  the pre-registered rule returned 0.00. Juan's product spec is model
+  probability → market price → bet/no-bet, and that is the app's job.
+  v4.1's picker runs a CHANGED model (double-count fixed, form 15%, tiers
+  merged) and is unmeasured; its GOOD-pick record accrues in the tracker.
+  The v3 record (49–60, −9.1%/bet) is displayed beside every call. Do not
+  hide it, and do not re-argue λ unless Juan raises it.
 - `GATE_THRESH_PP`, `ANCHOR_LAMBDA`, `PLAYOFF_BUDGET` are deliberately
   code-only — no UI controls — so in-the-moment eagerness can't loosen
   them. Any commit that changes one must cite the evidence in its message.

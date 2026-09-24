@@ -148,15 +148,25 @@ SEASON     = now_et().year
 #      half + double-count fixed + diagnostic now live.
 #   Q5 λ* = 0.00 (5/5 folds). Market Brier .2362 vs model .2422; joint
 #      logistic: market β=+6.6 (p≈0), model β=−0.2 (p=.93).
-# VERDICT: at FanDuel prices this model carries no information the market
-# lacks. v4 is market-anchored; the gate cannot recommend a bet until
-# closing-line value (CLV) earns λ > 0. See season_verdict_2026.md.
-MODEL_VERSION = "v4.0-market-anchored-2026-09-24"
+# VERDICT (v3.0): at FanDuel prices the v3 model carried no information the
+# market lacked; its GOOD picks went 49–60 (−9.1%/bet). See
+# season_verdict_2026.md — that record is permanent.
+#
+# OWNER DECISION 2026-09-24 (Juan): the app's job is the three-step pipeline —
+# model probability → market price → bet/no-bet determination. The
+# pre-registered v4 rule returned λ*=0.00; the owner set λ=1.0 so the gate
+# runs on the model's own probability. This is a product decision, NOT an
+# evidence-based one, and it is recorded as such. What makes it defensible
+# under the method: v4's model is CHANGED (double-count fixed, form 35→15%,
+# tiers merged), so its picker is UNMEASURED — its GOOD-pick record accrues
+# in the tracker under this version tag from this date, and the v3 record
+# stays displayed beside every call as context.
+MODEL_VERSION = "v4.1-picker-2026-09-24"
 
-# λ anchor from the registered v4 rule: p_gate = market_fair + λ·(model − market_fair).
-# λ=0 by verdict. Raising it requires NEW evidence (CLV or a new season's
-# pre-registered test) — never a hunch, never a hot week.
-ANCHOR_LAMBDA = 0.0
+# λ: p_gate = market_fair + λ·(model − market_fair).
+#   1.0 = gate on the model's probability (owner decision, above)
+#   0.0 = gate on the market (pre-registered v4 rule; no bets possible)
+ANCHOR_LAMBDA = 1.0
 # Break-even → fair-market approximation from the pick-side price alone.
 # The book's overround is spread PROPORTIONALLY (standard devig): fair =
 # break-even / (1 + OVERROUND). An earlier flat 2.1-point haircut made the
@@ -1775,19 +1785,17 @@ with tab_today:
         if gate_calls:
             n_good = sum(1 for v in gate_calls.values()
                          if v["call"].startswith("✅"))
-            if ANCHOR_LAMBDA == 0:
-                st.markdown(
-                    "<div style='font-size:12px;color:#ff8a80;margin-bottom:6px;'>"
-                    "<b>Season verdict:</b> the model predicts <i>winners</i> about "
-                    "as well as its confidence claims (High tier 66%), but the "
-                    "market prices those winners correctly — model-vs-price "
-                    "\"edges\" of +3 or more went 49–60 (−9.1%/bet). Rows are "
-                    "ranked by winner confidence. No row is a +EV bet on the "
-                    "model's evidence; wager as entertainment within budget and "
-                    "log the closing line.</div>", unsafe_allow_html=True)
+            st.markdown(
+                "<div style='font-size:12px;color:#aaa;margin-bottom:6px;'>"
+                "<b>Method record:</b> v3's GOOD picks went 49–60 (−9.1%/bet) over "
+                "the 2026 regular season. v4.1 runs a changed model (double-count "
+                "fixed, form 15%, tiers merged); its GOOD-pick record starts at "
+                "zero and accrues in the tracker below. Bet within the budget you "
+                "set; log the closing line.</div>", unsafe_allow_html=True)
             board = sorted(gate_calls.items(),
-                           key=lambda kv: (-kv[1]["model"]))
+                           key=lambda kv: (-kv[1]["cushion"]))
             board_df = pd.DataFrame([{
+                **({"Call": v["call"]} if ANCHOR_LAMBDA > 0 else {}),
                 "Matchup":          k,
                 "Model pick":       v["pick"],
                 "Winner conf":      v["tier"],
@@ -1797,17 +1805,10 @@ with tab_today:
                 "Needs %":          round(v["be"] * 100, 1),
                 "Model vs price":   f"{v['raw_cushion']*100:+.1f}",
                 "EV if model right": f"{v['ev_model']*100:+.1f}%",
-                "EV if market right": f"{v['ev']*100:+.1f}%",
-                **({"Gate": v["call"]} if ANCHOR_LAMBDA > 0 else {}),
+                "EV if market right": f"{(v['fair']*unit_profit(v['odds'])-(1-v['fair']))*100:+.1f}%",
             } for k, v in board])
             st.dataframe(board_df, hide_index=True, use_container_width=True)
-            if ANCHOR_LAMBDA == 0:
-                st.caption("\"Model vs price\" and \"EV if model right\" are the "
-                           "columns that picked bets in v3 — shown so you can see "
-                           "the model's opinion, with its record: at +3 or more it "
-                           "hit 45% and lost 9%/bet. \"EV if market right\" ≈ −vig "
-                           "on every row — that's what λ=0 means.")
-            elif n_good == 0:
+            if n_good == 0:
                 st.markdown("<div style='font-size:13px;color:#f5c842;"
                             "font-weight:700;'>No plays today — sitting out "
                             "IS the play. The market offered nothing.</div>",

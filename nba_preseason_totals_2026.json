@@ -1,0 +1,157 @@
+{
+ "_note": "FanDuel preseason REGULAR-SEASON win totals, entered once by Juan before Oct 20, 2026 (NBA_APP_SPEC.md section 3.1, open item section 10). prior_margin = (win_total - 41) / 2.7. A null entry falls back to prior-season MOV x 0.60 from ESPN standings ?season=2026. Edit the win_total values only; keys are ESPN team IDs. This file lives on main (a commit reboots the app) - enter all 30 in one commit.",
+ "source": "FanDuel",
+ "as_of": null,
+ "teams": {
+  "1": {
+   "team": "Atlanta Hawks",
+   "abbr": "ATL",
+   "win_total": null
+  },
+  "2": {
+   "team": "Boston Celtics",
+   "abbr": "BOS",
+   "win_total": null
+  },
+  "3": {
+   "team": "New Orleans Pelicans",
+   "abbr": "NO",
+   "win_total": null
+  },
+  "4": {
+   "team": "Chicago Bulls",
+   "abbr": "CHI",
+   "win_total": null
+  },
+  "5": {
+   "team": "Cleveland Cavaliers",
+   "abbr": "CLE",
+   "win_total": null
+  },
+  "6": {
+   "team": "Dallas Mavericks",
+   "abbr": "DAL",
+   "win_total": null
+  },
+  "7": {
+   "team": "Denver Nuggets",
+   "abbr": "DEN",
+   "win_total": null
+  },
+  "8": {
+   "team": "Detroit Pistons",
+   "abbr": "DET",
+   "win_total": null
+  },
+  "9": {
+   "team": "Golden State Warriors",
+   "abbr": "GS",
+   "win_total": null
+  },
+  "10": {
+   "team": "Houston Rockets",
+   "abbr": "HOU",
+   "win_total": null
+  },
+  "11": {
+   "team": "Indiana Pacers",
+   "abbr": "IND",
+   "win_total": null
+  },
+  "12": {
+   "team": "LA Clippers",
+   "abbr": "LAC",
+   "win_total": null
+  },
+  "13": {
+   "team": "Los Angeles Lakers",
+   "abbr": "LAL",
+   "win_total": null
+  },
+  "14": {
+   "team": "Miami Heat",
+   "abbr": "MIA",
+   "win_total": null
+  },
+  "15": {
+   "team": "Milwaukee Bucks",
+   "abbr": "MIL",
+   "win_total": null
+  },
+  "16": {
+   "team": "Minnesota Timberwolves",
+   "abbr": "MIN",
+   "win_total": null
+  },
+  "17": {
+   "team": "Brooklyn Nets",
+   "abbr": "BKN",
+   "win_total": null
+  },
+  "18": {
+   "team": "New York Knicks",
+   "abbr": "NY",
+   "win_total": null
+  },
+  "19": {
+   "team": "Orlando Magic",
+   "abbr": "ORL",
+   "win_total": null
+  },
+  "20": {
+   "team": "Philadelphia 76ers",
+   "abbr": "PHI",
+   "win_total": null
+  },
+  "21": {
+   "team": "Phoenix Suns",
+   "abbr": "PHX",
+   "win_total": null
+  },
+  "22": {
+   "team": "Portland Trail Blazers",
+   "abbr": "POR",
+   "win_total": null
+  },
+  "23": {
+   "team": "Sacramento Kings",
+   "abbr": "SAC",
+   "win_total": null
+  },
+  "24": {
+   "team": "San Antonio Spurs",
+   "abbr": "SA",
+   "win_total": null
+  },
+  "25": {
+   "team": "Oklahoma City Thunder",
+   "abbr": "OKC",
+   "win_total": null
+  },
+  "26": {
+   "team": "Utah Jazz",
+   "abbr": "UTAH",
+   "win_total": null
+  },
+  "27": {
+   "team": "Washington Wizards",
+   "abbr": "WSH",
+   "win_total": null
+  },
+  "28": {
+   "team": "Toronto Raptors",
+   "abbr": "TOR",
+   "win_total": null
+  },
+  "29": {
+   "team": "Memphis Grizzlies",
+   "abbr": "MEM",
+   "win_total": null
+  },
+  "30": {
+   "team": "Charlotte Hornets",
+   "abbr": "CHA",
+   "win_total": null
+  }
+ }
+}

@@ -1,0 +1,55 @@
+name: Snapshot NBA closing lines
+
+on:
+  schedule:
+    # Every 30 min at :17 and :47 — off-peak minutes (Actions delays runs
+    # most at :00/:30). The UTC window 16:17 → 04:47 covers 12:30 pm–11:00
+    # pm ET under BOTH EDT (UTC−4) and EST (UTC−5; DST ends 2026-11-01).
+    # The cron string never decides whether to spend a credit: the script
+    # exits free unless a game tips within 35 minutes on the ET clock and
+    # that slot's close isn't on file yet (scripts/snapshot_closes_nba.py).
+    - cron: "17,47 16-23 * * *"
+    - cron: "17,47 0-4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: data
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - name: Fetch main's script (outside the data tree so nothing extra is committed)
+        run: |
+          git fetch origin main --depth=1
+          mkdir -p /tmp/nbabot
+          git show origin/main:scripts/snapshot_closes_nba.py > /tmp/nbabot/snapshot_closes_nba.py
+          git show origin/main:nba_teams.py > /tmp/nbabot/nba_teams.py
+      - name: Snapshot
+        env:
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+        run: python /tmp/nbabot/snapshot_closes_nba.py
+      - name: Commit to data branch
+        run: |
+          git config user.name "odds-bot"
+          git config user.email "odds-bot@users.noreply.github.com"
+          git add odds_closes/nba/
+          if git diff --cached --quiet; then
+            echo "nothing to commit"
+            exit 0
+          fi
+          git commit -m "nba closes: $(date -u +%FT%TZ)"
+          # The MLB snapshot job writes the same branch at :00/:30; rebase
+          # and retry so two bots never fight over a push.
+          for i in 1 2 3; do
+            git push origin HEAD:data && exit 0
+            git pull --rebase origin data || exit 1
+          done
+          git push origin HEAD:data

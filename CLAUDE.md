@@ -58,3 +58,23 @@ Targeted, justified changes with the reasoning in a code comment at the
 site. Validate methodology before touching parameters. When he asks to
 loosen a constraint mid-slump, remind him he asked for it to be hard to
 loosen — then do what he decides, on the record.
+
+## NBA app (2026-09-27)
+- `nba_app.py` is the fourth sibling; its design contract is `NBA_APP_SPEC.md`
+  (CLAUDE.md wins on process, the spec wins on design). Pre-registered look:
+  `nba_evaluation_plan.md`. Model `nba-v1.0` is FROZEN — no parameter changes
+  before that look.
+- Its data lives beside the MLB data on the `data` branch: `nba_pick_log.json`
+  and `odds_closes/nba/<ET date>.json` (written by
+  `scripts/snapshot_closes_nba.py` via `odds_close_snapshot_nba.yml`, which
+  only spends a credit when a game tips within 35 min). Never touch
+  `mlb_app.py`, `scripts/snapshot_closes.py`, or `odds_close_snapshot.yml`
+  for NBA work.
+- Game identity is the ESPN event ID; every team join is by ESPN team ID via
+  `nba_teams.py`. Widget keys are namespaced `nba1_`.
+- Before pushing: `python -m py_compile nba_app.py`, then
+  `python -m pytest tests/test_nba_app.py` (AppTest harness on a mock ESPN +
+  Odds feed — the only way to exercise the slate without spending credits).
+- Open items Juan supplies before Oct 20: the 30 win totals in
+  `nba_preseason_totals_2026.json`, `STAKE_UNITS` / `SEASON_BUDGET` in code,
+  the app's own Streamlit Secrets, and the consensus-book list.

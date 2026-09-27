@@ -1,0 +1,9 @@
+__pycache__/
+.pytest_cache/
+*.pyc
+# Local fallbacks only — the real copies live on the data branch, never on main.
+pick_log.json
+nba_pick_log.json
+nfl_pick_log.json
+cfb_pick_log.json
+odds_closes/

@@ -422,5 +422,33 @@
     "New York Yankees": -136
    }
   }
+ },
+ {
+  "home": "New York Yankees",
+  "away": "Baltimore Orioles",
+  "commence": "2026-09-27T20:30:00Z",
+  "quoted_at": "2026-09-27T19:24:16.861238+00:00",
+  "quotes": {
+   "draftkings": {
+    "Baltimore Orioles": 100,
+    "New York Yankees": -120
+   },
+   "betmgm": {
+    "Baltimore Orioles": -102,
+    "New York Yankees": -118
+   },
+   "fanduel": {
+    "Baltimore Orioles": 100,
+    "New York Yankees": -118
+   },
+   "pinnacle": {
+    "Baltimore Orioles": 105,
+    "New York Yankees": -114
+   },
+   "betrivers": {
+    "Baltimore Orioles": 105,
+    "New York Yankees": -125
+   }
+  }
  }
 ]

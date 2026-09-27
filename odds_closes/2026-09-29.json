@@ -10,5 +10,21 @@
     "New York Yankees": -142
    }
   }
+ },
+ {
+  "home": "New York Yankees",
+  "away": "Boston Red Sox",
+  "commence": "2026-09-30T00:10:00Z",
+  "quoted_at": "2026-09-27T19:24:16.861238+00:00",
+  "quotes": {
+   "draftkings": {
+    "Boston Red Sox": 123,
+    "New York Yankees": -149
+   },
+   "betmgm": {
+    "Boston Red Sox": 120,
+    "New York Yankees": -145
+   }
+  }
  }
 ]

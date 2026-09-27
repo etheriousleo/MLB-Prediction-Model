@@ -161,12 +161,23 @@ SEASON     = now_et().year
 # tiers merged), so its picker is UNMEASURED — its GOOD-pick record accrues
 # in the tracker under this version tag from this date, and the v3 record
 # stays displayed beside every call as context.
-MODEL_VERSION = "v4.1-picker-2026-09-24"
+MODEL_VERSION = "v4.2-market-gate-2026-09-27"
 
-# λ: p_gate = market_fair + λ·(model − market_fair).
-#   1.0 = gate on the model's probability (owner decision, above)
-#   0.0 = gate on the market (pre-registered v4 rule; no bets possible)
-ANCHOR_LAMBDA = 1.0
+# ── v4.2 MARKET-REFERENCED GATE (2026-09-27) ───────────────────────────────────
+# Tested on the season log: a gate on the RAW model lost −9.1%/bet; a gate on
+# the CALIBRATED model (out-of-fold) lost −8.9%/bet. Post-processing cannot
+# give the model information it lacks. The one estimate of "true chance" the
+# data supports is the MARKET's — so the gate now asks the only question the
+# data says is answerable: is FanDuel's price better than the sharp
+# reference (Pinnacle, else consensus of books)?  cushion = ref_fair − BE(FD).
+# The model remains on the card as calibrated winner-confidence context.
+# When no odds feed is configured, the gate falls back to model-vs-price
+# under ANCHOR_LAMBDA (owner decision, 2026-09-24).
+ANCHOR_LAMBDA  = 1.0
+MARKET_EDGE_PP = 1.5     # GOOD when FD beats the reference by ≥ this (real edges are small)
+# Calibration map fit 2026-09-26 on 583 core picks: logit(true) = A + B·logit(raw).
+# Slope 1.81 = raw model under-dispersed ~1.8x. Display only.
+CAL_A, CAL_B = -0.135, 1.809
 # Break-even → fair-market approximation from the pick-side price alone.
 # The book's overround is spread PROPORTIONALLY (standard devig): fair =
 # break-even / (1 + OVERROUND). An earlier flat 2.1-point haircut made the
@@ -180,6 +191,16 @@ OVERROUND     = 0.045
 # (friction by design, like GATE_THRESH_PP). 0 = not set; the tracker nags.
 PLAYOFF_BUDGET = 0
 POSTSEASON_TYPES = {"F", "D", "L", "W"}   # Wild Card, Division, LCS, World Series
+
+# ── Odds feed (The Odds API) ───────────────────────────────────────────────────
+# Streamlit Cloud → Settings → Secrets:
+#     [odds]
+#     api_key = "..."            # free tier: 500 credits/month
+#     book    = "fanduel"        # the book you bet at
+#     reference = "pinnacle"     # sharp reference; consensus of others if absent
+# One request (bookmakers list, one market) = 1 credit; cached 5 min.
+ODDS_API   = "https://api.the-odds-api.com/v4/sports/baseball_mlb/odds"
+ODDS_BOOKS = "fanduel,pinnacle,draftkings,betmgm,caesars,betrivers"
 
 # ── GATE THRESHOLD — deliberately NOT adjustable in the UI ─────────────────────
 # Juan's explicit request: no in-app knob, so in-the-moment eagerness to bet
@@ -1220,6 +1241,89 @@ def fetch_results_for_date(date_iso: str) -> list:
     return statsapi.schedule(date=mmdd)
 
 
+def calibrate(p_raw: float) -> float:
+    """Season-fit calibration map (display only): raw model prob → honest prob."""
+    p = min(max(p_raw, 0.02), 0.98)
+    z = CAL_A + CAL_B * np.log(p / (1 - p))
+    return float(1 / (1 + np.exp(-z)))
+
+
+def _odds_cfg():
+    try:
+        o = st.secrets["odds"]
+        return {"key": str(o["api_key"]).strip(),
+                "book": str(o.get("book", "fanduel")).strip().lower(),
+                "ref": str(o.get("reference", "pinnacle")).strip().lower()}
+    except Exception:
+        return None
+
+
+@st.cache_data(show_spinner=False, ttl=300)
+def fetch_market_odds(api_key: str, date_iso: str) -> tuple:
+    """Current h2h prices from several books. date_iso is part of the cache
+    key. Returns (events, error). Each event: home, away, commence (UTC iso),
+    prices: {book: {team: american}}."""
+    try:
+        r = requests.get(ODDS_API, params={
+            "apiKey": api_key, "markets": "h2h", "oddsFormat": "american",
+            "bookmakers": ODDS_BOOKS}, timeout=15)
+        if r.status_code != 200:
+            return [], f"odds API {r.status_code}: {r.text[:120]}"
+        out = []
+        for ev in r.json():
+            prices = {}
+            for bk in ev.get("bookmakers", []):
+                for mk in bk.get("markets", []):
+                    if mk.get("key") != "h2h":
+                        continue
+                    prices[bk["key"]] = {o["name"]: int(o["price"])
+                                         for o in mk.get("outcomes", [])}
+            out.append({"home": ev.get("home_team"), "away": ev.get("away_team"),
+                        "commence": ev.get("commence_time", ""), "prices": prices})
+        return out, ""
+    except Exception as e:
+        return [], f"odds fetch failed: {e}"
+
+
+def market_view(event: dict, pick: str, opp: str, book: str, ref: str) -> dict:
+    """FanDuel price on the pick + reference fair prob (two-sided devig per
+    book: p = BE_pick / (BE_pick + BE_opp)). Reference = `ref` book if it
+    quotes the game, else the mean over all other books."""
+    fair = {}
+    for bk, q in event["prices"].items():
+        if pick in q and opp in q:
+            bp, bo = breakeven_prob(q[pick]), breakeven_prob(q[opp])
+            fair[bk] = bp / (bp + bo)
+    book_price = event["prices"].get(book, {}).get(pick)
+    if ref in fair:
+        ref_fair, ref_src = fair[ref], ref
+    else:
+        others = [v for k, v in fair.items() if k != book]
+        ref_fair = float(np.mean(others)) if others else None
+        ref_src = f"consensus of {len(others)}" if others else "none"
+    best_bk, best_px = None, None
+    for bk, q in event["prices"].items():
+        if pick in q and (best_px is None or unit_profit(q[pick]) > unit_profit(best_px)):
+            best_bk, best_px = bk, q[pick]
+    return {"book_price": book_price, "ref_fair": ref_fair, "ref_src": ref_src,
+            "best_book": best_bk, "best_price": best_px, "n_books": len(fair)}
+
+
+def match_odds_event(events: list, g: dict) -> dict:
+    """Match a slate game to an odds event by team names; doubleheaders by
+    commence order (G1 = earlier)."""
+    cands = sorted([e for e in events
+                    if e["home"] == g["home"] and e["away"] == g["away"]],
+                   key=lambda e: e["commence"])
+    if not cands:
+        return None
+    try:
+        gn = int(g.get("game_num") or 1)
+    except Exception:
+        gn = 1
+    return cands[min(gn, len(cands)) - 1]
+
+
 def matchup_key(g: dict) -> str:
     """Unique, human-readable identity for a game. Doubleheader game 2+
     gets a suffix — 'Athletics @ Red Sox (G2)' — so widget keys, gate
@@ -1697,8 +1801,37 @@ with tab_today:
     # request — no UI control, so eagerness can't loosen it mid-slump.
     upcoming = [g for g in slate_results if not g["completed"]]
     gate_calls = {}
+    market_ref = {}   # mkey → market_view dict (when the feed is configured)
     if upcoming:
         st.subheader("💰 Price gate")
+        ocfg = _odds_cfg()
+        if ocfg:
+            events, oerr = fetch_market_odds(ocfg["key"], today_et("%Y-%m-%d"))
+            if oerr:
+                st.error(f"Odds feed: {oerr} — falling back to manual prices.")
+            elif events:
+                filled = 0
+                for g in upcoming:
+                    ev = match_odds_event(events, g)
+                    if not ev:
+                        continue
+                    pick = g["prob_pick"]
+                    opp = g["away"] if pick == g["home"] else g["home"]
+                    mv = market_view(ev, pick, opp, ocfg["book"], ocfg["ref"])
+                    mkey = matchup_key(g)
+                    market_ref[mkey] = mv
+                    # Pre-fill the book's price into the form (session state
+                    # set BEFORE the widget instantiates); manual edits win
+                    # once the user has applied a value.
+                    if mv["book_price"] and not st.session_state.get(f"_manual_{mkey}"):
+                        st.session_state[f"mlpick_{mkey}"] = int(mv["book_price"])
+                        filled += 1
+                st.caption(f"📡 Odds feed: {filled}/{len(upcoming)} games priced "
+                           f"from {ocfg['book']}; reference = {ocfg['ref']} "
+                           f"(consensus fallback). Cached 5 min.")
+            else:
+                st.caption("📡 Odds feed returned no MLB events (off day, or "
+                           "games already started).")
         with st.form("odds_form"):
             st.caption("Price on the model's pick for each game — type them "
                        "all, then press Enter or Apply once.")
@@ -1718,7 +1851,16 @@ with tab_today:
                     st.number_input("price", value=0, step=5,
                                     key=f"mlpick_{mkey}",
                                     label_visibility="collapsed")
-            st.form_submit_button("Apply odds")
+            applied = st.form_submit_button("Apply odds")
+        if applied:
+            # Any price that differs from the feed's value is a deliberate
+            # manual override — stop the feed from overwriting it.
+            for g in upcoming:
+                mkey = matchup_key(g)
+                mv = market_ref.get(mkey)
+                if mv and mv.get("book_price") and \
+                        st.session_state.get(f"mlpick_{mkey}", 0) != int(mv["book_price"]):
+                    st.session_state[f"_manual_{mkey}"] = True
 
         # Compute all gate calls from the submitted values
         for g in upcoming:
@@ -1736,28 +1878,46 @@ with tab_today:
             # for next season), but it earns no betting weight until CLV
             # proves otherwise. With λ=0 the cushion is −vig at every price
             # (negative by construction): no game clears — by verdict.
-            fair_p = max(0.02, be_p / (1.0 + OVERROUND))
-            gate_p = fair_p + ANCHOR_LAMBDA * (pick_p - fair_p)
-            cushion = gate_p - be_p
-            ev = gate_p * unit_profit(ml_pick) - (1 - gate_p)
-            if cushion >= GATE_THRESH_PP / 100.0:
-                call, ccol = "✅ GOOD PICK", "#00c07a"
-            elif cushion >= 0:
-                call, ccol = "🟡 THIN — NO BET (edge inside model error)", "#f5c842"
-            elif ANCHOR_LAMBDA == 0:
-                call, ccol = "⛔ NO MODEL EDGE — market-anchored (λ=0 by season verdict)", "#ff5252"
+            mv = market_ref.get(mkey)
+            if mv and mv.get("ref_fair"):
+                # v4.2: the reference market's fair probability IS the truth
+                # estimate; the question is whether FanDuel's price beats it.
+                fair_p = float(mv["ref_fair"])
+                gate_p = fair_p
+                cushion = fair_p - be_p
+                thresh = MARKET_EDGE_PP / 100.0
+                mode = f"vs {mv['ref_src']}"
             else:
-                call, ccol = "⛔ STAY AWAY", "#ff5252"
+                # No feed: legacy model-vs-price gate under ANCHOR_LAMBDA.
+                fair_p = max(0.02, be_p / (1.0 + OVERROUND))
+                gate_p = fair_p + ANCHOR_LAMBDA * (pick_p - fair_p)
+                cushion = gate_p - be_p
+                thresh = GATE_THRESH_PP / 100.0
+                mode = "model vs price (no feed)"
+            ev = gate_p * unit_profit(ml_pick) - (1 - gate_p)
+            if cushion >= thresh:
+                call, ccol = f"✅ GOOD PRICE — {mode}", "#00c07a"
+            elif cushion >= 0:
+                call, ccol = f"🟡 THIN — NO BET ({mode})", "#f5c842"
+            else:
+                call, ccol = f"⛔ STAY AWAY — {mode}", "#ff5252"
             ev_model = pick_p * unit_profit(ml_pick) - (1 - pick_p)   # if the model's number were right
             gate_calls[mkey] = {"pick": pick, "odds": ml_pick,
-                                "model": pick_p, "gate_p": gate_p, "be": be_p,
-                                "fair": fair_p,
+                                "model": pick_p, "cal": calibrate(pick_p),
+                                "gate_p": gate_p, "be": be_p,
+                                "fair": fair_p, "mode": mode,
+                                "best": (f"{mv['best_price']:+d} @ {mv['best_book']}"
+                                         if mv and mv.get("best_price") else ""),
                                 "cushion": cushion, "raw_cushion": raw_cushion,
                                 "ev": ev, "ev_model": ev_model,
                                 "tier": g.get("conf_level", ""),
                                 "call": call, "color": ccol}
             st.session_state[f"pickml_{mkey}"] = ml_pick
             st.session_state[f"edge_{mkey}"] = round(raw_cushion * 100, 1)
+            st.session_state[f"mktedge_{mkey}"] = (round(cushion * 100, 1)
+                                                   if mv and mv.get("ref_fair") else None)
+            st.session_state[f"reffair_{mkey}"] = (round(fair_p * 100, 1)
+                                                   if mv and mv.get("ref_fair") else None)
 
         # Auto-sync: the panel is the source of truth for TODAY's prices.
         # Any rows already logged today get their odds/cushion updated from
@@ -1774,6 +1934,8 @@ with tab_today:
                         and _r.get("odds", 0) != _gc["odds"]):
                     _r["odds"] = _gc["odds"]
                     _r["edge"] = round(_gc["raw_cushion"] * 100, 1)
+                    _r["mkt_edge"] = st.session_state.get(f"mktedge_{_r['matchup']}")
+                    _r["ref_fair"] = st.session_state.get(f"reffair_{_r['matchup']}")
                     _synced += 1
             if _synced:
                 save_pick_log(_log)
@@ -1787,11 +1949,13 @@ with tab_today:
                          if v["call"].startswith("✅"))
             st.markdown(
                 "<div style='font-size:12px;color:#aaa;margin-bottom:6px;'>"
-                "<b>Method record:</b> v3's GOOD picks went 49–60 (−9.1%/bet) over "
-                "the 2026 regular season. v4.1 runs a changed model (double-count "
-                "fixed, form 15%, tiers merged); its GOOD-pick record starts at "
-                "zero and accrues in the tracker below. Bet within the budget you "
-                "set; log the closing line.</div>", unsafe_allow_html=True)
+                "<b>How the gate decides:</b> a good bet is a price better than the "
+                "true chance. Tested on 617 graded picks, the market's estimate of "
+                "that chance beat the model's (raw −9.1%/bet, calibrated −8.9%/bet). "
+                "So the gate compares <i>your</i> price to the sharp reference's fair "
+                "line — GOOD when yours is better by ≥ 1.5pp. The model shows as "
+                "calibrated winner-confidence context. Closing-line value in the "
+                "tracker is the scoreboard.</div>", unsafe_allow_html=True)
             board = sorted(gate_calls.items(),
                            key=lambda kv: (-kv[1]["cushion"]))
             board_df = pd.DataFrame([{
@@ -1799,11 +1963,12 @@ with tab_today:
                 "Matchup":          k,
                 "Model pick":       v["pick"],
                 "Winner conf":      v["tier"],
-                "Model %":          round(v["model"] * 100, 1),
-                "Market fair %":    round(v["fair"] * 100, 1),
-                "Price":            f"{v['odds']:+d}",
+                "Model % (cal.)":   f"{v['model']*100:.0f} ({v['cal']*100:.0f})",
+                "Reference fair %": round(v["fair"] * 100, 1),
+                "Your price":       f"{v['odds']:+d}",
                 "Needs %":          round(v["be"] * 100, 1),
-                "Model vs price":   f"{v['raw_cushion']*100:+.1f}",
+                "Edge vs ref":      f"{v['cushion']*100:+.1f}",
+                "Best price":       v["best"],
                 "EV if model right": f"{v['ev_model']*100:+.1f}%",
                 "EV if market right": f"{(v['fair']*unit_profit(v['odds'])-(1-v['fair']))*100:+.1f}%",
             } for k, v in board])
@@ -2048,6 +2213,8 @@ with tab_today:
                     # overwrite at grading time if the price you got differs.
                     "odds":    st.session_state.get(f"pickml_{matchup}", 0),
                     "edge":    st.session_state.get(f"edge_{matchup}", None),
+                    "mkt_edge": st.session_state.get(f"mktedge_{matchup}", None),  # FD vs reference (pp)
+                    "ref_fair": st.session_state.get(f"reffair_{matchup}", None),  # reference fair prob (%)
                     "form":    g.get("form_delta"),
                     "game_type": g.get("game_type", "R"),
                     "closing": 0,      # closing price on the pick — enter at grade time
@@ -2074,6 +2241,33 @@ with tab_today:
                     continue
                 if r["date"] > today_str:
                     continue
+                # Closing line from the cron snapshot on the data branch
+                # (scripts/snapshot_closes.py writes odds_closes/<date>.json:
+                # last pre-first-pitch quotes per game). Fill if missing.
+                if not r.get("closing"):
+                    try:
+                        _cfg = _gh_cfg(); _ocfg = _odds_cfg()
+                        if _cfg:
+                            key = f"closes_{r['date']}"
+                            if key not in st.session_state:
+                                st.session_state[key], _ = _gh_get_file(
+                                    _cfg, f"odds_closes/{r['date']}.json")
+                            snap = st.session_state.get(key) or []
+                            aw, hm = r["matchup"].split(" @ ", 1)
+                            hm = re.sub(r" \(G\d+\)$", "", hm)
+                            gn_m = re.search(r"\(G(\d+)\)$", r["matchup"])
+                            gn = int(gn_m.group(1)) if gn_m else 1
+                            cands = sorted([e for e in snap
+                                            if e["home"] == hm and e["away"] == aw],
+                                           key=lambda e: e["commence"])
+                            if cands:
+                                ev = cands[min(gn, len(cands)) - 1]
+                                bk = (_ocfg or {}).get("book", "fanduel")
+                                cp = ev.get("quotes", {}).get(bk, {}).get(r["pick"])
+                                if cp:
+                                    r["closing"] = int(cp)
+                    except Exception:
+                        pass
                 try:
                     day_games = fetch_results_for_date(r["date"])
                 except Exception:
@@ -2148,6 +2342,12 @@ with tab_today:
                     disabled=True),
                 "form":    st.column_config.NumberColumn(
                     "form", help="pp the 14-day form component moved the pick's probability at log time",
+                    disabled=True),
+                "mkt_edge": st.column_config.NumberColumn(
+                    "mkt edge", help="FanDuel price vs reference fair line at log time (pp)",
+                    disabled=True),
+                "ref_fair": st.column_config.NumberColumn(
+                    "ref fair %", help="Reference (Pinnacle/consensus) fair prob on the pick",
                     disabled=True),
                 "game_type": st.column_config.TextColumn(
                     "type", help="R = regular season; F/D/L/W = postseason rounds",
@@ -2296,6 +2496,16 @@ with tab_today:
                     else:
                         st.warning(f"Real stakes logged (${spent:,.0f}) but PLAYOFF_BUDGET "
                                    f"is 0. Set it in code before the next bet.")
+            # v4.2 scoreboard: picks where FanDuel beat the reference by ≥ MARKET_EDGE_PP
+            if "mkt_edge" in cur.columns:
+                gp = cur[(cur["odds"] != 0) & (pd.to_numeric(cur["mkt_edge"], errors="coerce") >= MARKET_EDGE_PP)]
+                if len(gp):
+                    w = int((gp["result"] == "W").sum()); l = int((gp["result"] == "L").sum())
+                    u = sum(unit_profit(r["odds"]) if r["result"] == "W" else -1.0
+                            for _, r in gp.iterrows())
+                    st.markdown(f"**GOOD PRICE picks (FD beat reference ≥ {MARKET_EDGE_PP}pp):** "
+                                f"{w}–{l}, {u:+.2f}u — pair with the CLV line above; "
+                                f"both positive over ~100 picks is the first real edge.")
             st.caption("Units use only picks with a price entered, flat 1u. "
                        "Hit rate without the price you paid says nothing about "
                        "profit — a 60% tier loses money at worse than -150.")

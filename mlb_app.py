@@ -1312,8 +1312,19 @@ def market_view(event: dict, pick: str, opp: str, book: str, ref: str) -> dict:
 def match_odds_event(events: list, g: dict) -> dict:
     """Match a slate game to an odds event by team names; doubleheaders by
     commence order (G1 = earlier)."""
+    # Pre-game quotes only: the feed also returns LIVE in-play prices for
+    # games already underway (e.g. −3000 on a team up five runs), which are
+    # meaningless for a pre-game decision. Skip anything that has started.
+    now = datetime.datetime.now(datetime.timezone.utc)
+    def _upcoming(e):
+        try:
+            return datetime.datetime.fromisoformat(
+                e["commence"].replace("Z", "+00:00")) > now
+        except Exception:
+            return False
     cands = sorted([e for e in events
-                    if e["home"] == g["home"] and e["away"] == g["away"]],
+                    if e["home"] == g["home"] and e["away"] == g["away"]
+                    and _upcoming(e)],
                    key=lambda e: e["commence"])
     if not cands:
         return None
@@ -1828,7 +1839,8 @@ with tab_today:
                         filled += 1
                 st.caption(f"📡 Odds feed: {filled}/{len(upcoming)} games priced "
                            f"from {ocfg['book']}; reference = {ocfg['ref']} "
-                           f"(consensus fallback). Cached 5 min.")
+                           f"(consensus fallback). Pre-game prices only — games "
+                           f"already underway are left blank. Cached 5 min.")
             else:
                 st.caption("📡 Odds feed returned no MLB events (off day, or "
                            "games already started).")

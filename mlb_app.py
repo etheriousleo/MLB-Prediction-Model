@@ -1322,17 +1322,16 @@ def match_odds_event(events: list, g: dict) -> dict:
                 e["commence"].replace("Z", "+00:00")) > now
         except Exception:
             return False
-    cands = sorted([e for e in events
-                    if e["home"] == g["home"] and e["away"] == g["away"]
-                    and _upcoming(e)],
-                   key=lambda e: e["commence"])
+    same = [e for e in events
+            if e["home"] == g["home"] and e["away"] == g["away"]]
+    cands = sorted([e for e in same if _upcoming(e)], key=lambda e: e["commence"])
     if not cands:
-        return None
+        return (None, "live" if same else "unmatched")
     try:
         gn = int(g.get("game_num") or 1)
     except Exception:
         gn = 1
-    return cands[min(gn, len(cands)) - 1]
+    return (cands[min(gn, len(cands)) - 1], "ok")
 
 
 def matchup_key(g: dict) -> str:
@@ -1823,13 +1822,21 @@ with tab_today:
             elif events:
                 filled = 0
                 for g in upcoming:
-                    ev = match_odds_event(events, g)
+                    ev, status = match_odds_event(events, g)
+                    mkey = matchup_key(g)
+                    if status == "live":
+                        # Underway: no pre-game price exists. Clear any value
+                        # the feed put here earlier (a live line would have
+                        # been gated as if pre-game) unless the user typed it.
+                        market_ref[mkey] = {"live": True}
+                        if not st.session_state.get(f"_manual_{mkey}"):
+                            st.session_state[f"mlpick_{mkey}"] = 0
+                        continue
                     if not ev:
                         continue
                     pick = g["prob_pick"]
                     opp = g["away"] if pick == g["home"] else g["home"]
                     mv = market_view(ev, pick, opp, ocfg["book"], ocfg["ref"])
-                    mkey = matchup_key(g)
                     market_ref[mkey] = mv
                     # Pre-fill the book's price into the form (session state
                     # set BEFORE the widget instantiates); manual edits win
@@ -1875,13 +1882,15 @@ with tab_today:
             for g in upcoming:
                 mkey = matchup_key(g)
                 mv = market_ref.get(mkey)
-                if mv and mv.get("book_price") and \
+                if mv and not mv.get("live") and mv.get("book_price") and \
                         st.session_state.get(f"mlpick_{mkey}", 0) != int(mv["book_price"]):
                     st.session_state[f"_manual_{mkey}"] = True
 
         # Compute all gate calls from the submitted values
         for g in upcoming:
             mkey = matchup_key(g)
+            if market_ref.get(mkey, {}).get("live"):
+                continue          # underway — not gated
             ml_pick = st.session_state.get(f"mlpick_{mkey}", 0)
             if abs(ml_pick) < 100:
                 continue
@@ -1981,7 +1990,8 @@ with tab_today:
                 "Model pick":       v["pick"],
                 "Winner conf":      v["tier"],
                 "Model % (cal.)":   f"{v['model']*100:.0f} ({v['cal']*100:.0f})",
-                "Reference fair %": round(v["fair"] * 100, 1),
+                "Reference fair %": (round(v["fair"] * 100, 1)
+                                     if not v["mode"].startswith("model vs") else "—"),
                 "Your price":       f"{v['odds']:+d}",
                 "Needs %":          round(v["be"] * 100, 1),
                 "Edge vs ref":      f"{v['cushion']*100:+.1f}",
@@ -2181,6 +2191,11 @@ with tab_today:
                     f"EV if model right {gc['ev_model']*100:+.1f}% / "
                     f"if market right {gc['ev']*100:+.1f}%</div>",
                     unsafe_allow_html=True)
+            elif market_ref.get(mkey, {}).get("live"):
+                st.markdown(
+                    "<div style='font-size:11px;color:#c77;"
+                    "margin:-6px 0 14px 2px;'>🔴 Game underway — no pre-game "
+                    "price; not gated</div>", unsafe_allow_html=True)
             else:
                 st.markdown(
                     "<div style='font-size:11px;color:#555;"

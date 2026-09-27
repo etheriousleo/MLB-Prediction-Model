@@ -1,0 +1,35 @@
+name: Snapshot closing lines
+
+on:
+  schedule:
+    - cron: "0,30 16-23 * * *"
+    - cron: "0,30 0-3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: data
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - name: Fetch main's script
+        run: git fetch origin main --depth=1 && git checkout origin/main -- scripts/snapshot_closes.py
+      - name: Snapshot
+        env:
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+        run: python scripts/snapshot_closes.py
+      - name: Commit to data branch
+        run: |
+          git config user.name "odds-bot"
+          git config user.email "odds-bot@users.noreply.github.com"
+          git add odds_closes/
+          git diff --cached --quiet || git commit -m "closes: $(date -u +%FT%TZ)"
+          git push origin HEAD:data

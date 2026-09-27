@@ -368,7 +368,7 @@
   "version": "v3.0-frozen-2026-08-06",
   "odds": -162,
   "edge": -4.8,
-  "result": "",
+  "result": "W",
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
@@ -9942,7 +9942,7 @@
   "game_type": "R",
   "closing": 0,
   "stake": 0,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-09-26",
@@ -9957,7 +9957,7 @@
   "game_type": "R",
   "closing": 0,
   "stake": 0,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-09-26",
@@ -10002,7 +10002,7 @@
   "game_type": "R",
   "closing": 0,
   "stake": 0,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-09-26",
@@ -10062,7 +10062,7 @@
   "game_type": "R",
   "closing": 0,
   "stake": 0,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-09-27",
@@ -10077,7 +10077,7 @@
   "ref_fair": 63.8,
   "form": 0.4,
   "game_type": "R",
-  "closing": 0,
+  "closing": -255,
   "stake": 0,
   "result": ""
  },
@@ -10094,7 +10094,7 @@
   "ref_fair": 59.1,
   "form": 0.3,
   "game_type": "R",
-  "closing": 0,
+  "closing": -196,
   "stake": 0,
   "result": ""
  },
@@ -10111,7 +10111,7 @@
   "ref_fair": 69.0,
   "form": 0.7,
   "game_type": "R",
-  "closing": 0,
+  "closing": -260,
   "stake": 0,
   "result": ""
  },
@@ -10128,7 +10128,7 @@
   "ref_fair": 60.8,
   "form": 0.2,
   "game_type": "R",
-  "closing": 0,
+  "closing": -178,
   "stake": 0,
   "result": ""
  },
@@ -10145,7 +10145,7 @@
   "ref_fair": 59.5,
   "form": 0.1,
   "game_type": "R",
-  "closing": 0,
+  "closing": -190,
   "stake": 0,
   "result": ""
  },
@@ -10162,7 +10162,7 @@
   "ref_fair": 52.2,
   "form": -0.1,
   "game_type": "R",
-  "closing": 0,
+  "closing": -130,
   "stake": 0,
   "result": ""
  },
@@ -10179,7 +10179,7 @@
   "ref_fair": 63.6,
   "form": 0.4,
   "game_type": "R",
-  "closing": 0,
+  "closing": -172,
   "stake": 0,
   "result": ""
  },
@@ -10196,7 +10196,7 @@
   "ref_fair": 50.2,
   "form": 1.1,
   "game_type": "R",
-  "closing": 0,
+  "closing": -146,
   "stake": 0,
   "result": ""
  },
@@ -10213,7 +10213,7 @@
   "ref_fair": 49.1,
   "form": -0.4,
   "game_type": "R",
-  "closing": 0,
+  "closing": -104,
   "stake": 0,
   "result": ""
  },
@@ -10230,7 +10230,7 @@
   "ref_fair": 49.5,
   "form": 0.1,
   "game_type": "R",
-  "closing": 0,
+  "closing": 106,
   "stake": 0,
   "result": ""
  },
@@ -10247,7 +10247,7 @@
   "ref_fair": 53.1,
   "form": 0.1,
   "game_type": "R",
-  "closing": 0,
+  "closing": -108,
   "stake": 0,
   "result": ""
  },
@@ -10264,7 +10264,7 @@
   "ref_fair": 53.9,
   "form": 0.2,
   "game_type": "R",
-  "closing": 0,
+  "closing": -124,
   "stake": 0,
   "result": ""
  },
@@ -10281,7 +10281,7 @@
   "ref_fair": 48.7,
   "form": 0.2,
   "game_type": "R",
-  "closing": 0,
+  "closing": 108,
   "stake": 0,
   "result": ""
  },
@@ -10298,7 +10298,7 @@
   "ref_fair": 38.4,
   "form": 0.2,
   "game_type": "R",
-  "closing": 0,
+  "closing": 132,
   "stake": 0,
   "result": ""
  },
@@ -10315,7 +10315,7 @@
   "ref_fair": 40.9,
   "form": -0.3,
   "game_type": "R",
-  "closing": 0,
+  "closing": 108,
   "stake": 0,
   "result": ""
  }

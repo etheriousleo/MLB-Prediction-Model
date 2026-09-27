@@ -1,5 +1,61 @@
 [
  {
+  "home": "New York Yankees",
+  "away": "Baltimore Orioles",
+  "commence": "2026-09-27T17:05:00Z",
+  "quoted_at": "2026-09-27T08:25:51.374121+00:00",
+  "quotes": {
+   "draftkings": {
+    "Baltimore Orioles": 113,
+    "New York Yankees": -136
+   },
+   "betmgm": {
+    "Baltimore Orioles": 110,
+    "New York Yankees": -135
+   },
+   "fanduel": {
+    "Baltimore Orioles": 110,
+    "New York Yankees": -130
+   },
+   "pinnacle": {
+    "Baltimore Orioles": 120,
+    "New York Yankees": -133
+   },
+   "betrivers": {
+    "Baltimore Orioles": 110,
+    "New York Yankees": -130
+   }
+  }
+ },
+ {
+  "home": "Washington Nationals",
+  "away": "New York Mets",
+  "commence": "2026-09-27T17:05:00Z",
+  "quoted_at": "2026-09-27T08:25:51.374121+00:00",
+  "quotes": {
+   "draftkings": {
+    "New York Mets": -110,
+    "Washington Nationals": -110
+   },
+   "betmgm": {
+    "New York Mets": -110,
+    "Washington Nationals": -110
+   },
+   "fanduel": {
+    "New York Mets": -112,
+    "Washington Nationals": -104
+   },
+   "pinnacle": {
+    "New York Mets": -106,
+    "Washington Nationals": -104
+   },
+   "betrivers": {
+    "New York Mets": -109,
+    "Washington Nationals": -109
+   }
+  }
+ },
+ {
   "home": "Washington Nationals",
   "away": "New York Mets",
   "commence": "2026-09-27T19:05:00Z",
@@ -31,27 +87,87 @@
   "home": "Philadelphia Phillies",
   "away": "Tampa Bay Rays",
   "commence": "2026-09-27T19:05:00Z",
-  "quoted_at": "2026-09-27T02:17:08.343186+00:00",
+  "quoted_at": "2026-09-27T08:25:51.374121+00:00",
   "quotes": {
    "draftkings": {
-    "Philadelphia Phillies": -137,
-    "Tampa Bay Rays": 113
+    "Philadelphia Phillies": -147,
+    "Tampa Bay Rays": 122
    },
    "betmgm": {
-    "Philadelphia Phillies": -140,
-    "Tampa Bay Rays": 115
+    "Philadelphia Phillies": -155,
+    "Tampa Bay Rays": 125
    },
    "fanduel": {
-    "Philadelphia Phillies": -148,
-    "Tampa Bay Rays": 126
+    "Philadelphia Phillies": -156,
+    "Tampa Bay Rays": 132
    },
    "pinnacle": {
-    "Philadelphia Phillies": -126,
-    "Tampa Bay Rays": 114
+    "Philadelphia Phillies": -143,
+    "Tampa Bay Rays": 129
    },
    "betrivers": {
-    "Philadelphia Phillies": -136,
-    "Tampa Bay Rays": 114
+    "Philadelphia Phillies": -148,
+    "Tampa Bay Rays": 120
+   }
+  }
+ },
+ {
+  "home": "Athletics",
+  "away": "Houston Astros",
+  "commence": "2026-09-27T19:06:00Z",
+  "quoted_at": "2026-09-27T08:25:51.374121+00:00",
+  "quotes": {
+   "fanduel": {
+    "Athletics": 144,
+    "Houston Astros": -172
+   },
+   "betrivers": {
+    "Athletics": 145,
+    "Houston Astros": -175
+   },
+   "draftkings": {
+    "Athletics": 139,
+    "Houston Astros": -168
+   }
+  }
+ },
+ {
+  "home": "Boston Red Sox",
+  "away": "Chicago Cubs",
+  "commence": "2026-09-27T19:06:00Z",
+  "quoted_at": "2026-09-27T08:25:51.374121+00:00",
+  "quotes": {
+   "fanduel": {
+    "Boston Red Sox": 106,
+    "Chicago Cubs": -124
+   },
+   "betrivers": {
+    "Boston Red Sox": 105,
+    "Chicago Cubs": -125
+   },
+   "draftkings": {
+    "Boston Red Sox": 103,
+    "Chicago Cubs": -124
+   }
+  }
+ },
+ {
+  "home": "San Francisco Giants",
+  "away": "Los Angeles Dodgers",
+  "commence": "2026-09-27T19:06:00Z",
+  "quoted_at": "2026-09-27T08:25:51.374121+00:00",
+  "quotes": {
+   "fanduel": {
+    "Los Angeles Dodgers": -260,
+    "San Francisco Giants": 215
+   },
+   "betrivers": {
+    "Los Angeles Dodgers": -275,
+    "San Francisco Giants": 220
+   },
+   "draftkings": {
+    "Los Angeles Dodgers": -259,
+    "San Francisco Giants": 208
    }
   }
  },
@@ -59,7 +175,7 @@
   "home": "Toronto Blue Jays",
   "away": "Cincinnati Reds",
   "commence": "2026-09-27T19:08:00Z",
-  "quoted_at": "2026-09-27T02:17:08.343186+00:00",
+  "quoted_at": "2026-09-27T08:25:51.374121+00:00",
   "quotes": {
    "fanduel": {
     "Cincinnati Reds": 150,
@@ -67,15 +183,15 @@
    },
    "draftkings": {
     "Cincinnati Reds": 147,
-    "Toronto Blue Jays": -178
+    "Toronto Blue Jays": -179
    },
    "betrivers": {
-    "Cincinnati Reds": 150,
-    "Toronto Blue Jays": -182
+    "Cincinnati Reds": 133,
+    "Toronto Blue Jays": -162
    },
    "betmgm": {
     "Cincinnati Reds": 145,
-    "Toronto Blue Jays": -175
+    "Toronto Blue Jays": -180
    }
   }
  },
@@ -83,11 +199,11 @@
   "home": "Miami Marlins",
   "away": "Atlanta Braves",
   "commence": "2026-09-27T19:10:00Z",
-  "quoted_at": "2026-09-27T02:17:08.343186+00:00",
+  "quoted_at": "2026-09-27T08:25:51.374121+00:00",
   "quotes": {
    "draftkings": {
-    "Atlanta Braves": -112,
-    "Miami Marlins": -108
+    "Atlanta Braves": -110,
+    "Miami Marlins": -110
    },
    "betmgm": {
     "Atlanta Braves": -110,
@@ -111,23 +227,23 @@
   "home": "Chicago White Sox",
   "away": "Colorado Rockies",
   "commence": "2026-09-27T19:10:00Z",
-  "quoted_at": "2026-09-27T02:17:08.343186+00:00",
+  "quoted_at": "2026-09-27T08:25:51.374121+00:00",
   "quotes": {
    "draftkings": {
-    "Chicago White Sox": -224,
-    "Colorado Rockies": 183
+    "Chicago White Sox": -208,
+    "Colorado Rockies": 170
    },
    "betmgm": {
-    "Chicago White Sox": -220,
-    "Colorado Rockies": 180
+    "Chicago White Sox": -210,
+    "Colorado Rockies": 170
    },
    "fanduel": {
     "Chicago White Sox": -196,
     "Colorado Rockies": 164
    },
    "pinnacle": {
-    "Chicago White Sox": -215,
-    "Colorado Rockies": 190
+    "Chicago White Sox": -199,
+    "Colorado Rockies": 177
    },
    "betrivers": {
     "Chicago White Sox": -220,
@@ -139,7 +255,7 @@
   "home": "Detroit Tigers",
   "away": "Pittsburgh Pirates",
   "commence": "2026-09-27T19:10:00Z",
-  "quoted_at": "2026-09-27T02:17:08.343186+00:00",
+  "quoted_at": "2026-09-27T08:25:51.374121+00:00",
   "quotes": {
    "draftkings": {
     "Detroit Tigers": 112,
@@ -150,8 +266,8 @@
     "Pittsburgh Pirates": -135
    },
    "fanduel": {
-    "Detroit Tigers": 104,
-    "Pittsburgh Pirates": -122
+    "Detroit Tigers": 108,
+    "Pittsburgh Pirates": -126
    },
    "pinnacle": {
     "Detroit Tigers": 118,
@@ -167,15 +283,15 @@
   "home": "Seattle Mariners",
   "away": "Los Angeles Angels",
   "commence": "2026-09-27T19:10:00Z",
-  "quoted_at": "2026-09-27T02:17:08.343186+00:00",
+  "quoted_at": "2026-09-27T08:25:51.374121+00:00",
   "quotes": {
    "draftkings": {
-    "Los Angeles Angels": 153,
-    "Seattle Mariners": -186
+    "Los Angeles Angels": 149,
+    "Seattle Mariners": -181
    },
    "betmgm": {
-    "Los Angeles Angels": 155,
-    "Seattle Mariners": -190
+    "Los Angeles Angels": 150,
+    "Seattle Mariners": -185
    },
    "fanduel": {
     "Los Angeles Angels": 160,
@@ -195,27 +311,27 @@
   "home": "Milwaukee Brewers",
   "away": "St. Louis Cardinals",
   "commence": "2026-09-27T19:10:00Z",
-  "quoted_at": "2026-09-27T02:17:08.343186+00:00",
+  "quoted_at": "2026-09-27T08:25:51.374121+00:00",
   "quotes": {
    "draftkings": {
-    "Milwaukee Brewers": -250,
+    "Milwaukee Brewers": -249,
     "St. Louis Cardinals": 202
    },
    "betmgm": {
-    "Milwaukee Brewers": -235,
-    "St. Louis Cardinals": 195
+    "Milwaukee Brewers": -250,
+    "St. Louis Cardinals": 200
    },
    "fanduel": {
     "Milwaukee Brewers": -255,
     "St. Louis Cardinals": 210
    },
    "pinnacle": {
-    "Milwaukee Brewers": -223,
-    "St. Louis Cardinals": 197
+    "Milwaukee Brewers": -230,
+    "St. Louis Cardinals": 203
    },
    "betrivers": {
-    "Milwaukee Brewers": -265,
-    "St. Louis Cardinals": 210
+    "Milwaukee Brewers": -230,
+    "St. Louis Cardinals": 185
    }
   }
  },
@@ -223,11 +339,63 @@
   "home": "Minnesota Twins",
   "away": "Texas Rangers",
   "commence": "2026-09-27T19:11:00Z",
-  "quoted_at": "2026-09-27T02:17:08.343186+00:00",
+  "quoted_at": "2026-09-27T08:25:51.374121+00:00",
   "quotes": {
    "fanduel": {
     "Minnesota Twins": 106,
     "Texas Rangers": -124
+   },
+   "betmgm": {
+    "Minnesota Twins": 105,
+    "Texas Rangers": -125
+   },
+   "draftkings": {
+    "Minnesota Twins": 105,
+    "Texas Rangers": -126
+   }
+  }
+ },
+ {
+  "home": "San Diego Padres",
+  "away": "Arizona Diamondbacks",
+  "commence": "2026-09-27T19:11:00Z",
+  "quoted_at": "2026-09-27T08:25:51.374121+00:00",
+  "quotes": {
+   "fanduel": {
+    "Arizona Diamondbacks": -126,
+    "San Diego Padres": 108
+   },
+   "betrivers": {
+    "Arizona Diamondbacks": -125,
+    "San Diego Padres": 106
+   },
+   "draftkings": {
+    "Arizona Diamondbacks": -131,
+    "San Diego Padres": 108
+   }
+  }
+ },
+ {
+  "home": "Kansas City Royals",
+  "away": "Cleveland Guardians",
+  "commence": "2026-09-27T19:11:00Z",
+  "quoted_at": "2026-09-27T08:25:51.374121+00:00",
+  "quotes": {
+   "fanduel": {
+    "Cleveland Guardians": -146,
+    "Kansas City Royals": 124
+   },
+   "betrivers": {
+    "Cleveland Guardians": -143,
+    "Kansas City Royals": 120
+   },
+   "draftkings": {
+    "Cleveland Guardians": -149,
+    "Kansas City Royals": 123
+   },
+   "betmgm": {
+    "Cleveland Guardians": -155,
+    "Kansas City Royals": 125
    }
   }
  },

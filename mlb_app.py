@@ -1832,6 +1832,11 @@ with tab_today:
             else:
                 st.caption("📡 Odds feed returned no MLB events (off day, or "
                            "games already started).")
+        else:
+            st.warning("📡 No odds feed configured — manual price entry. Add an "
+                       "[odds] block (api_key, book, reference) to Streamlit "
+                       "Secrets and reboot to enable auto-pricing and the "
+                       "market-referenced gate.")
         with st.form("odds_form"):
             st.caption("Price on the model's pick for each game — type them "
                        "all, then press Enter or Apply once.")

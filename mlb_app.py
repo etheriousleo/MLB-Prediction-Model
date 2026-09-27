@@ -274,6 +274,7 @@ STATSAPI_NAME_MAP = {
     "Oakland Athletics":     "Oakland Athletics",
     "Athletics":             "Oakland Athletics",
     "Sacramento Athletics":  "Oakland Athletics",
+    "Athletics Athletics":   "Oakland Athletics",
     "Philadelphia Phillies": "Philadelphia Phillies",
     "Pittsburgh Pirates":    "Pittsburgh Pirates",
     "San Diego Padres":      "San Diego Padres",
@@ -285,6 +286,14 @@ STATSAPI_NAME_MAP = {
     "Toronto Blue Jays":     "Toronto Blue Jays",
     "Washington Nationals":  "Washington Nationals",
 }
+
+
+def canon_team(name: str) -> str:
+    """Fold every external spelling of a team (MLB API, The Odds API, cron
+    snapshots) into the app's canonical name. The Athletics dropped "Oakland"
+    in 2025; feeds that use the new name silently missed every A's game until
+    this was applied at each name boundary."""
+    return STATSAPI_NAME_MAP.get(name, name)
 
 
 # ── Ballpark factors ──────────────────────────────────────────────────────────
@@ -1276,9 +1285,10 @@ def fetch_market_odds(api_key: str, date_iso: str) -> tuple:
                 for mk in bk.get("markets", []):
                     if mk.get("key") != "h2h":
                         continue
-                    prices[bk["key"]] = {o["name"]: int(o["price"])
+                    prices[bk["key"]] = {canon_team(o["name"]): int(o["price"])
                                          for o in mk.get("outcomes", [])}
-            out.append({"home": ev.get("home_team"), "away": ev.get("away_team"),
+            out.append({"home": canon_team(ev.get("home_team", "")),
+                        "away": canon_team(ev.get("away_team", "")),
                         "commence": ev.get("commence_time", ""), "prices": prices})
         return out, ""
     except Exception as e:
@@ -2290,12 +2300,15 @@ with tab_today:
                             gn_m = re.search(r"\(G(\d+)\)$", r["matchup"])
                             gn = int(gn_m.group(1)) if gn_m else 1
                             cands = sorted([e for e in snap
-                                            if e["home"] == hm and e["away"] == aw],
+                                            if canon_team(e["home"]) == hm
+                                            and canon_team(e["away"]) == aw],
                                            key=lambda e: e["commence"])
                             if cands:
                                 ev = cands[min(gn, len(cands)) - 1]
                                 bk = (_ocfg or {}).get("book", "fanduel")
-                                cp = ev.get("quotes", {}).get(bk, {}).get(r["pick"])
+                                bq = {canon_team(k): v for k, v in
+                                      ev.get("quotes", {}).get(bk, {}).items()}
+                                cp = bq.get(r["pick"])
                                 if cp:
                                     r["closing"] = int(cp)
                     except Exception:
@@ -2314,8 +2327,8 @@ with tab_today:
                 if m:
                     home, want_gn = m.group(1), int(m.group(2))
                 cands = [gm for gm in day_games
-                         if gm.get("away_name") == away
-                         and gm.get("home_name") == home]
+                         if canon_team(gm.get("away_name", "")) == away
+                         and canon_team(gm.get("home_name", "")) == home]
                 if want_gn is not None:
                     cands = [gm for gm in cands
                              if int(gm.get("game_num") or 1) == want_gn]

@@ -290,7 +290,7 @@
   "version": "nfl-v1.0-frozen-2026-09-04",
   "odds": -450,
   "edge": 1.4,
-  "result": "",
+  "result": "W",
   "margin": null
  },
  {
@@ -304,7 +304,7 @@
   "version": "nfl-v1.0-frozen-2026-09-04",
   "odds": -110,
   "edge": 11.5,
-  "result": "",
+  "result": "L",
   "margin": 13.5
  },
  {
@@ -318,7 +318,7 @@
   "version": "nfl-v1.0-frozen-2026-09-04",
   "odds": -124,
   "edge": 6.8,
-  "result": "",
+  "result": "W",
   "margin": null
  },
  {
@@ -332,7 +332,7 @@
   "version": "nfl-v1.0-frozen-2026-09-04",
   "odds": -110,
   "edge": 5.7,
-  "result": "",
+  "result": "W",
   "margin": -4.3
  },
  {
@@ -346,7 +346,7 @@
   "version": "nfl-v1.0-frozen-2026-09-04",
   "odds": -180,
   "edge": 9.4,
-  "result": "",
+  "result": "W",
   "margin": null
  },
  {
@@ -360,7 +360,7 @@
   "version": "nfl-v1.0-frozen-2026-09-04",
   "odds": -104,
   "edge": 14.0,
-  "result": "",
+  "result": "L",
   "margin": -8.9
  },
  {
@@ -374,7 +374,7 @@
   "version": "nfl-v1.0-frozen-2026-09-04",
   "odds": -180,
   "edge": -0.8,
-  "result": "",
+  "result": "L",
   "margin": null
  },
  {
@@ -388,7 +388,7 @@
   "version": "nfl-v1.0-frozen-2026-09-04",
   "odds": -120,
   "edge": 0.6,
-  "result": "",
+  "result": "L",
   "margin": 4.8
  },
  {

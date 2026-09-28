@@ -10079,7 +10079,7 @@
   "game_type": "R",
   "closing": -255,
   "stake": 0,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-09-27",
@@ -10096,7 +10096,7 @@
   "game_type": "R",
   "closing": -196,
   "stake": 0,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-09-27",
@@ -10113,7 +10113,7 @@
   "game_type": "R",
   "closing": -260,
   "stake": 0,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-09-27",
@@ -10130,7 +10130,7 @@
   "game_type": "R",
   "closing": -178,
   "stake": 0,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-09-27",
@@ -10147,7 +10147,7 @@
   "game_type": "R",
   "closing": -190,
   "stake": 0,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-09-27",
@@ -10181,7 +10181,7 @@
   "game_type": "R",
   "closing": -172,
   "stake": 0,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-09-27",
@@ -10198,7 +10198,7 @@
   "game_type": "R",
   "closing": -146,
   "stake": 0,
-  "result": ""
+  "result": "L"
  },
  {
   "date": "2026-09-27",
@@ -10232,7 +10232,7 @@
   "game_type": "R",
   "closing": 106,
   "stake": 0,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-09-27",
@@ -10249,7 +10249,7 @@
   "game_type": "R",
   "closing": -108,
   "stake": 0,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-09-27",
@@ -10266,7 +10266,7 @@
   "game_type": "R",
   "closing": -124,
   "stake": 0,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-09-27",
@@ -10283,7 +10283,7 @@
   "game_type": "R",
   "closing": 108,
   "stake": 0,
-  "result": ""
+  "result": "L"
  },
  {
   "date": "2026-09-27",
@@ -10300,7 +10300,7 @@
   "game_type": "R",
   "closing": 132,
   "stake": 0,
-  "result": ""
+  "result": "L"
  },
  {
   "date": "2026-09-27",
@@ -10317,6 +10317,6 @@
   "game_type": "R",
   "closing": 108,
   "stake": 0,
-  "result": ""
+  "result": "W"
  }
 ]

@@ -71,7 +71,7 @@
   "home": "New York Yankees",
   "away": "Boston Red Sox",
   "commence": "2026-09-30T00:10:00Z",
-  "quoted_at": "2026-09-29T20:19:17.773910+00:00",
+  "quoted_at": "2026-09-29T23:49:05.683040+00:00",
   "quotes": {
    "draftkings": {
     "Boston Red Sox": 116,
@@ -86,12 +86,12 @@
     "New York Yankees": -132
    },
    "pinnacle": {
-    "Boston Red Sox": 115,
-    "New York Yankees": -124
+    "Boston Red Sox": 116,
+    "New York Yankees": -126
    },
    "betrivers": {
-    "Boston Red Sox": 100,
-    "New York Yankees": -121
+    "Boston Red Sox": 105,
+    "New York Yankees": -125
    }
   }
  },
@@ -127,27 +127,27 @@
   "home": "San Diego Padres",
   "away": "Chicago Cubs",
   "commence": "2026-09-30T02:10:00Z",
-  "quoted_at": "2026-09-29T20:19:17.773910+00:00",
+  "quoted_at": "2026-09-29T23:49:05.683040+00:00",
   "quotes": {
    "fanduel": {
-    "Chicago Cubs": 108,
-    "San Diego Padres": -126
+    "Chicago Cubs": 116,
+    "San Diego Padres": -134
    },
    "draftkings": {
-    "Chicago Cubs": 103,
-    "San Diego Padres": -124
+    "Chicago Cubs": 108,
+    "San Diego Padres": -130
    },
    "betmgm": {
-    "Chicago Cubs": 105,
-    "San Diego Padres": -125
+    "Chicago Cubs": 110,
+    "San Diego Padres": -130
    },
    "pinnacle": {
-    "Chicago Cubs": 116,
-    "San Diego Padres": -126
+    "Chicago Cubs": 122,
+    "San Diego Padres": -132
    },
    "betrivers": {
-    "Chicago Cubs": 106,
-    "San Diego Padres": -125
+    "Chicago Cubs": 112,
+    "San Diego Padres": -134
    }
   }
  }

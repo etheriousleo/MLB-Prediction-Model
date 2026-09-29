@@ -1,0 +1,30 @@
+[
+ {
+  "home": "Atlanta Braves",
+  "away": "Philadelphia Phillies",
+  "commence": "2026-09-30T18:00:00Z",
+  "quoted_at": "2026-09-29T23:49:05.683040+00:00",
+  "quotes": {
+   "fanduel": {
+    "Atlanta Braves": 102,
+    "Philadelphia Phillies": -120
+   },
+   "draftkings": {
+    "Atlanta Braves": -105,
+    "Philadelphia Phillies": -115
+   },
+   "betmgm": {
+    "Atlanta Braves": -105,
+    "Philadelphia Phillies": -115
+   },
+   "betrivers": {
+    "Atlanta Braves": -103,
+    "Philadelphia Phillies": -118
+   },
+   "pinnacle": {
+    "Atlanta Braves": 101,
+    "Philadelphia Phillies": -111
+   }
+  }
+ }
+]

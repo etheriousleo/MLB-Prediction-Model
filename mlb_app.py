@@ -1848,11 +1848,22 @@ with tab_today:
                     opp = g["away"] if pick == g["home"] else g["home"]
                     mv = market_view(ev, pick, opp, ocfg["book"], ocfg["ref"])
                     market_ref[mkey] = mv
-                    # Pre-fill the book's price into the form (session state
-                    # set BEFORE the widget instantiates); manual edits win
-                    # once the user has applied a value.
-                    if mv["book_price"] and not st.session_state.get(f"_manual_{mkey}"):
-                        st.session_state[f"mlpick_{mkey}"] = int(mv["book_price"])
+                    # Pre-fill rule (runs BEFORE the widget instantiates, so it
+                    # must never clobber a user edit): overwrite the box only if
+                    # it is empty or still holds the feed's PREVIOUS value. Any
+                    # other value was typed by the user (a boost, a better
+                    # price) — flag it manual and leave it alone.
+                    if mv["book_price"]:
+                        fp = int(mv["book_price"])
+                        cur = st.session_state.get(f"mlpick_{mkey}")
+                        last = st.session_state.get(f"_feed_{mkey}")
+                        if st.session_state.get(f"_manual_{mkey}"):
+                            pass
+                        elif cur in (None, 0) or cur == last:
+                            st.session_state[f"mlpick_{mkey}"] = fp
+                        else:
+                            st.session_state[f"_manual_{mkey}"] = True
+                        st.session_state[f"_feed_{mkey}"] = fp
                         filled += 1
                 st.caption(f"📡 Odds feed: {filled}/{len(upcoming)} games priced "
                            f"from {ocfg['book']}; reference = {ocfg['ref']} "
@@ -1885,16 +1896,23 @@ with tab_today:
                     st.number_input("price", value=0, step=5,
                                     key=f"mlpick_{mkey}",
                                     label_visibility="collapsed")
-            applied = st.form_submit_button("Apply odds")
-        if applied:
-            # Any price that differs from the feed's value is a deliberate
-            # manual override — stop the feed from overwriting it.
-            for g in upcoming:
-                mkey = matchup_key(g)
-                mv = market_ref.get(mkey)
-                if mv and not mv.get("live") and mv.get("book_price") and \
-                        st.session_state.get(f"mlpick_{mkey}", 0) != int(mv["book_price"]):
-                    st.session_state[f"_manual_{mkey}"] = True
+            st.form_submit_button("Apply odds")
+        n_manual = sum(1 for g in upcoming
+                       if st.session_state.get(f"_manual_{matchup_key(g)}"))
+        if n_manual:
+            rc1, rc2 = st.columns([1, 3])
+            with rc1:
+                if st.button("↩ Reset prices to feed"):
+                    for g in upcoming:
+                        k = matchup_key(g)
+                        st.session_state.pop(f"_manual_{k}", None)
+                        st.session_state.pop(f"_feed_{k}", None)
+                        st.session_state[f"mlpick_{k}"] = 0
+                    st.rerun()
+            with rc2:
+                st.caption(f"{n_manual} price(s) overridden by hand (boosts / "
+                           f"better lines) — marked ✎ on the board and logged "
+                           f"as the price taken.")
 
         # Compute all gate calls from the submitted values
         for g in upcoming:
@@ -1939,6 +1957,7 @@ with tab_today:
                 call, ccol = f"⛔ STAY AWAY — {mode}", "#ff5252"
             ev_model = pick_p * unit_profit(ml_pick) - (1 - pick_p)   # if the model's number were right
             gate_calls[mkey] = {"pick": pick, "odds": ml_pick,
+                                "manual": bool(st.session_state.get(f"_manual_{mkey}")),
                                 "model": pick_p, "cal": calibrate(pick_p),
                                 "gate_p": gate_p, "be": be_p,
                                 "fair": fair_p, "mode": mode,
@@ -1949,6 +1968,7 @@ with tab_today:
                                 "tier": g.get("conf_level", ""),
                                 "call": call, "color": ccol}
             st.session_state[f"pickml_{mkey}"] = ml_pick
+            st.session_state[f"override_{mkey}"] = bool(st.session_state.get(f"_manual_{mkey}"))
             st.session_state[f"edge_{mkey}"] = round(raw_cushion * 100, 1)
             st.session_state[f"mktedge_{mkey}"] = (round(cushion * 100, 1)
                                                    if mv and mv.get("ref_fair") else None)
@@ -1971,6 +1991,7 @@ with tab_today:
                     _r["odds"] = _gc["odds"]
                     _r["edge"] = round(_gc["raw_cushion"] * 100, 1)
                     _r["mkt_edge"] = st.session_state.get(f"mktedge_{_r['matchup']}")
+                    _r["override"] = bool(st.session_state.get(f"override_{_r['matchup']}", False))
                     _r["ref_fair"] = st.session_state.get(f"reffair_{_r['matchup']}")
                     _synced += 1
             if _synced:
@@ -2002,7 +2023,7 @@ with tab_today:
                 "Model % (cal.)":   f"{v['model']*100:.0f} ({v['cal']*100:.0f})",
                 "Reference fair %": (round(v["fair"] * 100, 1)
                                      if not v["mode"].startswith("model vs") else "—"),
-                "Your price":       f"{v['odds']:+d}",
+                "Your price":       f"{v['odds']:+d}" + (" ✎" if v.get("manual") else ""),
                 "Needs %":          round(v["be"] * 100, 1),
                 "Edge vs ref":      f"{v['cushion']*100:+.1f}",
                 "Best price":       v["best"],
@@ -2259,6 +2280,7 @@ with tab_today:
                     "ref_fair": st.session_state.get(f"reffair_{matchup}", None),  # reference fair prob (%)
                     "form":    g.get("form_delta"),
                     "game_type": g.get("game_type", "R"),
+                    "override": bool(st.session_state.get(f"override_{matchup}", False)),  # boost / hand-entered price
                     "closing": 0,      # closing price on the pick — enter at grade time
                     "stake":   0,      # dollars actually wagered (0 = paper)
                     "result":  "",     # W / L / Push
@@ -2397,6 +2419,10 @@ with tab_today:
                 "game_type": st.column_config.TextColumn(
                     "type", help="R = regular season; F/D/L/W = postseason rounds",
                     disabled=True),
+                "override": st.column_config.CheckboxColumn(
+                    "boost/override", help="Price was hand-entered (boost or better line); "
+                                           "excluded from CLV, included in the GOOD PRICE record",
+                    disabled=True),
                 "closing": st.column_config.NumberColumn(
                     "closing", help="Closing moneyline on the pick side, at first pitch. "
                                     "CLV = did you beat the close?", step=5),
@@ -2510,6 +2536,8 @@ with tab_today:
                 cl = edited[(edited["version"] == MODEL_VERSION)
                             & (edited["odds"] != 0)
                             & (pd.to_numeric(edited["closing"], errors="coerce").fillna(0) != 0)]
+                if "override" in cl.columns:
+                    cl = cl[~cl["override"].fillna(False).astype(bool)]   # boosts aren't market timing
                 if len(cl):
                     clv = [(breakeven_prob(float(r["closing"])) - breakeven_prob(float(r["odds"]))) * 100
                            for _, r in cl.iterrows()]

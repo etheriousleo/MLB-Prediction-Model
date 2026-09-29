@@ -1,5 +1,549 @@
 [
  {
+  "date": "2026-09-29",
+  "matchup": "Boston Red Sox @ New York Yankees",
+  "pick": "New York Yankees",
+  "prob": 56,
+  "tier": "High",
+  "version": "v4.2-market-gate-2026-09-27",
+  "odds": 106,
+  "edge": -2.7,
+  "result": "",
+  "form": 0.3,
+  "game_type": "F",
+  "closing": 0.0,
+  "stake": 0.0,
+  "mkt_edge": -3.6,
+  "ref_fair": 55.1
+ },
+ {
+  "date": "2026-09-29",
+  "matchup": "Philadelphia Phillies @ Atlanta Braves",
+  "pick": "Atlanta Braves",
+  "prob": 55,
+  "tier": "High",
+  "version": "v4.2-market-gate-2026-09-27",
+  "odds": 150,
+  "edge": -11.2,
+  "result": "",
+  "form": -0.0,
+  "game_type": "F",
+  "closing": 0.0,
+  "stake": 0.0,
+  "mkt_edge": -3.3,
+  "ref_fair": 62.9
+ },
+ {
+  "date": "2026-09-29",
+  "matchup": "Chicago White Sox @ Houston Astros",
+  "pick": "Chicago White Sox",
+  "prob": 53,
+  "tier": "Low",
+  "version": "v4.2-market-gate-2026-09-27",
+  "odds": 108,
+  "edge": 4.9,
+  "result": "",
+  "form": -0.3,
+  "game_type": "F",
+  "closing": 0.0,
+  "stake": 0.0,
+  "mkt_edge": -1.1,
+  "ref_fair": 46.9
+ },
+ {
+  "date": "2026-09-29",
+  "matchup": "Chicago Cubs @ San Diego Padres",
+  "pick": "Chicago Cubs",
+  "prob": 51,
+  "tier": "Low",
+  "version": "v4.2-market-gate-2026-09-27",
+  "odds": 108,
+  "edge": 2.9,
+  "result": "",
+  "form": -0.1,
+  "game_type": "F",
+  "closing": 0.0,
+  "stake": 0.0,
+  "mkt_edge": -2.5,
+  "ref_fair": 45.6
+ },
+ {
+  "date": "2026-09-27",
+  "matchup": "St. Louis Cardinals @ Milwaukee Brewers",
+  "pick": "Milwaukee Brewers",
+  "prob": 66,
+  "tier": "High",
+  "version": "v4.2-market-gate-2026-09-27",
+  "odds": -205,
+  "edge": -1.2,
+  "result": "W",
+  "form": 0.4,
+  "game_type": "R",
+  "closing": -255.0,
+  "stake": 0.0,
+  "mkt_edge": -3.4,
+  "ref_fair": 63.8
+ },
+ {
+  "date": "2026-09-27",
+  "matchup": "Colorado Rockies @ Chicago White Sox",
+  "pick": "Chicago White Sox",
+  "prob": 62,
+  "tier": "High",
+  "version": "v4.2-market-gate-2026-09-27",
+  "odds": -164,
+  "edge": -0.1,
+  "result": "W",
+  "form": 0.3,
+  "game_type": "R",
+  "closing": -196.0,
+  "stake": 0.0,
+  "mkt_edge": -3.0,
+  "ref_fair": 59.1
+ },
+ {
+  "date": "2026-09-27",
+  "matchup": "Los Angeles Dodgers @ San Francisco Giants",
+  "pick": "Los Angeles Dodgers",
+  "prob": 61,
+  "tier": "High",
+  "version": "v4.2-market-gate-2026-09-27",
+  "odds": -255,
+  "edge": -10.8,
+  "result": "W",
+  "form": 0.7,
+  "game_type": "R",
+  "closing": -260.0,
+  "stake": 0.0,
+  "mkt_edge": -2.8,
+  "ref_fair": 69.0
+ },
+ {
+  "date": "2026-09-27",
+  "matchup": "Cincinnati Reds @ Toronto Blue Jays",
+  "pick": "Toronto Blue Jays",
+  "prob": 58,
+  "tier": "High",
+  "version": "v4.2-market-gate-2026-09-27",
+  "odds": -168,
+  "edge": -4.7,
+  "result": "W",
+  "form": 0.2,
+  "game_type": "R",
+  "closing": -178.0,
+  "stake": 0.0,
+  "mkt_edge": -1.9,
+  "ref_fair": 60.8
+ },
+ {
+  "date": "2026-09-27",
+  "matchup": "Los Angeles Angels @ Seattle Mariners",
+  "pick": "Seattle Mariners",
+  "prob": 58,
+  "tier": "High",
+  "version": "v4.2-market-gate-2026-09-27",
+  "odds": -172,
+  "edge": -5.2,
+  "result": "W",
+  "form": 0.1,
+  "game_type": "R",
+  "closing": -190.0,
+  "stake": 0.0,
+  "mkt_edge": -3.7,
+  "ref_fair": 59.5
+ },
+ {
+  "date": "2026-09-27",
+  "matchup": "Baltimore Orioles @ New York Yankees",
+  "pick": "New York Yankees",
+  "prob": 56,
+  "tier": "High",
+  "version": "v4.2-market-gate-2026-09-27",
+  "odds": -118,
+  "edge": 1.9,
+  "result": "Push",
+  "form": -0.1,
+  "game_type": "R",
+  "closing": -130.0,
+  "stake": 0.0,
+  "mkt_edge": -1.9,
+  "ref_fair": 52.2
+ },
+ {
+  "date": "2026-09-27",
+  "matchup": "Houston Astros @ Oakland Athletics",
+  "pick": "Houston Astros",
+  "prob": 56,
+  "tier": "High",
+  "version": "v4.2-market-gate-2026-09-27",
+  "odds": -190,
+  "edge": -9.5,
+  "result": "W",
+  "form": 0.4,
+  "game_type": "R",
+  "closing": -172.0,
+  "stake": 0.0,
+  "mkt_edge": -1.9,
+  "ref_fair": 63.6
+ },
+ {
+  "date": "2026-09-27",
+  "matchup": "Cleveland Guardians @ Kansas City Royals",
+  "pick": "Cleveland Guardians",
+  "prob": 56,
+  "tier": "High",
+  "version": "v4.2-market-gate-2026-09-27",
+  "odds": -112,
+  "edge": 3.2,
+  "result": "L",
+  "form": 1.1,
+  "game_type": "R",
+  "closing": -146.0,
+  "stake": 0.0,
+  "mkt_edge": -2.6,
+  "ref_fair": 50.2
+ },
+ {
+  "date": "2026-09-27",
+  "matchup": "New York Mets @ Washington Nationals",
+  "pick": "Washington Nationals",
+  "prob": 53,
+  "tier": "Low",
+  "version": "v4.2-market-gate-2026-09-27",
+  "odds": 100,
+  "edge": 3.0,
+  "result": "W",
+  "form": -0.4,
+  "game_type": "R",
+  "closing": -104.0,
+  "stake": 0.0,
+  "mkt_edge": -0.9,
+  "ref_fair": 49.1
+ },
+ {
+  "date": "2026-09-27",
+  "matchup": "Texas Rangers @ Minnesota Twins",
+  "pick": "Minnesota Twins",
+  "prob": 53,
+  "tier": "Low",
+  "version": "v4.2-market-gate-2026-09-27",
+  "odds": -102,
+  "edge": 2.5,
+  "result": "W",
+  "form": 0.1,
+  "game_type": "R",
+  "closing": 106.0,
+  "stake": 0.0,
+  "mkt_edge": -1.0,
+  "ref_fair": 49.5
+ },
+ {
+  "date": "2026-09-27",
+  "matchup": "Atlanta Braves @ Miami Marlins",
+  "pick": "Miami Marlins",
+  "prob": 51,
+  "tier": "Low",
+  "version": "v4.2-market-gate-2026-09-27",
+  "odds": -116,
+  "edge": -2.7,
+  "result": "W",
+  "form": 0.1,
+  "game_type": "R",
+  "closing": -108.0,
+  "stake": 0.0,
+  "mkt_edge": -0.6,
+  "ref_fair": 53.1
+ },
+ {
+  "date": "2026-09-27",
+  "matchup": "Chicago Cubs @ Boston Red Sox",
+  "pick": "Chicago Cubs",
+  "prob": 50,
+  "tier": "Low",
+  "version": "v4.2-market-gate-2026-09-27",
+  "odds": -122,
+  "edge": -5.0,
+  "result": "W",
+  "form": 0.2,
+  "game_type": "R",
+  "closing": -124.0,
+  "stake": 0.0,
+  "mkt_edge": -1.1,
+  "ref_fair": 53.9
+ },
+ {
+  "date": "2026-09-27",
+  "matchup": "Pittsburgh Pirates @ Detroit Tigers",
+  "pick": "Detroit Tigers",
+  "prob": 53,
+  "tier": "Conflicted",
+  "version": "v4.2-market-gate-2026-09-27",
+  "odds": 100,
+  "edge": 3.0,
+  "result": "L",
+  "form": 0.2,
+  "game_type": "R",
+  "closing": 108.0,
+  "stake": 0.0,
+  "mkt_edge": -1.3,
+  "ref_fair": 48.7
+ },
+ {
+  "date": "2026-09-27",
+  "matchup": "Tampa Bay Rays @ Philadelphia Phillies",
+  "pick": "Tampa Bay Rays",
+  "prob": 51,
+  "tier": "Conflicted",
+  "version": "v4.2-market-gate-2026-09-27",
+  "odds": 146,
+  "edge": 10.3,
+  "result": "L",
+  "form": 0.2,
+  "game_type": "R",
+  "closing": 132.0,
+  "stake": 0.0,
+  "mkt_edge": -2.3,
+  "ref_fair": 38.4
+ },
+ {
+  "date": "2026-09-27",
+  "matchup": "Arizona Diamondbacks @ San Diego Padres",
+  "pick": "San Diego Padres",
+  "prob": 51,
+  "tier": "Conflicted",
+  "version": "v4.2-market-gate-2026-09-27",
+  "odds": 134,
+  "edge": 8.3,
+  "result": "W",
+  "form": -0.3,
+  "game_type": "R",
+  "closing": 108.0,
+  "stake": 0.0,
+  "mkt_edge": -1.9,
+  "ref_fair": 40.9
+ },
+ {
+  "date": "2026-09-26",
+  "matchup": "Colorado Rockies @ Chicago White Sox",
+  "pick": "Chicago White Sox",
+  "prob": 63,
+  "tier": "High",
+  "version": "v4.1-picker-2026-09-24",
+  "odds": -235,
+  "edge": -7.1,
+  "result": "L",
+  "form": 0.4,
+  "game_type": "R",
+  "closing": 0.0,
+  "stake": 0.0,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
+ },
+ {
+  "date": "2026-09-26",
+  "matchup": "St. Louis Cardinals @ Milwaukee Brewers",
+  "pick": "Milwaukee Brewers",
+  "prob": 62,
+  "tier": "High",
+  "version": "v4.1-picker-2026-09-24",
+  "odds": -188,
+  "edge": -3.3,
+  "result": "W",
+  "form": 0.3,
+  "game_type": "R",
+  "closing": 0.0,
+  "stake": 0.0,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
+ },
+ {
+  "date": "2026-09-26",
+  "matchup": "Cincinnati Reds @ Toronto Blue Jays",
+  "pick": "Toronto Blue Jays",
+  "prob": 61,
+  "tier": "High",
+  "version": "v4.1-picker-2026-09-24",
+  "odds": -164,
+  "edge": -1.1,
+  "result": "L",
+  "form": 0.4,
+  "game_type": "R",
+  "closing": 0.0,
+  "stake": 0.0,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
+ },
+ {
+  "date": "2026-09-26",
+  "matchup": "Los Angeles Dodgers @ San Francisco Giants",
+  "pick": "Los Angeles Dodgers",
+  "prob": 61,
+  "tier": "High",
+  "version": "v4.1-picker-2026-09-24",
+  "odds": -335,
+  "edge": -16.0,
+  "result": "W",
+  "form": 0.7,
+  "game_type": "R",
+  "closing": 0.0,
+  "stake": 0.0,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
+ },
+ {
+  "date": "2026-09-26",
+  "matchup": "Los Angeles Angels @ Seattle Mariners",
+  "pick": "Seattle Mariners",
+  "prob": 56,
+  "tier": "High",
+  "version": "v4.1-picker-2026-09-24",
+  "odds": -198,
+  "edge": -10.4,
+  "result": "W",
+  "form": 0.3,
+  "game_type": "R",
+  "closing": 0.0,
+  "stake": 0.0,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
+ },
+ {
+  "date": "2026-09-26",
+  "matchup": "Houston Astros @ Oakland Athletics",
+  "pick": "Houston Astros",
+  "prob": 55,
+  "tier": "High",
+  "version": "v4.1-picker-2026-09-24",
+  "odds": -154,
+  "edge": -5.6,
+  "result": "W",
+  "form": 0.3,
+  "game_type": "R",
+  "closing": 0.0,
+  "stake": 0.0,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
+ },
+ {
+  "date": "2026-09-26",
+  "matchup": "New York Mets @ Washington Nationals",
+  "pick": "Washington Nationals",
+  "prob": 54,
+  "tier": "High",
+  "version": "v4.1-picker-2026-09-24",
+  "odds": 114,
+  "edge": 7.3,
+  "result": "L",
+  "form": -0.2,
+  "game_type": "R",
+  "closing": 0.0,
+  "stake": 0.0,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
+ },
+ {
+  "date": "2026-09-26",
+  "matchup": "Texas Rangers @ Minnesota Twins",
+  "pick": "Minnesota Twins",
+  "prob": 52,
+  "tier": "Low",
+  "version": "v4.1-picker-2026-09-24",
+  "odds": 110,
+  "edge": 4.4,
+  "result": "L",
+  "form": 0.2,
+  "game_type": "R",
+  "closing": 0.0,
+  "stake": 0.0,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
+ },
+ {
+  "date": "2026-09-26",
+  "matchup": "Tampa Bay Rays @ Philadelphia Phillies",
+  "pick": "Tampa Bay Rays",
+  "prob": 51,
+  "tier": "Low",
+  "version": "v4.1-picker-2026-09-24",
+  "odds": -110,
+  "edge": -1.4,
+  "result": "W",
+  "form": 0.1,
+  "game_type": "R",
+  "closing": 0.0,
+  "stake": 0.0,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
+ },
+ {
+  "date": "2026-09-26",
+  "matchup": "Atlanta Braves @ Miami Marlins",
+  "pick": "Atlanta Braves",
+  "prob": 50,
+  "tier": "Low",
+  "version": "v4.1-picker-2026-09-24",
+  "odds": -132,
+  "edge": -6.9,
+  "result": "W",
+  "form": 0.0,
+  "game_type": "R",
+  "closing": 0.0,
+  "stake": 0.0,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
+ },
+ {
+  "date": "2026-09-26",
+  "matchup": "Pittsburgh Pirates @ Detroit Tigers",
+  "pick": "Detroit Tigers",
+  "prob": 53,
+  "tier": "Conflicted",
+  "version": "v4.1-picker-2026-09-24",
+  "odds": -112,
+  "edge": 0.2,
+  "result": "W",
+  "form": 0.4,
+  "game_type": "R",
+  "closing": 0.0,
+  "stake": 0.0,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
+ },
+ {
+  "date": "2026-09-26",
+  "matchup": "Cleveland Guardians @ Kansas City Royals",
+  "pick": "Cleveland Guardians",
+  "prob": 53,
+  "tier": "Conflicted",
+  "version": "v4.1-picker-2026-09-24",
+  "odds": -126,
+  "edge": -2.8,
+  "result": "W",
+  "form": 0.8,
+  "game_type": "R",
+  "closing": 0.0,
+  "stake": 0.0,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
+ },
+ {
+  "date": "2026-09-26",
+  "matchup": "Arizona Diamondbacks @ San Diego Padres",
+  "pick": "San Diego Padres",
+  "prob": 52,
+  "tier": "Conflicted",
+  "version": "v4.1-picker-2026-09-24",
+  "odds": -120,
+  "edge": -2.5,
+  "result": "W",
+  "form": -0.3,
+  "game_type": "R",
+  "closing": 0.0,
+  "stake": 0.0,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
+ },
+ {
   "date": "2026-09-25",
   "matchup": "Colorado Rockies @ Chicago White Sox",
   "pick": "Chicago White Sox",
@@ -12,7 +556,9 @@
   "form": 0.3,
   "game_type": "R",
   "closing": 0.0,
-  "stake": 0.0
+  "stake": 0.0,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-25",
@@ -27,7 +573,9 @@
   "form": 0.6,
   "game_type": "R",
   "closing": 0.0,
-  "stake": 0.0
+  "stake": 0.0,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-25",
@@ -42,7 +590,9 @@
   "form": 0.4,
   "game_type": "R",
   "closing": 0.0,
-  "stake": 0.0
+  "stake": 0.0,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-25",
@@ -57,7 +607,9 @@
   "form": 0.6,
   "game_type": "R",
   "closing": 0.0,
-  "stake": 0.0
+  "stake": 0.0,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-25",
@@ -72,7 +624,9 @@
   "form": 0.1,
   "game_type": "R",
   "closing": 0.0,
-  "stake": 0.0
+  "stake": 0.0,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-25",
@@ -87,7 +641,9 @@
   "form": 0.1,
   "game_type": "R",
   "closing": 0.0,
-  "stake": 0.0
+  "stake": 0.0,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-25",
@@ -102,7 +658,9 @@
   "form": 0.5,
   "game_type": "R",
   "closing": 0.0,
-  "stake": 0.0
+  "stake": 0.0,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-25",
@@ -117,7 +675,9 @@
   "form": 0.7,
   "game_type": "R",
   "closing": 0.0,
-  "stake": 0.0
+  "stake": 0.0,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-25",
@@ -132,7 +692,9 @@
   "form": 0.1,
   "game_type": "R",
   "closing": 0.0,
-  "stake": 0.0
+  "stake": 0.0,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-25",
@@ -147,7 +709,9 @@
   "form": 0.3,
   "game_type": "R",
   "closing": 0.0,
-  "stake": 0.0
+  "stake": 0.0,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-25",
@@ -162,7 +726,9 @@
   "form": -0.2,
   "game_type": "R",
   "closing": 0.0,
-  "stake": 0.0
+  "stake": 0.0,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-25",
@@ -177,7 +743,9 @@
   "form": -0.2,
   "game_type": "R",
   "closing": 0.0,
-  "stake": 0.0
+  "stake": 0.0,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-25",
@@ -192,7 +760,9 @@
   "form": 0.1,
   "game_type": "R",
   "closing": 0.0,
-  "stake": 0.0
+  "stake": 0.0,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-25",
@@ -207,7 +777,9 @@
   "form": -0.2,
   "game_type": "R",
   "closing": 0.0,
-  "stake": 0.0
+  "stake": 0.0,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-25",
@@ -222,7 +794,9 @@
   "form": 0.4,
   "game_type": "R",
   "closing": 0.0,
-  "stake": 0.0
+  "stake": 0.0,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-25",
@@ -237,7 +811,9 @@
   "form": -0.5,
   "game_type": "R",
   "closing": 0.0,
-  "stake": 0.0
+  "stake": 0.0,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-25",
@@ -252,7 +828,9 @@
   "form": -0.5,
   "game_type": "R",
   "closing": 0.0,
-  "stake": 0.0
+  "stake": 0.0,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-24",
@@ -267,7 +845,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-24",
@@ -282,7 +862,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-24",
@@ -297,7 +879,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-24",
@@ -312,7 +896,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-24",
@@ -327,7 +913,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-24",
@@ -342,7 +930,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-24",
@@ -357,7 +947,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-24",
@@ -372,7 +964,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-24",
@@ -387,7 +981,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-24",
@@ -402,7 +998,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-24",
@@ -417,7 +1015,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-24",
@@ -432,7 +1032,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-23",
@@ -447,7 +1049,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-23",
@@ -462,7 +1066,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-23",
@@ -477,7 +1083,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-23",
@@ -492,7 +1100,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-23",
@@ -507,7 +1117,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-23",
@@ -522,7 +1134,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-23",
@@ -537,7 +1151,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-23",
@@ -552,7 +1168,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-23",
@@ -567,7 +1185,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-23",
@@ -582,7 +1202,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-23",
@@ -597,7 +1219,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-23",
@@ -612,7 +1236,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-23",
@@ -627,7 +1253,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-23",
@@ -642,7 +1270,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-23",
@@ -657,7 +1287,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-23",
@@ -672,7 +1304,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-22",
@@ -687,7 +1321,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-22",
@@ -702,7 +1338,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-22",
@@ -717,7 +1355,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-22",
@@ -732,7 +1372,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-22",
@@ -747,7 +1389,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-22",
@@ -762,7 +1406,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-22",
@@ -777,7 +1423,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-22",
@@ -792,7 +1440,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-22",
@@ -807,7 +1457,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-22",
@@ -822,7 +1474,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-22",
@@ -837,7 +1491,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-22",
@@ -852,7 +1508,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-22",
@@ -867,7 +1525,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-22",
@@ -882,7 +1542,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-22",
@@ -897,7 +1559,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-22",
@@ -912,7 +1576,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-21",
@@ -927,7 +1593,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-21",
@@ -942,7 +1610,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-21",
@@ -957,7 +1627,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-20",
@@ -972,7 +1644,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-20",
@@ -987,7 +1661,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-20",
@@ -1002,7 +1678,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-20",
@@ -1017,7 +1695,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-20",
@@ -1032,7 +1712,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-20",
@@ -1047,7 +1729,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-20",
@@ -1062,7 +1746,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-20",
@@ -1077,7 +1763,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-20",
@@ -1092,7 +1780,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-20",
@@ -1107,7 +1797,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-20",
@@ -1122,7 +1814,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-20",
@@ -1137,7 +1831,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-20",
@@ -1152,7 +1848,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-20",
@@ -1167,7 +1865,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-20",
@@ -1182,7 +1882,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-19",
@@ -1197,7 +1899,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-19",
@@ -1212,7 +1916,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-19",
@@ -1227,7 +1933,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-19",
@@ -1242,7 +1950,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-19",
@@ -1257,7 +1967,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-19",
@@ -1272,7 +1984,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-19",
@@ -1287,7 +2001,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-19",
@@ -1302,7 +2018,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-19",
@@ -1317,7 +2035,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-19",
@@ -1332,7 +2052,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-19",
@@ -1347,7 +2069,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-19",
@@ -1362,7 +2086,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-19",
@@ -1377,7 +2103,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-19",
@@ -1392,7 +2120,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-19",
@@ -1407,7 +2137,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-18",
@@ -1422,7 +2154,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-18",
@@ -1437,7 +2171,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-18",
@@ -1452,7 +2188,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-18",
@@ -1467,7 +2205,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-18",
@@ -1482,7 +2222,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-18",
@@ -1497,7 +2239,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-18",
@@ -1512,7 +2256,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-18",
@@ -1527,7 +2273,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-18",
@@ -1542,7 +2290,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-18",
@@ -1557,7 +2307,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-18",
@@ -1572,7 +2324,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-18",
@@ -1587,7 +2341,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-18",
@@ -1602,7 +2358,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-18",
@@ -1617,7 +2375,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-18",
@@ -1632,7 +2392,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-17",
@@ -1647,7 +2409,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-17",
@@ -1662,7 +2426,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-17",
@@ -1677,7 +2443,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-17",
@@ -1692,7 +2460,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-17",
@@ -1707,7 +2477,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-17",
@@ -1722,7 +2494,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-17",
@@ -1737,7 +2511,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-17",
@@ -1752,7 +2528,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-17",
@@ -1767,7 +2545,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-16",
@@ -1782,7 +2562,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-16",
@@ -1797,7 +2579,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-16",
@@ -1812,7 +2596,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-16",
@@ -1827,7 +2613,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-16",
@@ -1842,7 +2630,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-16",
@@ -1857,7 +2647,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-16",
@@ -1872,7 +2664,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-16",
@@ -1887,7 +2681,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-16",
@@ -1902,7 +2698,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-16",
@@ -1917,7 +2715,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-16",
@@ -1932,7 +2732,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-16",
@@ -1947,7 +2749,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-16",
@@ -1962,7 +2766,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-16",
@@ -1977,7 +2783,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-16",
@@ -1992,7 +2800,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-15",
@@ -2007,7 +2817,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-15",
@@ -2022,7 +2834,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-15",
@@ -2037,7 +2851,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-15",
@@ -2052,7 +2868,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-15",
@@ -2067,7 +2885,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-15",
@@ -2082,7 +2902,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-15",
@@ -2097,7 +2919,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-15",
@@ -2112,7 +2936,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-15",
@@ -2127,7 +2953,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-15",
@@ -2142,7 +2970,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-15",
@@ -2157,7 +2987,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-15",
@@ -2172,7 +3004,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-15",
@@ -2187,7 +3021,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-15",
@@ -2202,7 +3038,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-15",
@@ -2217,7 +3055,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-14",
@@ -2232,7 +3072,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-14",
@@ -2247,7 +3089,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-14",
@@ -2262,7 +3106,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-14",
@@ -2277,7 +3123,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-14",
@@ -2292,7 +3140,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-14",
@@ -2307,7 +3157,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-14",
@@ -2322,7 +3174,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-14",
@@ -2337,7 +3191,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-14",
@@ -2352,7 +3208,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-14",
@@ -2367,7 +3225,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-13",
@@ -2382,7 +3242,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-13",
@@ -2397,7 +3259,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-13",
@@ -2412,7 +3276,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-13",
@@ -2427,7 +3293,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-13",
@@ -2442,7 +3310,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-13",
@@ -2457,7 +3327,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-13",
@@ -2472,7 +3344,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-13",
@@ -2487,7 +3361,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-13",
@@ -2502,7 +3378,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-13",
@@ -2517,7 +3395,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-13",
@@ -2532,7 +3412,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-13",
@@ -2547,7 +3429,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-13",
@@ -2562,7 +3446,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-13",
@@ -2577,7 +3463,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-13",
@@ -2592,7 +3480,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-12",
@@ -2607,7 +3497,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-12",
@@ -2622,7 +3514,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-12",
@@ -2637,7 +3531,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-12",
@@ -2652,7 +3548,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-12",
@@ -2667,7 +3565,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-12",
@@ -2682,7 +3582,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-12",
@@ -2697,7 +3599,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-12",
@@ -2712,7 +3616,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-12",
@@ -2727,7 +3633,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-12",
@@ -2742,7 +3650,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-12",
@@ -2757,7 +3667,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-12",
@@ -2772,7 +3684,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-12",
@@ -2787,7 +3701,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-12",
@@ -2802,7 +3718,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-12",
@@ -2817,7 +3735,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-11",
@@ -2832,7 +3752,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-11",
@@ -2847,7 +3769,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-11",
@@ -2862,7 +3786,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-11",
@@ -2877,7 +3803,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-11",
@@ -2892,7 +3820,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-11",
@@ -2907,7 +3837,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-11",
@@ -2922,7 +3854,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-11",
@@ -2937,7 +3871,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-11",
@@ -2952,7 +3888,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-11",
@@ -2967,7 +3905,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-11",
@@ -2982,7 +3922,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-11",
@@ -2997,7 +3939,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-11",
@@ -3012,7 +3956,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-11",
@@ -3027,7 +3973,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-11",
@@ -3042,7 +3990,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-09",
@@ -3057,7 +4007,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-09",
@@ -3072,7 +4024,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-09",
@@ -3087,7 +4041,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-09",
@@ -3102,7 +4058,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-09",
@@ -3117,7 +4075,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-09",
@@ -3132,7 +4092,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-09",
@@ -3147,7 +4109,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-09",
@@ -3162,7 +4126,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-09",
@@ -3177,7 +4143,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-09",
@@ -3192,7 +4160,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-09",
@@ -3207,7 +4177,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-09",
@@ -3222,7 +4194,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-09",
@@ -3237,7 +4211,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-09",
@@ -3252,7 +4228,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-09",
@@ -3267,7 +4245,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-08",
@@ -3282,7 +4262,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-08",
@@ -3297,7 +4279,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-08",
@@ -3312,7 +4296,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-08",
@@ -3327,7 +4313,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-08",
@@ -3342,7 +4330,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-08",
@@ -3357,7 +4347,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-08",
@@ -3372,7 +4364,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-08",
@@ -3387,7 +4381,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-08",
@@ -3402,7 +4398,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-08",
@@ -3417,7 +4415,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-08",
@@ -3432,7 +4432,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-08",
@@ -3447,7 +4449,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-08",
@@ -3462,7 +4466,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-08",
@@ -3477,7 +4483,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-08",
@@ -3492,7 +4500,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-07",
@@ -3507,7 +4517,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-07",
@@ -3522,7 +4534,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-07",
@@ -3537,7 +4551,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-07",
@@ -3552,7 +4568,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-07",
@@ -3567,7 +4585,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-07",
@@ -3582,7 +4602,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-07",
@@ -3597,7 +4619,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-07",
@@ -3612,7 +4636,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-07",
@@ -3627,7 +4653,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-07",
@@ -3642,7 +4670,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-07",
@@ -3657,7 +4687,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-06",
@@ -3672,7 +4704,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-06",
@@ -3687,7 +4721,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-06",
@@ -3702,7 +4738,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-06",
@@ -3717,7 +4755,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-06",
@@ -3732,7 +4772,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-06",
@@ -3747,7 +4789,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-06",
@@ -3762,7 +4806,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-06",
@@ -3777,7 +4823,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-06",
@@ -3792,7 +4840,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-06",
@@ -3807,7 +4857,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-06",
@@ -3822,7 +4874,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-06",
@@ -3837,7 +4891,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-06",
@@ -3852,7 +4908,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-06",
@@ -3867,7 +4925,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-06",
@@ -3882,7 +4942,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-05",
@@ -3897,7 +4959,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-05",
@@ -3912,7 +4976,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-05",
@@ -3927,7 +4993,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-05",
@@ -3942,7 +5010,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-05",
@@ -3957,7 +5027,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-05",
@@ -3972,7 +5044,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-05",
@@ -3987,7 +5061,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-05",
@@ -4002,7 +5078,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-05",
@@ -4017,7 +5095,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-05",
@@ -4032,7 +5112,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-05",
@@ -4047,7 +5129,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-05",
@@ -4062,7 +5146,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-05",
@@ -4077,7 +5163,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-05",
@@ -4092,7 +5180,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-05",
@@ -4107,7 +5197,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-04",
@@ -4122,7 +5214,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-04",
@@ -4137,7 +5231,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-04",
@@ -4152,7 +5248,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-04",
@@ -4167,7 +5265,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-04",
@@ -4182,7 +5282,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-04",
@@ -4197,7 +5299,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-04",
@@ -4212,7 +5316,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-04",
@@ -4227,7 +5333,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-04",
@@ -4242,7 +5350,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-04",
@@ -4257,7 +5367,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-04",
@@ -4272,7 +5384,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-04",
@@ -4287,7 +5401,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-04",
@@ -4302,7 +5418,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-04",
@@ -4317,7 +5435,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-04",
@@ -4332,7 +5452,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-04",
@@ -4347,7 +5469,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-03",
@@ -4362,7 +5486,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-03",
@@ -4377,7 +5503,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-03",
@@ -4392,7 +5520,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-03",
@@ -4407,7 +5537,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-03",
@@ -4422,7 +5554,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-03",
@@ -4437,7 +5571,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-03",
@@ -4452,7 +5588,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-03",
@@ -4467,7 +5605,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-03",
@@ -4482,7 +5622,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-02",
@@ -4497,7 +5639,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-02",
@@ -4512,7 +5656,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-02",
@@ -4527,7 +5673,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-02",
@@ -4542,7 +5690,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-02",
@@ -4557,7 +5707,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-02",
@@ -4572,7 +5724,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-02",
@@ -4587,7 +5741,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-02",
@@ -4602,7 +5758,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-02",
@@ -4617,7 +5775,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-02",
@@ -4632,7 +5792,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-02",
@@ -4647,7 +5809,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-02",
@@ -4662,7 +5826,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-02",
@@ -4677,7 +5843,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-02",
@@ -4692,7 +5860,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-02",
@@ -4707,7 +5877,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-01",
@@ -4722,7 +5894,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-01",
@@ -4737,7 +5911,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-01",
@@ -4752,7 +5928,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-01",
@@ -4767,7 +5945,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-01",
@@ -4782,7 +5962,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-01",
@@ -4797,7 +5979,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-01",
@@ -4812,7 +5996,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-01",
@@ -4827,7 +6013,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-01",
@@ -4842,7 +6030,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-01",
@@ -4857,7 +6047,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-01",
@@ -4872,7 +6064,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-01",
@@ -4887,7 +6081,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-01",
@@ -4902,7 +6098,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-01",
@@ -4917,7 +6115,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-09-01",
@@ -4932,7 +6132,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-31",
@@ -4947,7 +6149,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-31",
@@ -4962,7 +6166,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-31",
@@ -4977,7 +6183,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-31",
@@ -4992,7 +6200,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-31",
@@ -5007,7 +6217,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-31",
@@ -5022,7 +6234,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-31",
@@ -5037,7 +6251,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-31",
@@ -5052,7 +6268,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-31",
@@ -5067,7 +6285,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-31",
@@ -5082,7 +6302,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-31",
@@ -5097,7 +6319,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-31",
@@ -5112,7 +6336,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-30",
@@ -5127,7 +6353,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-30",
@@ -5142,7 +6370,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-30",
@@ -5157,7 +6387,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-30",
@@ -5172,7 +6404,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-30",
@@ -5187,7 +6421,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-30",
@@ -5202,7 +6438,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-30",
@@ -5217,7 +6455,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-30",
@@ -5232,7 +6472,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-30",
@@ -5247,7 +6489,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-30",
@@ -5262,7 +6506,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-30",
@@ -5277,7 +6523,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-30",
@@ -5292,7 +6540,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-30",
@@ -5307,7 +6557,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-30",
@@ -5322,7 +6574,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-29",
@@ -5337,7 +6591,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-29",
@@ -5352,7 +6608,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-29",
@@ -5367,7 +6625,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-29",
@@ -5382,7 +6642,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-29",
@@ -5397,7 +6659,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-29",
@@ -5412,7 +6676,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-29",
@@ -5427,7 +6693,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-29",
@@ -5442,7 +6710,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-29",
@@ -5457,7 +6727,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-29",
@@ -5472,7 +6744,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-29",
@@ -5487,7 +6761,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-29",
@@ -5502,7 +6778,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-29",
@@ -5517,7 +6795,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-29",
@@ -5532,7 +6812,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-29",
@@ -5547,7 +6829,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-29",
@@ -5562,7 +6846,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-29",
@@ -5577,7 +6863,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-28",
@@ -5592,7 +6880,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-28",
@@ -5607,7 +6897,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-28",
@@ -5622,7 +6914,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-28",
@@ -5637,7 +6931,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-28",
@@ -5652,7 +6948,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-28",
@@ -5667,7 +6965,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-28",
@@ -5682,7 +6982,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-28",
@@ -5697,7 +6999,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-28",
@@ -5712,7 +7016,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-28",
@@ -5727,7 +7033,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-28",
@@ -5742,7 +7050,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-28",
@@ -5757,7 +7067,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-28",
@@ -5772,7 +7084,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-28",
@@ -5787,7 +7101,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-28",
@@ -5802,7 +7118,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-27",
@@ -5817,7 +7135,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-27",
@@ -5832,7 +7152,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-27",
@@ -5847,7 +7169,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-27",
@@ -5862,7 +7186,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-27",
@@ -5877,7 +7203,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-27",
@@ -5892,7 +7220,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-27",
@@ -5907,7 +7237,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-26",
@@ -5922,7 +7254,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-26",
@@ -5937,7 +7271,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-26",
@@ -5952,7 +7288,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-26",
@@ -5967,7 +7305,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-26",
@@ -5982,7 +7322,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-26",
@@ -5997,7 +7339,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-26",
@@ -6012,7 +7356,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-26",
@@ -6027,7 +7373,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-26",
@@ -6042,7 +7390,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-26",
@@ -6057,7 +7407,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-26",
@@ -6072,7 +7424,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-26",
@@ -6087,7 +7441,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-26",
@@ -6102,7 +7458,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-26",
@@ -6117,7 +7475,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-26",
@@ -6132,7 +7492,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-25",
@@ -6147,7 +7509,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-25",
@@ -6162,7 +7526,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-25",
@@ -6177,7 +7543,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-25",
@@ -6192,7 +7560,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-25",
@@ -6207,7 +7577,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-25",
@@ -6222,7 +7594,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-25",
@@ -6237,7 +7611,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-25",
@@ -6252,7 +7628,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-25",
@@ -6267,7 +7645,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-25",
@@ -6282,7 +7662,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-25",
@@ -6297,7 +7679,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-25",
@@ -6312,7 +7696,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-25",
@@ -6327,7 +7713,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-25",
@@ -6342,7 +7730,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-25",
@@ -6357,7 +7747,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-24",
@@ -6372,7 +7764,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-24",
@@ -6387,7 +7781,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-24",
@@ -6402,7 +7798,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-24",
@@ -6417,7 +7815,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-24",
@@ -6432,7 +7832,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-24",
@@ -6447,7 +7849,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-24",
@@ -6462,7 +7866,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-24",
@@ -6477,7 +7883,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-24",
@@ -6492,7 +7900,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-24",
@@ -6507,7 +7917,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-23",
@@ -6522,7 +7934,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-23",
@@ -6537,7 +7951,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-23",
@@ -6552,7 +7968,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-23",
@@ -6567,7 +7985,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-23",
@@ -6582,7 +8002,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-23",
@@ -6597,7 +8019,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-23",
@@ -6612,7 +8036,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-23",
@@ -6627,7 +8053,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-23",
@@ -6642,7 +8070,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-23",
@@ -6657,7 +8087,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-23",
@@ -6672,7 +8104,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-23",
@@ -6687,7 +8121,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-23",
@@ -6702,7 +8138,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-23",
@@ -6717,7 +8155,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-23",
@@ -6732,7 +8172,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-22",
@@ -6747,7 +8189,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-22",
@@ -6762,7 +8206,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-22",
@@ -6777,7 +8223,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-22",
@@ -6792,7 +8240,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-22",
@@ -6807,7 +8257,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-22",
@@ -6822,7 +8274,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-22",
@@ -6837,7 +8291,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-22",
@@ -6852,7 +8308,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-22",
@@ -6867,7 +8325,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-22",
@@ -6882,7 +8342,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-22",
@@ -6897,7 +8359,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-22",
@@ -6912,7 +8376,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-22",
@@ -6927,7 +8393,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-22",
@@ -6942,7 +8410,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-22",
@@ -6957,7 +8427,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-21",
@@ -6972,7 +8444,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-21",
@@ -6987,7 +8461,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-21",
@@ -7002,7 +8478,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-21",
@@ -7017,7 +8495,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-21",
@@ -7032,7 +8512,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-21",
@@ -7047,7 +8529,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-21",
@@ -7062,7 +8546,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-21",
@@ -7077,7 +8563,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-21",
@@ -7092,7 +8580,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-21",
@@ -7107,7 +8597,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-21",
@@ -7122,7 +8614,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-21",
@@ -7137,7 +8631,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-21",
@@ -7152,7 +8648,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-21",
@@ -7167,7 +8665,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-21",
@@ -7182,7 +8682,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-19",
@@ -7197,7 +8699,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-19",
@@ -7212,7 +8716,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-19",
@@ -7227,7 +8733,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-19",
@@ -7242,7 +8750,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-19",
@@ -7257,7 +8767,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-19",
@@ -7272,7 +8784,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-19",
@@ -7287,7 +8801,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-19",
@@ -7302,7 +8818,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-19",
@@ -7317,7 +8835,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-19",
@@ -7332,7 +8852,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-19",
@@ -7347,7 +8869,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-19",
@@ -7362,7 +8886,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-19",
@@ -7377,7 +8903,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-19",
@@ -7392,7 +8920,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-19",
@@ -7407,7 +8937,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-18",
@@ -7422,7 +8954,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-18",
@@ -7437,7 +8971,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-18",
@@ -7452,7 +8988,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-18",
@@ -7467,7 +9005,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-18",
@@ -7482,7 +9022,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-18",
@@ -7497,7 +9039,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-18",
@@ -7512,7 +9056,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-18",
@@ -7527,7 +9073,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-18",
@@ -7542,7 +9090,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-18",
@@ -7557,7 +9107,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-18",
@@ -7572,7 +9124,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-18",
@@ -7587,7 +9141,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-18",
@@ -7602,7 +9158,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-18",
@@ -7617,7 +9175,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-18",
@@ -7632,7 +9192,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-17",
@@ -7647,7 +9209,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-17",
@@ -7662,7 +9226,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-17",
@@ -7677,7 +9243,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-17",
@@ -7692,7 +9260,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-17",
@@ -7707,7 +9277,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-17",
@@ -7722,7 +9294,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-17",
@@ -7737,7 +9311,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-17",
@@ -7752,7 +9328,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-17",
@@ -7767,7 +9345,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-17",
@@ -7782,7 +9362,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-17",
@@ -7797,7 +9379,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-16",
@@ -7812,7 +9396,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-16",
@@ -7827,7 +9413,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-16",
@@ -7842,7 +9430,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-16",
@@ -7857,7 +9447,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-16",
@@ -7872,7 +9464,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-16",
@@ -7887,7 +9481,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-16",
@@ -7902,7 +9498,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-16",
@@ -7917,7 +9515,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-16",
@@ -7932,7 +9532,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-16",
@@ -7947,7 +9549,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-16",
@@ -7962,7 +9566,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-16",
@@ -7977,7 +9583,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-16",
@@ -7992,7 +9600,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-16",
@@ -8007,7 +9617,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-16",
@@ -8022,7 +9634,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-15",
@@ -8037,7 +9651,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-15",
@@ -8052,7 +9668,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-15",
@@ -8067,7 +9685,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-15",
@@ -8082,7 +9702,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-15",
@@ -8097,7 +9719,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-15",
@@ -8112,7 +9736,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-15",
@@ -8127,7 +9753,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-15",
@@ -8142,7 +9770,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-15",
@@ -8157,7 +9787,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-15",
@@ -8172,7 +9804,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-15",
@@ -8187,7 +9821,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-15",
@@ -8202,7 +9838,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-15",
@@ -8217,7 +9855,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-15",
@@ -8232,7 +9872,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-15",
@@ -8247,7 +9889,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-14",
@@ -8262,7 +9906,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-14",
@@ -8277,7 +9923,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-14",
@@ -8292,7 +9940,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-14",
@@ -8307,7 +9957,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-14",
@@ -8322,7 +9974,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-14",
@@ -8337,7 +9991,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-14",
@@ -8352,7 +10008,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-14",
@@ -8367,7 +10025,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-14",
@@ -8382,7 +10042,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-14",
@@ -8397,7 +10059,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-14",
@@ -8412,7 +10076,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-14",
@@ -8427,7 +10093,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-14",
@@ -8442,7 +10110,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-14",
@@ -8457,7 +10127,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-13",
@@ -8472,7 +10144,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-13",
@@ -8487,7 +10161,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-13",
@@ -8502,7 +10178,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-13",
@@ -8517,7 +10195,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-13",
@@ -8532,7 +10212,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-13",
@@ -8547,7 +10229,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-13",
@@ -8562,7 +10246,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-13",
@@ -8577,7 +10263,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-13",
@@ -8592,7 +10280,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-12",
@@ -8607,7 +10297,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-12",
@@ -8622,7 +10314,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-12",
@@ -8637,7 +10331,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-12",
@@ -8652,7 +10348,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-12",
@@ -8667,7 +10365,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-12",
@@ -8682,7 +10382,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-12",
@@ -8697,7 +10399,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-12",
@@ -8712,7 +10416,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-12",
@@ -8727,7 +10433,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-12",
@@ -8742,7 +10450,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-12",
@@ -8757,7 +10467,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-12",
@@ -8772,7 +10484,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-12",
@@ -8787,7 +10501,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-12",
@@ -8802,7 +10518,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-12",
@@ -8817,7 +10535,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-11",
@@ -8832,7 +10552,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-11",
@@ -8847,7 +10569,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-11",
@@ -8862,7 +10586,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-11",
@@ -8877,7 +10603,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-11",
@@ -8892,7 +10620,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-11",
@@ -8907,7 +10637,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-11",
@@ -8922,7 +10654,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-11",
@@ -8937,7 +10671,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-11",
@@ -8952,7 +10688,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-11",
@@ -8967,7 +10705,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-11",
@@ -8982,7 +10722,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-11",
@@ -8997,7 +10739,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-11",
@@ -9012,7 +10756,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-11",
@@ -9027,7 +10773,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-11",
@@ -9042,7 +10790,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-10",
@@ -9057,7 +10807,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-10",
@@ -9072,7 +10824,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-10",
@@ -9087,7 +10841,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-10",
@@ -9102,7 +10858,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-10",
@@ -9117,7 +10875,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-10",
@@ -9132,7 +10892,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-10",
@@ -9147,7 +10909,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-10",
@@ -9162,7 +10926,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-10",
@@ -9177,7 +10943,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-10",
@@ -9192,7 +10960,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-09",
@@ -9207,7 +10977,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-09",
@@ -9222,7 +10994,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-09",
@@ -9237,7 +11011,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-09",
@@ -9252,7 +11028,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-09",
@@ -9267,7 +11045,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-09",
@@ -9282,7 +11062,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-09",
@@ -9297,7 +11079,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-09",
@@ -9312,7 +11096,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-09",
@@ -9327,7 +11113,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-09",
@@ -9342,7 +11130,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-09",
@@ -9357,7 +11147,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-09",
@@ -9372,7 +11164,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-09",
@@ -9387,7 +11181,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-09",
@@ -9402,7 +11198,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-09",
@@ -9417,7 +11215,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-08",
@@ -9432,7 +11232,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-08",
@@ -9447,7 +11249,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-08",
@@ -9462,7 +11266,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-08",
@@ -9477,7 +11283,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-08",
@@ -9492,7 +11300,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-08",
@@ -9507,7 +11317,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-08",
@@ -9522,7 +11334,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-08",
@@ -9537,7 +11351,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-08",
@@ -9552,7 +11368,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-08",
@@ -9567,7 +11385,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-08",
@@ -9582,7 +11402,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-08",
@@ -9597,7 +11419,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-08",
@@ -9612,7 +11436,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-08",
@@ -9627,7 +11453,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-08",
@@ -9642,7 +11470,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-07",
@@ -9657,7 +11487,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-07",
@@ -9672,7 +11504,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-07",
@@ -9687,7 +11521,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-07",
@@ -9702,7 +11538,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-07",
@@ -9717,7 +11555,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-07",
@@ -9732,7 +11572,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-07",
@@ -9747,7 +11589,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-07",
@@ -9762,7 +11606,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-07",
@@ -9777,7 +11623,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-07",
@@ -9792,7 +11640,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-07",
@@ -9807,7 +11657,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-07",
@@ -9822,7 +11674,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-07",
@@ -9837,7 +11691,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-07",
@@ -9852,7 +11708,9 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  },
  {
   "date": "2026-08-07",
@@ -9867,524 +11725,8 @@
   "form": NaN,
   "game_type": NaN,
   "closing": NaN,
-  "stake": NaN
- },
- {
-  "date": "2026-09-26",
-  "matchup": "Colorado Rockies @ Chicago White Sox",
-  "pick": "Chicago White Sox",
-  "prob": 63,
-  "tier": "High",
-  "version": "v4.1-picker-2026-09-24",
-  "odds": -235,
-  "edge": -7.1,
-  "form": 0.4,
-  "game_type": "R",
-  "closing": 0,
-  "stake": 0,
-  "result": "L"
- },
- {
-  "date": "2026-09-26",
-  "matchup": "St. Louis Cardinals @ Milwaukee Brewers",
-  "pick": "Milwaukee Brewers",
-  "prob": 62,
-  "tier": "High",
-  "version": "v4.1-picker-2026-09-24",
-  "odds": -188,
-  "edge": -3.3,
-  "form": 0.3,
-  "game_type": "R",
-  "closing": 0,
-  "stake": 0,
-  "result": "W"
- },
- {
-  "date": "2026-09-26",
-  "matchup": "Cincinnati Reds @ Toronto Blue Jays",
-  "pick": "Toronto Blue Jays",
-  "prob": 61,
-  "tier": "High",
-  "version": "v4.1-picker-2026-09-24",
-  "odds": -164,
-  "edge": -1.1,
-  "form": 0.4,
-  "game_type": "R",
-  "closing": 0,
-  "stake": 0,
-  "result": "L"
- },
- {
-  "date": "2026-09-26",
-  "matchup": "Los Angeles Dodgers @ San Francisco Giants",
-  "pick": "Los Angeles Dodgers",
-  "prob": 61,
-  "tier": "High",
-  "version": "v4.1-picker-2026-09-24",
-  "odds": -335,
-  "edge": -16.0,
-  "form": 0.7,
-  "game_type": "R",
-  "closing": 0,
-  "stake": 0,
-  "result": "W"
- },
- {
-  "date": "2026-09-26",
-  "matchup": "Los Angeles Angels @ Seattle Mariners",
-  "pick": "Seattle Mariners",
-  "prob": 56,
-  "tier": "High",
-  "version": "v4.1-picker-2026-09-24",
-  "odds": -198,
-  "edge": -10.4,
-  "form": 0.3,
-  "game_type": "R",
-  "closing": 0,
-  "stake": 0,
-  "result": "W"
- },
- {
-  "date": "2026-09-26",
-  "matchup": "Houston Astros @ Oakland Athletics",
-  "pick": "Houston Astros",
-  "prob": 55,
-  "tier": "High",
-  "version": "v4.1-picker-2026-09-24",
-  "odds": -154,
-  "edge": -5.6,
-  "form": 0.3,
-  "game_type": "R",
-  "closing": 0,
-  "stake": 0,
-  "result": "W"
- },
- {
-  "date": "2026-09-26",
-  "matchup": "New York Mets @ Washington Nationals",
-  "pick": "Washington Nationals",
-  "prob": 54,
-  "tier": "High",
-  "version": "v4.1-picker-2026-09-24",
-  "odds": 114,
-  "edge": 7.3,
-  "form": -0.2,
-  "game_type": "R",
-  "closing": 0,
-  "stake": 0,
-  "result": "L"
- },
- {
-  "date": "2026-09-26",
-  "matchup": "Texas Rangers @ Minnesota Twins",
-  "pick": "Minnesota Twins",
-  "prob": 52,
-  "tier": "Low",
-  "version": "v4.1-picker-2026-09-24",
-  "odds": 110,
-  "edge": 4.4,
-  "form": 0.2,
-  "game_type": "R",
-  "closing": 0,
-  "stake": 0,
-  "result": "L"
- },
- {
-  "date": "2026-09-26",
-  "matchup": "Tampa Bay Rays @ Philadelphia Phillies",
-  "pick": "Tampa Bay Rays",
-  "prob": 51,
-  "tier": "Low",
-  "version": "v4.1-picker-2026-09-24",
-  "odds": -110,
-  "edge": -1.4,
-  "form": 0.1,
-  "game_type": "R",
-  "closing": 0,
-  "stake": 0,
-  "result": "W"
- },
- {
-  "date": "2026-09-26",
-  "matchup": "Atlanta Braves @ Miami Marlins",
-  "pick": "Atlanta Braves",
-  "prob": 50,
-  "tier": "Low",
-  "version": "v4.1-picker-2026-09-24",
-  "odds": -132,
-  "edge": -6.9,
-  "form": 0.0,
-  "game_type": "R",
-  "closing": 0,
-  "stake": 0,
-  "result": "W"
- },
- {
-  "date": "2026-09-26",
-  "matchup": "Pittsburgh Pirates @ Detroit Tigers",
-  "pick": "Detroit Tigers",
-  "prob": 53,
-  "tier": "Conflicted",
-  "version": "v4.1-picker-2026-09-24",
-  "odds": -112,
-  "edge": 0.2,
-  "form": 0.4,
-  "game_type": "R",
-  "closing": 0,
-  "stake": 0,
-  "result": "W"
- },
- {
-  "date": "2026-09-26",
-  "matchup": "Cleveland Guardians @ Kansas City Royals",
-  "pick": "Cleveland Guardians",
-  "prob": 53,
-  "tier": "Conflicted",
-  "version": "v4.1-picker-2026-09-24",
-  "odds": -126,
-  "edge": -2.8,
-  "form": 0.8,
-  "game_type": "R",
-  "closing": 0,
-  "stake": 0,
-  "result": "W"
- },
- {
-  "date": "2026-09-26",
-  "matchup": "Arizona Diamondbacks @ San Diego Padres",
-  "pick": "San Diego Padres",
-  "prob": 52,
-  "tier": "Conflicted",
-  "version": "v4.1-picker-2026-09-24",
-  "odds": -120,
-  "edge": -2.5,
-  "form": -0.3,
-  "game_type": "R",
-  "closing": 0,
-  "stake": 0,
-  "result": "W"
- },
- {
-  "date": "2026-09-27",
-  "matchup": "St. Louis Cardinals @ Milwaukee Brewers",
-  "pick": "Milwaukee Brewers",
-  "prob": 66,
-  "tier": "High",
-  "version": "v4.2-market-gate-2026-09-27",
-  "odds": -205,
-  "edge": -1.2,
-  "mkt_edge": -3.4,
-  "ref_fair": 63.8,
-  "form": 0.4,
-  "game_type": "R",
-  "closing": -255,
-  "stake": 0,
-  "result": "W"
- },
- {
-  "date": "2026-09-27",
-  "matchup": "Colorado Rockies @ Chicago White Sox",
-  "pick": "Chicago White Sox",
-  "prob": 62,
-  "tier": "High",
-  "version": "v4.2-market-gate-2026-09-27",
-  "odds": -164,
-  "edge": -0.1,
-  "mkt_edge": -3.0,
-  "ref_fair": 59.1,
-  "form": 0.3,
-  "game_type": "R",
-  "closing": -196,
-  "stake": 0,
-  "result": "W"
- },
- {
-  "date": "2026-09-27",
-  "matchup": "Los Angeles Dodgers @ San Francisco Giants",
-  "pick": "Los Angeles Dodgers",
-  "prob": 61,
-  "tier": "High",
-  "version": "v4.2-market-gate-2026-09-27",
-  "odds": -255,
-  "edge": -10.8,
-  "mkt_edge": -2.8,
-  "ref_fair": 69.0,
-  "form": 0.7,
-  "game_type": "R",
-  "closing": -260,
-  "stake": 0,
-  "result": "W"
- },
- {
-  "date": "2026-09-27",
-  "matchup": "Cincinnati Reds @ Toronto Blue Jays",
-  "pick": "Toronto Blue Jays",
-  "prob": 58,
-  "tier": "High",
-  "version": "v4.2-market-gate-2026-09-27",
-  "odds": -168,
-  "edge": -4.7,
-  "mkt_edge": -1.9,
-  "ref_fair": 60.8,
-  "form": 0.2,
-  "game_type": "R",
-  "closing": -178,
-  "stake": 0,
-  "result": "W"
- },
- {
-  "date": "2026-09-27",
-  "matchup": "Los Angeles Angels @ Seattle Mariners",
-  "pick": "Seattle Mariners",
-  "prob": 58,
-  "tier": "High",
-  "version": "v4.2-market-gate-2026-09-27",
-  "odds": -172,
-  "edge": -5.2,
-  "mkt_edge": -3.7,
-  "ref_fair": 59.5,
-  "form": 0.1,
-  "game_type": "R",
-  "closing": -190,
-  "stake": 0,
-  "result": "W"
- },
- {
-  "date": "2026-09-27",
-  "matchup": "Baltimore Orioles @ New York Yankees",
-  "pick": "New York Yankees",
-  "prob": 56,
-  "tier": "High",
-  "version": "v4.2-market-gate-2026-09-27",
-  "odds": -118,
-  "edge": 1.9,
-  "mkt_edge": -1.9,
-  "ref_fair": 52.2,
-  "form": -0.1,
-  "game_type": "R",
-  "closing": -130,
-  "stake": 0,
-  "result": "Push"
- },
- {
-  "date": "2026-09-27",
-  "matchup": "Houston Astros @ Oakland Athletics",
-  "pick": "Houston Astros",
-  "prob": 56,
-  "tier": "High",
-  "version": "v4.2-market-gate-2026-09-27",
-  "odds": -190,
-  "edge": -9.5,
-  "mkt_edge": -1.9,
-  "ref_fair": 63.6,
-  "form": 0.4,
-  "game_type": "R",
-  "closing": -172,
-  "stake": 0,
-  "result": "W"
- },
- {
-  "date": "2026-09-27",
-  "matchup": "Cleveland Guardians @ Kansas City Royals",
-  "pick": "Cleveland Guardians",
-  "prob": 56,
-  "tier": "High",
-  "version": "v4.2-market-gate-2026-09-27",
-  "odds": -112,
-  "edge": 3.2,
-  "mkt_edge": -2.6,
-  "ref_fair": 50.2,
-  "form": 1.1,
-  "game_type": "R",
-  "closing": -146,
-  "stake": 0,
-  "result": "L"
- },
- {
-  "date": "2026-09-27",
-  "matchup": "New York Mets @ Washington Nationals",
-  "pick": "Washington Nationals",
-  "prob": 53,
-  "tier": "Low",
-  "version": "v4.2-market-gate-2026-09-27",
-  "odds": 100,
-  "edge": 3.0,
-  "mkt_edge": -0.9,
-  "ref_fair": 49.1,
-  "form": -0.4,
-  "game_type": "R",
-  "closing": -104,
-  "stake": 0,
-  "result": "W"
- },
- {
-  "date": "2026-09-27",
-  "matchup": "Texas Rangers @ Minnesota Twins",
-  "pick": "Minnesota Twins",
-  "prob": 53,
-  "tier": "Low",
-  "version": "v4.2-market-gate-2026-09-27",
-  "odds": -102,
-  "edge": 2.5,
-  "mkt_edge": -1.0,
-  "ref_fair": 49.5,
-  "form": 0.1,
-  "game_type": "R",
-  "closing": 106,
-  "stake": 0,
-  "result": "W"
- },
- {
-  "date": "2026-09-27",
-  "matchup": "Atlanta Braves @ Miami Marlins",
-  "pick": "Miami Marlins",
-  "prob": 51,
-  "tier": "Low",
-  "version": "v4.2-market-gate-2026-09-27",
-  "odds": -116,
-  "edge": -2.7,
-  "mkt_edge": -0.6,
-  "ref_fair": 53.1,
-  "form": 0.1,
-  "game_type": "R",
-  "closing": -108,
-  "stake": 0,
-  "result": "W"
- },
- {
-  "date": "2026-09-27",
-  "matchup": "Chicago Cubs @ Boston Red Sox",
-  "pick": "Chicago Cubs",
-  "prob": 50,
-  "tier": "Low",
-  "version": "v4.2-market-gate-2026-09-27",
-  "odds": -122,
-  "edge": -5.0,
-  "mkt_edge": -1.1,
-  "ref_fair": 53.9,
-  "form": 0.2,
-  "game_type": "R",
-  "closing": -124,
-  "stake": 0,
-  "result": "W"
- },
- {
-  "date": "2026-09-27",
-  "matchup": "Pittsburgh Pirates @ Detroit Tigers",
-  "pick": "Detroit Tigers",
-  "prob": 53,
-  "tier": "Conflicted",
-  "version": "v4.2-market-gate-2026-09-27",
-  "odds": 100,
-  "edge": 3.0,
-  "mkt_edge": -1.3,
-  "ref_fair": 48.7,
-  "form": 0.2,
-  "game_type": "R",
-  "closing": 108,
-  "stake": 0,
-  "result": "L"
- },
- {
-  "date": "2026-09-27",
-  "matchup": "Tampa Bay Rays @ Philadelphia Phillies",
-  "pick": "Tampa Bay Rays",
-  "prob": 51,
-  "tier": "Conflicted",
-  "version": "v4.2-market-gate-2026-09-27",
-  "odds": 146,
-  "edge": 10.3,
-  "mkt_edge": -2.3,
-  "ref_fair": 38.4,
-  "form": 0.2,
-  "game_type": "R",
-  "closing": 132,
-  "stake": 0,
-  "result": "L"
- },
- {
-  "date": "2026-09-27",
-  "matchup": "Arizona Diamondbacks @ San Diego Padres",
-  "pick": "San Diego Padres",
-  "prob": 51,
-  "tier": "Conflicted",
-  "version": "v4.2-market-gate-2026-09-27",
-  "odds": 134,
-  "edge": 8.3,
-  "mkt_edge": -1.9,
-  "ref_fair": 40.9,
-  "form": -0.3,
-  "game_type": "R",
-  "closing": 108,
-  "stake": 0,
-  "result": "W"
- },
- {
-  "date": "2026-09-29",
-  "matchup": "Boston Red Sox @ New York Yankees",
-  "pick": "New York Yankees",
-  "prob": 56,
-  "tier": "High",
-  "version": "v4.2-market-gate-2026-09-27",
-  "odds": -142,
-  "edge": -2.7,
-  "mkt_edge": -3.6,
-  "ref_fair": 55.1,
-  "form": 0.3,
-  "game_type": "F",
-  "closing": 0,
-  "stake": 0,
-  "result": ""
- },
- {
-  "date": "2026-09-29",
-  "matchup": "Philadelphia Phillies @ Atlanta Braves",
-  "pick": "Atlanta Braves",
-  "prob": 55,
-  "tier": "High",
-  "version": "v4.2-market-gate-2026-09-27",
-  "odds": -196,
-  "edge": -11.2,
-  "mkt_edge": -3.3,
-  "ref_fair": 62.9,
-  "form": -0.0,
-  "game_type": "F",
-  "closing": 0,
-  "stake": 0,
-  "result": ""
- },
- {
-  "date": "2026-09-29",
-  "matchup": "Chicago White Sox @ Houston Astros",
-  "pick": "Chicago White Sox",
-  "prob": 53,
-  "tier": "Low",
-  "version": "v4.2-market-gate-2026-09-27",
-  "odds": 108,
-  "edge": 4.9,
-  "mkt_edge": -1.1,
-  "ref_fair": 46.9,
-  "form": -0.3,
-  "game_type": "F",
-  "closing": 0,
-  "stake": 0,
-  "result": ""
- },
- {
-  "date": "2026-09-29",
-  "matchup": "Chicago Cubs @ San Diego Padres",
-  "pick": "Chicago Cubs",
-  "prob": 51,
-  "tier": "Low",
-  "version": "v4.2-market-gate-2026-09-27",
-  "odds": 108,
-  "edge": 2.9,
-  "mkt_edge": -2.5,
-  "ref_fair": 45.6,
-  "form": -0.1,
-  "game_type": "F",
-  "closing": 0,
-  "stake": 0,
-  "result": ""
+  "stake": NaN,
+  "mkt_edge": NaN,
+  "ref_fair": NaN
  }
 ]

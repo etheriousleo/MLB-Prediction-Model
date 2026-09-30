@@ -3,27 +3,79 @@
   "home": "Atlanta Braves",
   "away": "Philadelphia Phillies",
   "commence": "2026-09-30T18:00:00Z",
-  "quoted_at": "2026-09-29T23:49:05.683040+00:00",
+  "quoted_at": "2026-09-30T03:30:17.904976+00:00",
   "quotes": {
    "fanduel": {
     "Atlanta Braves": 102,
     "Philadelphia Phillies": -120
    },
    "draftkings": {
-    "Atlanta Braves": -105,
-    "Philadelphia Phillies": -115
+    "Atlanta Braves": -103,
+    "Philadelphia Phillies": -117
    },
    "betmgm": {
-    "Atlanta Braves": -105,
-    "Philadelphia Phillies": -115
-   },
-   "betrivers": {
-    "Atlanta Braves": -103,
+    "Atlanta Braves": -102,
     "Philadelphia Phillies": -118
    },
+   "betrivers": {
+    "Atlanta Braves": 100,
+    "Philadelphia Phillies": -121
+   },
    "pinnacle": {
-    "Atlanta Braves": 101,
-    "Philadelphia Phillies": -111
+    "Atlanta Braves": -102,
+    "Philadelphia Phillies": -108
+   }
+  }
+ },
+ {
+  "home": "Houston Astros",
+  "away": "Chicago White Sox",
+  "commence": "2026-09-30T21:00:00Z",
+  "quoted_at": "2026-09-30T03:30:17.904976+00:00",
+  "quotes": {
+   "draftkings": {
+    "Chicago White Sox": 128,
+    "Houston Astros": -155
+   },
+   "fanduel": {
+    "Chicago White Sox": 122,
+    "Houston Astros": -144
+   },
+   "betmgm": {
+    "Chicago White Sox": 120,
+    "Houston Astros": -145
+   },
+   "betrivers": {
+    "Chicago White Sox": 120,
+    "Houston Astros": -148
+   },
+   "pinnacle": {
+    "Chicago White Sox": 130,
+    "Houston Astros": -144
+   }
+  }
+ },
+ {
+  "home": "New York Yankees",
+  "away": "Boston Red Sox",
+  "commence": "2026-10-01T00:00:00Z",
+  "quoted_at": "2026-09-30T03:30:17.904976+00:00",
+  "quotes": {
+   "fanduel": {
+    "Boston Red Sox": 116,
+    "New York Yankees": -134
+   },
+   "betmgm": {
+    "Boston Red Sox": 115,
+    "New York Yankees": -135
+   },
+   "betrivers": {
+    "Boston Red Sox": 118,
+    "New York Yankees": -141
+   },
+   "draftkings": {
+    "Boston Red Sox": 107,
+    "New York Yankees": -129
    }
   }
  }

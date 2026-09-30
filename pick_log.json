@@ -59,15 +59,16 @@
   "prob": 51,
   "tier": "Low",
   "version": "v4.2-market-gate-2026-09-27",
-  "odds": 108,
-  "edge": 2.9,
+  "odds": 116,
+  "edge": 4.7,
   "result": "",
   "form": -0.1,
   "game_type": "F",
   "closing": 0.0,
   "stake": 0.0,
-  "mkt_edge": -2.5,
-  "ref_fair": 45.6
+  "mkt_edge": -1.7,
+  "ref_fair": 44.6,
+  "override": false
  },
  {
   "date": "2026-09-27",

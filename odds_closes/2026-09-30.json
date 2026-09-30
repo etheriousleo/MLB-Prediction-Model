@@ -31,27 +31,27 @@
   "home": "Houston Astros",
   "away": "Chicago White Sox",
   "commence": "2026-09-30T21:00:00Z",
-  "quoted_at": "2026-09-30T03:30:17.904976+00:00",
+  "quoted_at": "2026-09-30T20:23:26.463597+00:00",
   "quotes": {
    "draftkings": {
     "Chicago White Sox": 128,
     "Houston Astros": -155
    },
    "fanduel": {
-    "Chicago White Sox": 122,
-    "Houston Astros": -144
+    "Chicago White Sox": 128,
+    "Houston Astros": -152
    },
    "betmgm": {
-    "Chicago White Sox": 120,
-    "Houston Astros": -145
+    "Chicago White Sox": 125,
+    "Houston Astros": -150
    },
    "betrivers": {
-    "Chicago White Sox": 120,
-    "Houston Astros": -148
+    "Chicago White Sox": 128,
+    "Houston Astros": -152
    },
    "pinnacle": {
-    "Chicago White Sox": 130,
-    "Houston Astros": -144
+    "Chicago White Sox": 134,
+    "Houston Astros": -145
    }
   }
  },
@@ -59,23 +59,55 @@
   "home": "New York Yankees",
   "away": "Boston Red Sox",
   "commence": "2026-10-01T00:00:00Z",
-  "quoted_at": "2026-09-30T03:30:17.904976+00:00",
+  "quoted_at": "2026-09-30T20:23:26.463597+00:00",
   "quotes": {
    "fanduel": {
     "Boston Red Sox": 116,
-    "New York Yankees": -134
+    "New York Yankees": -136
    },
    "betmgm": {
-    "Boston Red Sox": 115,
-    "New York Yankees": -135
+    "Boston Red Sox": 120,
+    "New York Yankees": -140
    },
    "betrivers": {
-    "Boston Red Sox": 118,
-    "New York Yankees": -141
+    "Boston Red Sox": 120,
+    "New York Yankees": -143
    },
    "draftkings": {
-    "Boston Red Sox": 107,
-    "New York Yankees": -129
+    "Boston Red Sox": 113,
+    "New York Yankees": -136
+   },
+   "pinnacle": {
+    "Boston Red Sox": 118,
+    "New York Yankees": -128
+   }
+  }
+ },
+ {
+  "home": "San Diego Padres",
+  "away": "Chicago Cubs",
+  "commence": "2026-10-01T02:00:00Z",
+  "quoted_at": "2026-09-30T20:23:26.463597+00:00",
+  "quotes": {
+   "fanduel": {
+    "Chicago Cubs": 122,
+    "San Diego Padres": -144
+   },
+   "draftkings": {
+    "Chicago Cubs": 123,
+    "San Diego Padres": -149
+   },
+   "betmgm": {
+    "Chicago Cubs": 120,
+    "San Diego Padres": -140
+   },
+   "betrivers": {
+    "Chicago Cubs": 123,
+    "San Diego Padres": -148
+   },
+   "pinnacle": {
+    "Chicago Cubs": 130,
+    "San Diego Padres": -141
    }
   }
  }

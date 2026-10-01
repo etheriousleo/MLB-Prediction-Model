@@ -11803,5 +11803,23 @@
   "closing": -144,
   "stake": 0,
   "result": ""
+ },
+ {
+  "date": "2026-10-01",
+  "matchup": "Philadelphia Phillies @ Atlanta Braves",
+  "pick": "Atlanta Braves",
+  "prob": 57,
+  "tier": "High",
+  "version": "v4.2-market-gate-2026-09-27",
+  "odds": -106,
+  "edge": 5.5,
+  "mkt_edge": -1.9,
+  "ref_fair": 49.5,
+  "form": 0.2,
+  "game_type": "F",
+  "override": false,
+  "closing": 0,
+  "stake": 0,
+  "result": ""
  }
 ]

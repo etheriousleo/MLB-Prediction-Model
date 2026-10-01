@@ -26,5 +26,33 @@
     "Philadelphia Phillies": -108
    }
   }
+ },
+ {
+  "home": "Atlanta Braves",
+  "away": "Philadelphia Phillies",
+  "commence": "2026-10-02T00:11:00Z",
+  "quoted_at": "2026-10-01T20:38:51.181228+00:00",
+  "quotes": {
+   "fanduel": {
+    "Atlanta Braves": -106,
+    "Philadelphia Phillies": -110
+   },
+   "betmgm": {
+    "Atlanta Braves": -105,
+    "Philadelphia Phillies": -115
+   },
+   "draftkings": {
+    "Atlanta Braves": -109,
+    "Philadelphia Phillies": -110
+   },
+   "betrivers": {
+    "Atlanta Braves": -108,
+    "Philadelphia Phillies": -110
+   },
+   "pinnacle": {
+    "Atlanta Braves": -105,
+    "Philadelphia Phillies": -103
+   }
+  }
  }
 ]

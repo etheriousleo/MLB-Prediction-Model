@@ -2,6 +2,34 @@
  {
   "home": "Cleveland Guardians",
   "away": "Chicago White Sox",
+  "commence": "2026-10-03T17:01:00Z",
+  "quoted_at": "2026-10-01T20:38:51.181228+00:00",
+  "quotes": {
+   "fanduel": {
+    "Chicago White Sox": 128,
+    "Cleveland Guardians": -152
+   },
+   "draftkings": {
+    "Chicago White Sox": 129,
+    "Cleveland Guardians": -156
+   },
+   "betmgm": {
+    "Chicago White Sox": 125,
+    "Cleveland Guardians": -150
+   },
+   "betrivers": {
+    "Chicago White Sox": 125,
+    "Cleveland Guardians": -150
+   },
+   "pinnacle": {
+    "Chicago White Sox": 136,
+    "Cleveland Guardians": -151
+   }
+  }
+ },
+ {
+  "home": "Cleveland Guardians",
+  "away": "Chicago White Sox",
   "commence": "2026-10-03T17:11:00Z",
   "quoted_at": "2026-10-01T03:35:29.072099+00:00",
   "quotes": {
@@ -27,19 +55,55 @@
   "home": "Tampa Bay Rays",
   "away": "New York Yankees",
   "commence": "2026-10-03T22:31:00Z",
-  "quoted_at": "2026-10-01T03:35:29.072099+00:00",
+  "quoted_at": "2026-10-01T20:38:51.181228+00:00",
   "quotes": {
    "fanduel": {
     "New York Yankees": 116,
     "Tampa Bay Rays": -136
    },
    "draftkings": {
-    "New York Yankees": 110,
-    "Tampa Bay Rays": -133
+    "New York Yankees": 113,
+    "Tampa Bay Rays": -136
    },
    "betmgm": {
     "New York Yankees": 115,
     "Tampa Bay Rays": -135
+   },
+   "betrivers": {
+    "New York Yankees": 116,
+    "Tampa Bay Rays": -137
+   },
+   "pinnacle": {
+    "New York Yankees": 118,
+    "Tampa Bay Rays": -130
+   }
+  }
+ },
+ {
+  "home": "Milwaukee Brewers",
+  "away": "San Diego Padres",
+  "commence": "2026-10-04T00:30:00Z",
+  "quoted_at": "2026-10-01T20:38:51.181228+00:00",
+  "quotes": {
+   "draftkings": {
+    "Milwaukee Brewers": -230,
+    "San Diego Padres": 187
+   },
+   "fanduel": {
+    "Milwaukee Brewers": -225,
+    "San Diego Padres": 188
+   },
+   "betmgm": {
+    "Milwaukee Brewers": -220,
+    "San Diego Padres": 180
+   },
+   "betrivers": {
+    "Milwaukee Brewers": -230,
+    "San Diego Padres": 188
+   },
+   "pinnacle": {
+    "Milwaukee Brewers": -222,
+    "San Diego Padres": 196
    }
   }
  }

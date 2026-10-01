@@ -3,7 +3,7 @@
   "home": "Atlanta Braves",
   "away": "Philadelphia Phillies",
   "commence": "2026-10-01T18:00:00Z",
-  "quoted_at": "2026-10-01T00:00:22.493395+00:00",
+  "quoted_at": "2026-10-01T03:35:29.072099+00:00",
   "quotes": {
    "draftkings": {
     "Atlanta Braves": -104,
@@ -14,8 +14,8 @@
     "Philadelphia Phillies": -118
    },
    "betrivers": {
-    "Atlanta Braves": -103,
-    "Philadelphia Phillies": -118
+    "Atlanta Braves": -107,
+    "Philadelphia Phillies": -112
    },
    "betmgm": {
     "Atlanta Braves": -105,

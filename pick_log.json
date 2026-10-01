@@ -11802,7 +11802,7 @@
   "override": false,
   "closing": -144,
   "stake": 0,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-10-01",
@@ -11818,7 +11818,7 @@
   "form": 0.2,
   "game_type": "F",
   "override": false,
-  "closing": 0,
+  "closing": 100,
   "stake": 0,
   "result": ""
  }

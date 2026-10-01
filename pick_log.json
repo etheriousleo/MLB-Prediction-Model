@@ -11746,9 +11746,9 @@
   "form": 0.1,
   "game_type": "F",
   "override": false,
-  "closing": 0,
+  "closing": -136,
   "stake": 0,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-09-30",
@@ -11764,9 +11764,9 @@
   "form": -0.2,
   "game_type": "F",
   "override": false,
-  "closing": 0,
+  "closing": 102,
   "stake": 0,
-  "result": ""
+  "result": "L"
  },
  {
   "date": "2026-09-30",
@@ -11782,9 +11782,9 @@
   "form": -0.3,
   "game_type": "F",
   "override": false,
-  "closing": 0,
+  "closing": 128,
   "stake": 0,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-09-30",
@@ -11800,7 +11800,7 @@
   "form": 0.2,
   "game_type": "F",
   "override": false,
-  "closing": 0,
+  "closing": -144,
   "stake": 0,
   "result": ""
  }

@@ -3,11 +3,11 @@
   "home": "Cleveland Guardians",
   "away": "Chicago White Sox",
   "commence": "2026-10-03T17:01:00Z",
-  "quoted_at": "2026-10-02T00:18:29.934624+00:00",
+  "quoted_at": "2026-10-02T03:35:28.988660+00:00",
   "quotes": {
    "fanduel": {
-    "Chicago White Sox": 128,
-    "Cleveland Guardians": -152
+    "Chicago White Sox": 130,
+    "Cleveland Guardians": -154
    },
    "draftkings": {
     "Chicago White Sox": 129,
@@ -18,8 +18,8 @@
     "Cleveland Guardians": -150
    },
    "betrivers": {
-    "Chicago White Sox": 123,
-    "Cleveland Guardians": -148
+    "Chicago White Sox": 130,
+    "Cleveland Guardians": -157
    },
    "pinnacle": {
     "Chicago White Sox": 136,
@@ -52,10 +52,34 @@
   }
  },
  {
+  "home": "Los Angeles Dodgers",
+  "away": "Atlanta Braves",
+  "commence": "2026-10-03T20:00:00Z",
+  "quoted_at": "2026-10-02T03:35:28.988660+00:00",
+  "quotes": {
+   "draftkings": {
+    "Atlanta Braves": 168,
+    "Los Angeles Dodgers": -205
+   },
+   "fanduel": {
+    "Atlanta Braves": 176,
+    "Los Angeles Dodgers": -210
+   },
+   "betmgm": {
+    "Atlanta Braves": 170,
+    "Los Angeles Dodgers": -210
+   },
+   "betrivers": {
+    "Atlanta Braves": 170,
+    "Los Angeles Dodgers": -205
+   }
+  }
+ },
+ {
   "home": "Tampa Bay Rays",
   "away": "New York Yankees",
   "commence": "2026-10-03T22:31:00Z",
-  "quoted_at": "2026-10-02T00:18:29.934624+00:00",
+  "quoted_at": "2026-10-02T03:35:28.988660+00:00",
   "quotes": {
    "fanduel": {
     "New York Yankees": 116,
@@ -83,7 +107,7 @@
   "home": "Milwaukee Brewers",
   "away": "San Diego Padres",
   "commence": "2026-10-04T00:30:00Z",
-  "quoted_at": "2026-10-02T00:18:29.934624+00:00",
+  "quoted_at": "2026-10-02T03:35:28.988660+00:00",
   "quotes": {
    "draftkings": {
     "Milwaukee Brewers": -230,
@@ -98,12 +122,12 @@
     "San Diego Padres": 180
    },
    "betrivers": {
-    "Milwaukee Brewers": -225,
-    "San Diego Padres": 185
+    "Milwaukee Brewers": -200,
+    "San Diego Padres": 165
    },
    "pinnacle": {
-    "Milwaukee Brewers": -221,
-    "San Diego Padres": 195
+    "Milwaukee Brewers": -215,
+    "San Diego Padres": 190
    }
   }
  }

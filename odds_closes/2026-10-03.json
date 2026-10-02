@@ -3,7 +3,7 @@
   "home": "Cleveland Guardians",
   "away": "Chicago White Sox",
   "commence": "2026-10-03T17:01:00Z",
-  "quoted_at": "2026-10-02T03:35:28.988660+00:00",
+  "quoted_at": "2026-10-02T20:14:08.780488+00:00",
   "quotes": {
    "fanduel": {
     "Chicago White Sox": 130,
@@ -14,16 +14,16 @@
     "Cleveland Guardians": -156
    },
    "betmgm": {
-    "Chicago White Sox": 125,
-    "Cleveland Guardians": -150
+    "Chicago White Sox": 130,
+    "Cleveland Guardians": -155
    },
    "betrivers": {
-    "Chicago White Sox": 130,
-    "Cleveland Guardians": -157
+    "Chicago White Sox": 133,
+    "Cleveland Guardians": -159
    },
    "pinnacle": {
-    "Chicago White Sox": 136,
-    "Cleveland Guardians": -151
+    "Chicago White Sox": 131,
+    "Cleveland Guardians": -146
    }
   }
  },
@@ -55,23 +55,27 @@
   "home": "Los Angeles Dodgers",
   "away": "Atlanta Braves",
   "commence": "2026-10-03T20:00:00Z",
-  "quoted_at": "2026-10-02T03:35:28.988660+00:00",
+  "quoted_at": "2026-10-02T20:14:08.780488+00:00",
   "quotes": {
    "draftkings": {
-    "Atlanta Braves": 168,
-    "Los Angeles Dodgers": -205
+    "Atlanta Braves": 182,
+    "Los Angeles Dodgers": -223
    },
    "fanduel": {
-    "Atlanta Braves": 176,
-    "Los Angeles Dodgers": -210
+    "Atlanta Braves": 188,
+    "Los Angeles Dodgers": -225
    },
    "betmgm": {
-    "Atlanta Braves": 170,
-    "Los Angeles Dodgers": -210
+    "Atlanta Braves": 180,
+    "Los Angeles Dodgers": -220
    },
    "betrivers": {
     "Atlanta Braves": 170,
     "Los Angeles Dodgers": -205
+   },
+   "pinnacle": {
+    "Atlanta Braves": 187,
+    "Los Angeles Dodgers": -211
    }
   }
  },
@@ -79,10 +83,10 @@
   "home": "Tampa Bay Rays",
   "away": "New York Yankees",
   "commence": "2026-10-03T22:31:00Z",
-  "quoted_at": "2026-10-02T03:35:28.988660+00:00",
+  "quoted_at": "2026-10-02T20:14:08.780488+00:00",
   "quotes": {
    "fanduel": {
-    "New York Yankees": 116,
+    "New York Yankees": 114,
     "Tampa Bay Rays": -134
    },
    "draftkings": {
@@ -94,12 +98,12 @@
     "Tampa Bay Rays": -135
    },
    "betrivers": {
-    "New York Yankees": 116,
-    "Tampa Bay Rays": -137
+    "New York Yankees": 110,
+    "Tampa Bay Rays": -132
    },
    "pinnacle": {
-    "New York Yankees": 117,
-    "Tampa Bay Rays": -130
+    "New York Yankees": 113,
+    "Tampa Bay Rays": -125
    }
   }
  },
@@ -107,27 +111,27 @@
   "home": "Milwaukee Brewers",
   "away": "San Diego Padres",
   "commence": "2026-10-04T00:30:00Z",
-  "quoted_at": "2026-10-02T03:35:28.988660+00:00",
+  "quoted_at": "2026-10-02T20:14:08.780488+00:00",
   "quotes": {
    "draftkings": {
-    "Milwaukee Brewers": -230,
-    "San Diego Padres": 187
+    "Milwaukee Brewers": -218,
+    "San Diego Padres": 178
    },
    "fanduel": {
-    "Milwaukee Brewers": -225,
-    "San Diego Padres": 188
+    "Milwaukee Brewers": -210,
+    "San Diego Padres": 176
    },
    "betmgm": {
     "Milwaukee Brewers": -220,
     "San Diego Padres": 180
    },
    "betrivers": {
-    "Milwaukee Brewers": -200,
-    "San Diego Padres": 165
+    "Milwaukee Brewers": -235,
+    "San Diego Padres": 190
    },
    "pinnacle": {
-    "Milwaukee Brewers": -215,
-    "San Diego Padres": 190
+    "Milwaukee Brewers": -202,
+    "San Diego Padres": 180
    }
   }
  }

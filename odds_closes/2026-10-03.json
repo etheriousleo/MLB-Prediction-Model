@@ -3,7 +3,7 @@
   "home": "Cleveland Guardians",
   "away": "Chicago White Sox",
   "commence": "2026-10-03T17:01:00Z",
-  "quoted_at": "2026-10-01T20:38:51.181228+00:00",
+  "quoted_at": "2026-10-02T00:18:29.934624+00:00",
   "quotes": {
    "fanduel": {
     "Chicago White Sox": 128,
@@ -18,8 +18,8 @@
     "Cleveland Guardians": -150
    },
    "betrivers": {
-    "Chicago White Sox": 125,
-    "Cleveland Guardians": -150
+    "Chicago White Sox": 123,
+    "Cleveland Guardians": -148
    },
    "pinnacle": {
     "Chicago White Sox": 136,
@@ -55,11 +55,11 @@
   "home": "Tampa Bay Rays",
   "away": "New York Yankees",
   "commence": "2026-10-03T22:31:00Z",
-  "quoted_at": "2026-10-01T20:38:51.181228+00:00",
+  "quoted_at": "2026-10-02T00:18:29.934624+00:00",
   "quotes": {
    "fanduel": {
     "New York Yankees": 116,
-    "Tampa Bay Rays": -136
+    "Tampa Bay Rays": -134
    },
    "draftkings": {
     "New York Yankees": 113,
@@ -74,7 +74,7 @@
     "Tampa Bay Rays": -137
    },
    "pinnacle": {
-    "New York Yankees": 118,
+    "New York Yankees": 117,
     "Tampa Bay Rays": -130
    }
   }
@@ -83,7 +83,7 @@
   "home": "Milwaukee Brewers",
   "away": "San Diego Padres",
   "commence": "2026-10-04T00:30:00Z",
-  "quoted_at": "2026-10-01T20:38:51.181228+00:00",
+  "quoted_at": "2026-10-02T00:18:29.934624+00:00",
   "quotes": {
    "draftkings": {
     "Milwaukee Brewers": -230,
@@ -98,12 +98,12 @@
     "San Diego Padres": 180
    },
    "betrivers": {
-    "Milwaukee Brewers": -230,
-    "San Diego Padres": 188
+    "Milwaukee Brewers": -225,
+    "San Diego Padres": 185
    },
    "pinnacle": {
-    "Milwaukee Brewers": -222,
-    "San Diego Padres": 196
+    "Milwaukee Brewers": -221,
+    "San Diego Padres": 195
    }
   }
  }

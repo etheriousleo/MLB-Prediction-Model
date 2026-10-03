@@ -6,16 +6,16 @@
   "prob": 63,
   "tier": "High",
   "version": "v4.2-market-gate-2026-09-27",
-  "odds": -160,
-  "edge": 1.5,
+  "odds": -210,
+  "edge": -4.7,
   "result": "",
   "form": -0.0,
   "game_type": "D",
   "closing": -160.0,
   "stake": 10.0,
-  "mkt_edge": 3.7,
-  "ref_fair": 65.3,
-  "override": true
+  "mkt_edge": -2.8,
+  "ref_fair": 64.9,
+  "override": false
  },
  {
   "date": "2026-10-03",
@@ -42,16 +42,16 @@
   "prob": 53,
   "tier": "Low",
   "version": "v4.2-market-gate-2026-09-27",
-  "odds": 112,
-  "edge": 5.8,
+  "odds": -134,
+  "edge": -4.3,
   "result": "",
   "form": 0.1,
   "game_type": "D",
   "closing": 112.0,
   "stake": 10.0,
-  "mkt_edge": 7.9,
-  "ref_fair": 55.0,
-  "override": true
+  "mkt_edge": -2.1,
+  "ref_fair": 55.1,
+  "override": false
  },
  {
   "date": "2026-10-03",

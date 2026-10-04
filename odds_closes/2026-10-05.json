@@ -3,7 +3,7 @@
   "home": "Cleveland Guardians",
   "away": "Chicago White Sox",
   "commence": "2026-10-05T21:10:00Z",
-  "quoted_at": "2026-10-04T18:52:57.120503+00:00",
+  "quoted_at": "2026-10-04T22:04:41.333827+00:00",
   "quotes": {
    "fanduel": {
     "Chicago White Sox": 132,
@@ -15,15 +15,15 @@
    },
    "betmgm": {
     "Chicago White Sox": 135,
-    "Cleveland Guardians": -165
+    "Cleveland Guardians": -160
    },
    "betrivers": {
     "Chicago White Sox": 130,
     "Cleveland Guardians": -157
    },
    "pinnacle": {
-    "Chicago White Sox": 136,
-    "Cleveland Guardians": -151
+    "Chicago White Sox": 135,
+    "Cleveland Guardians": -150
    }
   }
  },
@@ -31,7 +31,7 @@
   "home": "Tampa Bay Rays",
   "away": "New York Yankees",
   "commence": "2026-10-06T00:00:00Z",
-  "quoted_at": "2026-10-04T18:52:57.120503+00:00",
+  "quoted_at": "2026-10-04T22:04:41.333827+00:00",
   "quotes": {
    "fanduel": {
     "New York Yankees": -130,

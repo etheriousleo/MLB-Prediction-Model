@@ -31,27 +31,27 @@
   "home": "Los Angeles Dodgers",
   "away": "Atlanta Braves",
   "commence": "2026-10-05T00:00:00Z",
-  "quoted_at": "2026-10-04T18:52:57.120503+00:00",
+  "quoted_at": "2026-10-04T22:04:41.333827+00:00",
   "quotes": {
    "fanduel": {
     "Atlanta Braves": 194,
     "Los Angeles Dodgers": -235
    },
    "betmgm": {
-    "Atlanta Braves": 190,
-    "Los Angeles Dodgers": -235
+    "Atlanta Braves": 185,
+    "Los Angeles Dodgers": -225
    },
    "draftkings": {
-    "Atlanta Braves": 172,
-    "Los Angeles Dodgers": -211
+    "Atlanta Braves": 173,
+    "Los Angeles Dodgers": -212
    },
    "betrivers": {
-    "Atlanta Braves": 188,
-    "Los Angeles Dodgers": -230
+    "Atlanta Braves": 180,
+    "Los Angeles Dodgers": -225
    },
    "pinnacle": {
-    "Atlanta Braves": 203,
-    "Los Angeles Dodgers": -225
+    "Atlanta Braves": 208,
+    "Los Angeles Dodgers": -231
    }
   }
  }

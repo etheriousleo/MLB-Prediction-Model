@@ -111,26 +111,26 @@
   "home": "Milwaukee Brewers",
   "away": "San Diego Padres",
   "commence": "2026-10-04T00:30:00Z",
-  "quoted_at": "2026-10-03T21:53:37.473374+00:00",
+  "quoted_at": "2026-10-04T00:13:42.189694+00:00",
   "quotes": {
    "draftkings": {
     "Milwaukee Brewers": -209,
     "San Diego Padres": 171
    },
    "fanduel": {
-    "Milwaukee Brewers": -210,
-    "San Diego Padres": 176
+    "Milwaukee Brewers": -200,
+    "San Diego Padres": 180
    },
    "betmgm": {
     "Milwaukee Brewers": -220,
     "San Diego Padres": 180
    },
    "betrivers": {
-    "Milwaukee Brewers": -220,
-    "San Diego Padres": 180
+    "Milwaukee Brewers": -210,
+    "San Diego Padres": 175
    },
    "pinnacle": {
-    "Milwaukee Brewers": -195,
+    "Milwaukee Brewers": -196,
     "San Diego Padres": 178
    }
   }

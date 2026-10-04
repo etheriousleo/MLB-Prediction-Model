@@ -3,7 +3,7 @@
   "home": "Cleveland Guardians",
   "away": "Chicago White Sox",
   "commence": "2026-10-05T21:10:00Z",
-  "quoted_at": "2026-10-03T21:53:37.473374+00:00",
+  "quoted_at": "2026-10-04T00:13:42.189694+00:00",
   "quotes": {
    "fanduel": {
     "Chicago White Sox": 128,
@@ -20,6 +20,10 @@
    "betrivers": {
     "Chicago White Sox": 128,
     "Cleveland Guardians": -152
+   },
+   "pinnacle": {
+    "Chicago White Sox": 136,
+    "Cleveland Guardians": -151
    }
   }
  }

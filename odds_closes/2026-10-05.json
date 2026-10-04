@@ -3,23 +3,23 @@
   "home": "Cleveland Guardians",
   "away": "Chicago White Sox",
   "commence": "2026-10-05T21:10:00Z",
-  "quoted_at": "2026-10-04T03:47:36.462527+00:00",
+  "quoted_at": "2026-10-04T18:52:57.120503+00:00",
   "quotes": {
    "fanduel": {
-    "Chicago White Sox": 128,
-    "Cleveland Guardians": -152
+    "Chicago White Sox": 132,
+    "Cleveland Guardians": -156
    },
    "draftkings": {
-    "Chicago White Sox": 135,
-    "Cleveland Guardians": -164
+    "Chicago White Sox": 130,
+    "Cleveland Guardians": -157
    },
    "betmgm": {
     "Chicago White Sox": 135,
-    "Cleveland Guardians": -160
+    "Cleveland Guardians": -165
    },
    "betrivers": {
-    "Chicago White Sox": 128,
-    "Cleveland Guardians": -152
+    "Chicago White Sox": 130,
+    "Cleveland Guardians": -157
    },
    "pinnacle": {
     "Chicago White Sox": 136,
@@ -31,15 +31,15 @@
   "home": "Tampa Bay Rays",
   "away": "New York Yankees",
   "commence": "2026-10-06T00:00:00Z",
-  "quoted_at": "2026-10-04T03:47:36.462527+00:00",
+  "quoted_at": "2026-10-04T18:52:57.120503+00:00",
   "quotes": {
    "fanduel": {
-    "New York Yankees": -126,
-    "Tampa Bay Rays": 108
+    "New York Yankees": -130,
+    "Tampa Bay Rays": 110
    },
    "draftkings": {
-    "New York Yankees": -130,
-    "Tampa Bay Rays": 108
+    "New York Yankees": -131,
+    "Tampa Bay Rays": 109
    },
    "betmgm": {
     "New York Yankees": -130,
@@ -47,7 +47,7 @@
    },
    "betrivers": {
     "New York Yankees": -129,
-    "Tampa Bay Rays": 107
+    "Tampa Bay Rays": 108
    },
    "pinnacle": {
     "New York Yankees": -121,

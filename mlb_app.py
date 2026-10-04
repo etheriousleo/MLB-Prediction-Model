@@ -189,7 +189,7 @@ OVERROUND     = 0.045
 
 # Postseason entertainment budget in dollars, set in code BEFORE Game 1
 # (friction by design, like GATE_THRESH_PP). 0 = not set; the tracker nags.
-PLAYOFF_BUDGET = 0
+PLAYOFF_BUDGET = 37.95
 POSTSEASON_TYPES = {"F", "D", "L", "W"}   # Wild Card, Division, LCS, World Series
 
 # ── Odds feed (The Odds API) ───────────────────────────────────────────────────

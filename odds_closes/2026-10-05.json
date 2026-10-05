@@ -31,27 +31,27 @@
   "home": "Tampa Bay Rays",
   "away": "New York Yankees",
   "commence": "2026-10-06T00:00:00Z",
-  "quoted_at": "2026-10-05T03:32:05.583542+00:00",
+  "quoted_at": "2026-10-05T22:14:45.712927+00:00",
   "quotes": {
    "fanduel": {
-    "New York Yankees": -130,
-    "Tampa Bay Rays": 110
+    "New York Yankees": -120,
+    "Tampa Bay Rays": 102
    },
    "draftkings": {
-    "New York Yankees": -131,
-    "Tampa Bay Rays": 109
+    "New York Yankees": -125,
+    "Tampa Bay Rays": 104
    },
    "betmgm": {
-    "New York Yankees": -130,
-    "Tampa Bay Rays": 110
+    "New York Yankees": -125,
+    "Tampa Bay Rays": 105
    },
    "betrivers": {
-    "New York Yankees": -129,
-    "Tampa Bay Rays": 108
+    "New York Yankees": -121,
+    "Tampa Bay Rays": 100
    },
    "pinnacle": {
-    "New York Yankees": -122,
-    "Tampa Bay Rays": 110
+    "New York Yankees": -118,
+    "Tampa Bay Rays": 109
    }
   }
  }

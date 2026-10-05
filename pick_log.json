@@ -12616,5 +12616,41 @@
   "mkt_edge": NaN,
   "ref_fair": NaN,
   "override": NaN
+ },
+ {
+  "date": "2026-10-05",
+  "matchup": "Chicago White Sox @ Cleveland Guardians",
+  "pick": "Cleveland Guardians",
+  "prob": 54,
+  "tier": "High",
+  "version": "v4.2-market-gate-2026-09-27",
+  "odds": -152,
+  "edge": -6.3,
+  "mkt_edge": -2.2,
+  "ref_fair": 58.1,
+  "form": -0.2,
+  "game_type": "D",
+  "override": false,
+  "closing": 0,
+  "stake": 0,
+  "result": ""
+ },
+ {
+  "date": "2026-10-05",
+  "matchup": "New York Yankees @ Tampa Bay Rays",
+  "pick": "New York Yankees",
+  "prob": 51,
+  "tier": "Low",
+  "version": "v4.2-market-gate-2026-09-27",
+  "odds": -124,
+  "edge": -4.4,
+  "mkt_edge": -2.9,
+  "ref_fair": 52.4,
+  "form": 0.1,
+  "game_type": "D",
+  "override": false,
+  "closing": 0,
+  "stake": 0,
+  "result": ""
  }
 ]

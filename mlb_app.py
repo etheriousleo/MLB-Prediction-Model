@@ -1827,6 +1827,9 @@ with tab_today:
     if upcoming:
         st.subheader("💰 Price gate")
         ocfg = _odds_cfg()
+        _today_rows = {r["matchup"]: r for r in load_pick_log()
+                       if r.get("date") == today_et("%Y-%m-%d")
+                       and r.get("version") == MODEL_VERSION}
         if ocfg:
             events, oerr = fetch_market_odds(ocfg["key"], today_et("%Y-%m-%d"))
             if oerr:
@@ -1857,6 +1860,14 @@ with tab_today:
                     # price) — flag it manual and leave it alone.
                     if mv["book_price"]:
                         fp = int(mv["book_price"])
+                        # Restore a logged override (boost) for this game so a
+                        # new session doesn't lose it.
+                        _lr = _today_rows.get(mkey)
+                        if (_lr and _lr.get("override") and _lr.get("odds")
+                                and not st.session_state.get(f"_manual_{mkey}")
+                                and st.session_state.get(f"_feed_{mkey}") is None):
+                            st.session_state[f"mlpick_{mkey}"] = int(_lr["odds"])
+                            st.session_state[f"_manual_{mkey}"] = True
                         cur = st.session_state.get(f"mlpick_{mkey}")
                         last = st.session_state.get(f"_feed_{mkey}")
                         if st.session_state.get(f"_manual_{mkey}"):
@@ -1977,18 +1988,23 @@ with tab_today:
             st.session_state[f"reffair_{mkey}"] = (round(fair_p * 100, 1)
                                                    if mv and mv.get("ref_fair") else None)
 
-        # Auto-sync: the panel is the source of truth for TODAY's prices.
-        # Any rows already logged today get their odds/cushion updated from
-        # what's entered above — no second data entry in the tracker. The
-        # tracker's editable odds column remains for past days only.
+        # Auto-sync: the panel keeps TODAY's feed-tracked, unbet rows current.
+        # A row whose price was hand-entered (override) or that carries a
+        # stake holds the price actually TAKEN — it is never overwritten,
+        # whatever the feed says later. (Earlier versions treated the panel
+        # as source of truth unconditionally, so a reload or reboot refilled
+        # the feed price and erased boost overrides from the log.)
         if gate_calls:
             _log = load_pick_log()
             _today = today_et("%Y-%m-%d")
             _synced = 0
             for _r in _log:
                 _gc = gate_calls.get(_r["matchup"])
+                _locked = (bool(_r.get("override")) or
+                           float(pd.to_numeric(_r.get("stake", 0), errors="coerce") or 0) > 0)
                 if (_gc and _r["date"] == _today
                         and _r.get("version") == MODEL_VERSION
+                        and not (_locked and not _gc.get("manual"))
                         and _r.get("odds", 0) != _gc["odds"]):
                     _r["odds"] = _gc["odds"]
                     _r["edge"] = round(_gc["raw_cushion"] * 100, 1)
@@ -2434,7 +2450,20 @@ with tab_today:
             num_rows="dynamic",
             hide_index=True, use_container_width=True, height=300)
         if st.button("Save grades"):
-            save_pick_log(edited.to_dict("records"))
+            recs = edited.to_dict("records")
+            # A price changed by hand in the tracker is a taken price: flag it
+            # so the panel sync never overwrites it.
+            orig = {(r["date"], r["matchup"]): r for r in log}
+            for r in recs:
+                o = orig.get((r.get("date"), r.get("matchup")))
+                if o is not None:
+                    try:
+                        if float(r.get("odds") or 0) != float(o.get("odds") or 0) \
+                                and float(r.get("odds") or 0) != 0:
+                            r["override"] = True
+                    except Exception:
+                        pass
+            save_pick_log(recs)
             st.success("Saved.")
             st.rerun()
 

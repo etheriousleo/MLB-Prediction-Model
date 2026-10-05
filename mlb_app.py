@@ -187,9 +187,11 @@ CAL_A, CAL_B = -0.135, 1.809
 # sides' prices would make this exact; one price makes it a good estimate.
 OVERROUND     = 0.045
 
-# Postseason entertainment budget in dollars, set in code BEFORE Game 1
-# (friction by design, like GATE_THRESH_PP). 0 = not set; the tracker nags.
-PLAYOFF_BUDGET = 37.95
+# Postseason LOSS LIMIT in dollars — the most you are willing to be DOWN,
+# set in code BEFORE Game 1 (friction by design, like GATE_THRESH_PP).
+# Winnings extend the room; losses consume it; stakes on unsettled bets count
+# against it until they resolve. 0 = not set; the tracker nags.
+PLAYOFF_BUDGET = 0
 POSTSEASON_TYPES = {"F", "D", "L", "W"}   # Wild Card, Division, LCS, World Series
 
 # ── Odds feed (The Odds API) ───────────────────────────────────────────────────
@@ -2552,22 +2554,34 @@ with tab_today:
                 bets = edited[(edited["version"] == MODEL_VERSION)
                               & (pd.to_numeric(edited["stake"], errors="coerce").fillna(0) > 0)]
                 if len(bets) or PLAYOFF_BUDGET > 0:
-                    spent = float(pd.to_numeric(bets["stake"], errors="coerce").fillna(0).sum())
+                    # Loss-limit accounting (NOT a spending cap): the guard
+                    # measures how far you are from being down PLAYOFF_BUDGET.
+                    #   settled P/L  = wins pay stake·profit, losses cost stake
+                    #   at risk      = stakes on bets not yet settled
+                    #   room         = limit + settled P/L − at risk
+                    # Earlier version capped gross stakes and declared the
+                    # budget "spent" while the bettor was up — wrong measure.
+                    staked = float(pd.to_numeric(bets["stake"], errors="coerce").fillna(0).sum())
                     pl = sum((float(r["stake"]) * unit_profit(float(r["odds"])) if r["result"] == "W"
                               else (-float(r["stake"]) if r["result"] == "L" else 0.0))
                              for _, r in bets.iterrows() if r["odds"] != 0)
+                    at_risk = float(pd.to_numeric(
+                        bets[~bets["result"].isin(["W", "L", "Push"])]["stake"],
+                        errors="coerce").fillna(0).sum())
                     if PLAYOFF_BUDGET > 0:
-                        left = PLAYOFF_BUDGET - spent
-                        col = "#00c07a" if left > 0 else "#ff5252"
-                        st.markdown(f"**Playoff budget** — staked ${spent:,.0f} of "
-                                    f"${PLAYOFF_BUDGET:,.0f} (<span style='color:{col};'>"
-                                    f"${left:,.0f} remaining</span>) · P/L ${pl:+,.0f}",
+                        room = PLAYOFF_BUDGET + pl - at_risk
+                        col = "#00c07a" if room > 0 else "#ff5252"
+                        # \$ — Streamlit markdown treats $…$ as LaTeX.
+                        st.markdown(f"**Playoff loss limit** \\${PLAYOFF_BUDGET:,.0f} · "
+                                    f"settled P/L \\${pl:+,.0f} · at risk now \\${at_risk:,.0f} · "
+                                    f"<span style='color:{col};'>room before stop: "
+                                    f"\\${room:,.0f}</span> · total staked \\${staked:,.0f}",
                                     unsafe_allow_html=True)
-                        if left <= 0:
-                            st.error("Budget spent. No reload — that was the deal you "
-                                     "made with yourself before Game 1.")
+                        if room <= 0:
+                            st.error("Loss limit reached. No reload — that was the deal "
+                                     "you made with yourself before Game 1.")
                     else:
-                        st.warning(f"Real stakes logged (${spent:,.0f}) but PLAYOFF_BUDGET "
+                        st.warning(f"Real stakes logged (\\${staked:,.0f}) but PLAYOFF_BUDGET "
                                    f"is 0. Set it in code before the next bet.")
             # v4.2 scoreboard: picks where FanDuel beat the reference by ≥ MARKET_EDGE_PP
             if "mkt_edge" in cur.columns:

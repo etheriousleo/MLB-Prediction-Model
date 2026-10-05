@@ -29,8 +29,8 @@
   "result": "",
   "form": 1.0,
   "game_type": "D",
-  "closing": -235,
-  "stake": 0.0,
+  "closing": -115.0,
+  "stake": 10.0,
   "mkt_edge": -0.8,
   "ref_fair": 68.4,
   "override": false

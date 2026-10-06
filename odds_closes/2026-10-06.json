@@ -3,11 +3,11 @@
   "home": "Atlanta Braves",
   "away": "Los Angeles Dodgers",
   "commence": "2026-10-06T22:00:00Z",
-  "quoted_at": "2026-10-06T02:21:52.677664+00:00",
+  "quoted_at": "2026-10-06T04:19:46.484844+00:00",
   "quotes": {
    "draftkings": {
-    "Atlanta Braves": -111,
-    "Los Angeles Dodgers": -108
+    "Atlanta Braves": -109,
+    "Los Angeles Dodgers": -110
    },
    "fanduel": {
     "Atlanta Braves": -108,
@@ -18,12 +18,12 @@
     "Los Angeles Dodgers": -110
    },
    "betrivers": {
-    "Atlanta Braves": -105,
-    "Los Angeles Dodgers": -114
+    "Atlanta Braves": -110,
+    "Los Angeles Dodgers": -109
    },
    "pinnacle": {
-    "Atlanta Braves": -105,
-    "Los Angeles Dodgers": -105
+    "Atlanta Braves": -104,
+    "Los Angeles Dodgers": -106
    }
   }
  },
@@ -31,7 +31,7 @@
   "home": "San Diego Padres",
   "away": "Milwaukee Brewers",
   "commence": "2026-10-07T01:30:00Z",
-  "quoted_at": "2026-10-06T02:21:52.677664+00:00",
+  "quoted_at": "2026-10-06T04:19:46.484844+00:00",
   "quotes": {
    "fanduel": {
     "Milwaukee Brewers": 116,
@@ -42,16 +42,16 @@
     "San Diego Padres": -140
    },
    "draftkings": {
-    "Milwaukee Brewers": 113,
-    "San Diego Padres": -136
+    "Milwaukee Brewers": 119,
+    "San Diego Padres": -144
    },
    "betrivers": {
     "Milwaukee Brewers": 110,
     "San Diego Padres": -130
    },
    "pinnacle": {
-    "Milwaukee Brewers": 118,
-    "San Diego Padres": -130
+    "Milwaukee Brewers": 112,
+    "San Diego Padres": -124
    }
   }
  }

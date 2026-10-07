@@ -12652,5 +12652,41 @@
   "closing": -120,
   "stake": 0,
   "result": "L"
+ },
+ {
+  "date": "2026-10-06",
+  "matchup": "Los Angeles Dodgers @ Atlanta Braves",
+  "pick": "Los Angeles Dodgers",
+  "prob": 54,
+  "tier": "High",
+  "version": "v4.2-market-gate-2026-09-27",
+  "odds": 0,
+  "edge": null,
+  "mkt_edge": null,
+  "ref_fair": null,
+  "form": 1.1,
+  "game_type": "D",
+  "override": false,
+  "closing": 0,
+  "stake": 0,
+  "result": ""
+ },
+ {
+  "date": "2026-10-06",
+  "matchup": "Milwaukee Brewers @ San Diego Padres",
+  "pick": "Milwaukee Brewers",
+  "prob": 53,
+  "tier": "Conflicted",
+  "version": "v4.2-market-gate-2026-09-27",
+  "odds": 0,
+  "edge": null,
+  "mkt_edge": null,
+  "ref_fair": null,
+  "form": 0.4,
+  "game_type": "D",
+  "override": false,
+  "closing": 0,
+  "stake": 0,
+  "result": ""
  }
 ]

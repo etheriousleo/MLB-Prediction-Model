@@ -31,27 +31,27 @@
   "home": "Atlanta Braves",
   "away": "Los Angeles Dodgers",
   "commence": "2026-10-07T22:10:00Z",
-  "quoted_at": "2026-10-07T03:46:06.450291+00:00",
+  "quoted_at": "2026-10-07T20:53:20.660273+00:00",
   "quotes": {
    "draftkings": {
-    "Atlanta Braves": 120,
-    "Los Angeles Dodgers": -144
+    "Atlanta Braves": 129,
+    "Los Angeles Dodgers": -156
    },
    "fanduel": {
-    "Atlanta Braves": 120,
-    "Los Angeles Dodgers": -142
-   },
-   "betmgm": {
-    "Atlanta Braves": 115,
-    "Los Angeles Dodgers": -140
-   },
-   "betrivers": {
     "Atlanta Braves": 128,
     "Los Angeles Dodgers": -152
    },
+   "betmgm": {
+    "Atlanta Braves": 130,
+    "Los Angeles Dodgers": -155
+   },
+   "betrivers": {
+    "Atlanta Braves": 120,
+    "Los Angeles Dodgers": -148
+   },
    "pinnacle": {
-    "Atlanta Braves": 128,
-    "Los Angeles Dodgers": -141
+    "Atlanta Braves": 132,
+    "Los Angeles Dodgers": -144
    }
   }
  },
@@ -80,6 +80,62 @@
    "pinnacle": {
     "New York Yankees": -158,
     "Tampa Bay Rays": 142
+   }
+  }
+ },
+ {
+  "home": "New York Yankees",
+  "away": "Tampa Bay Rays",
+  "commence": "2026-10-08T00:08:00Z",
+  "quoted_at": "2026-10-07T20:53:20.660273+00:00",
+  "quotes": {
+   "fanduel": {
+    "New York Yankees": -168,
+    "Tampa Bay Rays": 142
+   },
+   "draftkings": {
+    "New York Yankees": -175,
+    "Tampa Bay Rays": 144
+   },
+   "betmgm": {
+    "New York Yankees": -170,
+    "Tampa Bay Rays": 140
+   },
+   "betrivers": {
+    "New York Yankees": -175,
+    "Tampa Bay Rays": 140
+   },
+   "pinnacle": {
+    "New York Yankees": -161,
+    "Tampa Bay Rays": 148
+   }
+  }
+ },
+ {
+  "home": "San Diego Padres",
+  "away": "Milwaukee Brewers",
+  "commence": "2026-10-08T02:00:00Z",
+  "quoted_at": "2026-10-07T20:53:20.660273+00:00",
+  "quotes": {
+   "fanduel": {
+    "Milwaukee Brewers": -106,
+    "San Diego Padres": -110
+   },
+   "draftkings": {
+    "Milwaukee Brewers": -107,
+    "San Diego Padres": -112
+   },
+   "betmgm": {
+    "Milwaukee Brewers": -110,
+    "San Diego Padres": -110
+   },
+   "betrivers": {
+    "Milwaukee Brewers": -108,
+    "San Diego Padres": -110
+   },
+   "pinnacle": {
+    "Milwaukee Brewers": -103,
+    "San Diego Padres": -105
    }
   }
  }

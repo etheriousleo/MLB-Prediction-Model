@@ -115,7 +115,7 @@
   "home": "San Diego Padres",
   "away": "Milwaukee Brewers",
   "commence": "2026-10-08T02:00:00Z",
-  "quoted_at": "2026-10-07T20:53:20.660273+00:00",
+  "quoted_at": "2026-10-08T00:32:47.493060+00:00",
   "quotes": {
    "fanduel": {
     "Milwaukee Brewers": -106,
@@ -131,11 +131,11 @@
    },
    "betrivers": {
     "Milwaukee Brewers": -108,
-    "San Diego Padres": -110
+    "San Diego Padres": -112
    },
    "pinnacle": {
-    "Milwaukee Brewers": -103,
-    "San Diego Padres": -105
+    "Milwaukee Brewers": -104,
+    "San Diego Padres": -104
    }
   }
  }

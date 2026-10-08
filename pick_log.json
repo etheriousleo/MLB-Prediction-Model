@@ -12703,9 +12703,9 @@
   "form": 0.4,
   "game_type": "D",
   "override": false,
-  "closing": 0,
+  "closing": -106,
   "stake": 0,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-10-07",
@@ -12723,7 +12723,7 @@
   "override": true,
   "closing": -142,
   "stake": 0,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-10-07",
@@ -12741,7 +12741,7 @@
   "override": false,
   "closing": -162,
   "stake": 0,
-  "result": ""
+  "result": "L"
  },
  {
   "date": "2026-10-07",
@@ -12759,6 +12759,6 @@
   "override": false,
   "closing": -120,
   "stake": 0,
-  "result": ""
+  "result": "L"
  }
 ]

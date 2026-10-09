@@ -18,7 +18,7 @@ This document is the design contract for the fourth sibling app. `CLAUDE.md` gov
 | What the model does | Runs on every game, shown as calibrated winner-confidence context, and its model-vs-price picks are logged as **paper** — never bet in v1.0. |
 | Primary market | Spread. Moneyline surfaced when the market gate finds an edge (expect these on dogs/pick'ems). |
 | Same-game rule | Spread + ML on the same side of the same game = **one position**, not two. Tracker enforces. |
-| Prior | Preseason **win totals** (market-derived), entered once by Juan. Fallback: prior-season MOV regressed 40% to zero. |
+| Prior | Preseason **win totals** (market-derived), entered once by Juan. Fallback: prior-season MOV regressed 40% to zero (from game scores; ESPN standings only as a guarded fallback — amended 2026-10-09). |
 | Fade | Linear over **15 games** per team. |
 | Recent form | Last **15** games, opponent-adjusted, **30%** weight with the double-count correction. |
 | Rest | **−1.5 pts** to a team on the second night of a back-to-back. Nets to 0 when both are. |
@@ -79,7 +79,7 @@ PRIOR_REGRESS = 0.60    # fallback prior only: prior-season MOV × 0.60
 
 **Prior (per team, before any games):**
 - Primary: `prior_margin = (win_total − 41) / 2.7` from `nba_preseason_totals_2026.json` (30 teams, entered by Juan from FanDuel's preseason win totals).
-- Fallback if a team is missing from the file: prior-season MOV × `PRIOR_REGRESS` from ESPN standings `?season=2026`.
+- Fallback if a team is missing from the file: prior-season regular-season MOV × `PRIOR_REGRESS`, derived from game scores (the Oct–Jun scoreboard scan; preseason, play-in, playoffs and the Cup final excluded). ESPN standings `?season=2026` only as a guarded fallback for teams the scan cannot cover. *Amended 2026-10-09: the standings parse guessed total-vs-per-game by magnitude and turned a −25-point season into −25 per game; the quantity and `PRIOR_REGRESS` are unchanged.*
 
 **Season-to-date margin:** average MOV over regular-season games only (exclude preseason, exclude the NBA Cup final), **opponent-adjusted** with the same SRS-style iteration as `cfb_app.py`.
 

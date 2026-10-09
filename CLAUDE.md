@@ -75,6 +75,14 @@ loosen — then do what he decides, on the record.
 - Before pushing: `python -m py_compile nba_app.py`, then
   `python -m pytest tests/test_nba_app.py` (AppTest harness on a mock ESPN +
   Odds feed — the only way to exercise the slate without spending credits).
+- GitHub's `schedule` trigger fires this repo's crons only 2–4 times a day
+  (measured Sep 27 – Oct 9, 2026; MLB too). The real 30-minute cadence comes
+  from an external scheduler hitting `workflow_dispatch` — setup and the
+  evidence in `nba_closes_scheduler.md`. A dispatch on `ref: main` runs
+  main's yml and script, so NBA cron changes only take effect once merged.
+  A "close" quoted hours before tip is not a close; check `quoted_at` vs
+  tip before trusting any CLV number. The MLB cron spends a credit on every
+  run (no window gate) — never put it on a 30-minute dispatcher as is.
 - Open items Juan supplies before Oct 20: the 30 win totals in
   `nba_preseason_totals_2026.json`, `STAKE_UNITS` / `SEASON_BUDGET` in code,
   the app's own Streamlit Secrets, and the consensus-book list.

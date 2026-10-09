@@ -64,17 +64,22 @@ st.markdown("""
     .confidence-reason { font-size: 0.85rem; line-height: 1.6; color: #ccc; }
     /* Theme-aware card palette: the suite's cards were designed on the dark
        theme; fixed grays were the faintest text on a light theme. Streamlit
-       exposes the active theme as CSS variables, so everything neutral
-       derives from --text-color / --secondary-background-color. */
-    .nba-card { background: var(--secondary-background-color); border-radius: 12px;
-                padding: 18px 22px; margin-bottom: 16px; color: var(--text-color); }
+       does NOT publish its theme as CSS variables on the page (only inside
+       component iframes), so every neutral derives from currentColor and
+       opacity, which inherit the active theme's text color. The first line
+       of each pair is the fallback for browsers without color-mix(). */
+    .nba-card { background: rgba(128,128,128,.08);
+                background: color-mix(in srgb, currentColor 5%, transparent);
+                border-radius: 12px; padding: 18px 22px; margin-bottom: 16px; }
     .nba-label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
-                 color: var(--text-color); opacity: .55; margin-bottom: 4px; }
-    .nba-muted { color: var(--text-color); opacity: .72; }
-    .nba-dim   { color: var(--text-color); opacity: .5; }
-    .nba-strong { color: var(--text-color); font-weight: 700; }
+                 opacity: .55; margin-bottom: 4px; }
+    .nba-muted { opacity: .72; }
+    .nba-dim   { opacity: .5; }
+    .nba-muted .nba-dim { opacity: calc(.5 / .72); }  /* nesting must not compound */
+    .nba-strong { font-weight: 700; }
     .nba-pick  { color: #00c07a; font-weight: 800; }
-    .nba-rule  { border-top: 1px solid color-mix(in srgb, var(--text-color) 12%, transparent);
+    .nba-rule  { border-top: 1px solid rgba(128,128,128,.25);
+                 border-top: 1px solid color-mix(in srgb, currentColor 12%, transparent);
                  padding-top: 10px; }
 </style>
 """, unsafe_allow_html=True)
@@ -209,6 +214,12 @@ def odds_url(sport: str) -> str:
 
 def book_label(key: str) -> str:
     return BOOK_LABELS.get(str(key).lower(), str(key).title())
+
+
+def ref_label(src) -> str:
+    """A reference source is a book key ("pinnacle") or a consensus string
+    ("consensus of 3"); only the former gets the display label."""
+    return book_label(src) if str(src).lower() in BOOK_LABELS else str(src)
 # Consensus books beside Pinnacle — spec §10 suggests DK / BetMGM / Caesars;
 # Juan confirms. Every book here costs nothing extra (cost is per market).
 ODDS_BOOKS   = "fanduel,pinnacle,draftkings,betmgm,caesars"
@@ -234,8 +245,10 @@ SEASON_TYPE_NAMES = {1: "preseason", 2: "regular", 3: "postseason",
 # NBA Cup final: logged and gradeable, cup_final=True, EXCLUDED from all
 # team-strength stats (it doesn't count in standings). Detected from the
 # event's notes headline ("NBA Cup ... Championship/Final"); the dated
-# neutral-site check is the belt-and-braces fallback.
-CUP_FINAL_DATE_ET = "2026-12-11"
+# neutral-site check is the belt-and-braces fallback, keyed by ESPN's
+# season label so the PRIOR season's final (feeding the fallback prior) is
+# excluded too. Verify each date against the released Cup schedule.
+CUP_FINAL_DATES_ET = {2026: "2025-12-16", 2027: "2026-12-11"}
 
 # Widget key namespace — fresh and versioned so no session-state carries
 # over from a sibling app or an older layout.
@@ -387,6 +400,7 @@ def _parse_event(ev: dict) -> dict | None:
         period = _int(status.get("period"))
         ot = bool(completed and period > 4)
         season_type = _int((ev.get("season") or {}).get("type"), 2) or 2
+        season_year = _int((ev.get("season") or {}).get("year"))
         notes = " ".join(str(n.get("headline", "") or "")
                          for n in (comp.get("notes", []) or []))
         nl = notes.lower()
@@ -398,7 +412,7 @@ def _parse_event(ev: dict) -> dict | None:
         date_et = tip_et.strftime("%Y-%m-%d")
         tip_label = tip_et.strftime("%a %I:%M %p ET").replace(" 0", " ")
         cup_final = (("cup" in nl and ("championship" in nl or "final" in nl))
-                     or (date_et == CUP_FINAL_DATE_ET and neutral))
+                     or (date_et == CUP_FINAL_DATES_ET.get(season_year) and neutral))
         playin = season_type == 5 or "play-in" in nl or "play in" in nl
         venue = comp.get("venue", {}) or {}
         return {
@@ -494,26 +508,34 @@ def fetch_scoreboard(date_iso: str) -> list:
     return [g for g in games if g]
 
 
+MIN_PRIOR_GAMES = 70   # trust the prior-season scan only for a near-full season
+
+
 @st.cache_data(show_spinner=False, ttl=86400)
 def fetch_prior_mov(prior_season: int) -> dict:
-    """{team_id: prior-season regular-season MOV} for the FALLBACK prior.
-    Derived from GAME SCORES — the same monthly scoreboard scan the current
-    season uses (Oct → Jun of the prior season, cached a day), so it depends
-    on nothing this build could not verify. The earlier version read a
-    standings stat and guessed from its magnitude whether it was a season
-    total or a per-game number; a team within ±30 points on the season
-    became a ±30-per-game prior. The standings endpoint is now only a
-    guarded fallback (per-game fields, or a total divided by games)."""
+    """{team_id: {"mov": prior-season regular-season MOV, "src": "scores" |
+    "standings"}} for the FALLBACK prior (teams missing from the win-totals
+    file). Derived from GAME SCORES — the same monthly scoreboard scan the
+    current season uses (Oct → Jun, cached a day; preseason, play-in,
+    playoffs and the Cup final excluded by build_gamelogs) — so it depends on
+    nothing this build could not verify. A team is trusted from the scan only
+    with ≥ MIN_PRIOR_GAMES games on file (a silently truncated month would
+    otherwise pass as a full season for 24 h); the rest come from the
+    standings endpoint, decided by STAT NAME (avgPointsFor/Against or
+    avgPointDifferential/differential are per game; pointDifferential is a
+    season total ÷ games played), never by magnitude or formatting — the
+    earlier magnitude guess turned a −25-point season into −25 per game."""
     out = {}
     try:
         end = min(datetime.date(prior_season, 6, 30), now_et().date())
         season_log, _, _ = build_gamelogs(fetch_season_events(prior_season, end.isoformat()))
         for tid, games in season_log.items():
-            if games:
-                out[tid] = round(sum(pf - pa for _, pf, pa in games) / len(games), 2)
+            if len(games) >= MIN_PRIOR_GAMES:
+                out[tid] = {"mov": round(sum(pf - pa for _, pf, pa in games) / len(games), 2),
+                            "src": "scores"}
     except Exception:
         out = {}
-    if len(out) >= 25:
+    if len(out) == len(NBA_TEAMS):
         return out
     try:
         j = _espn_get(ESPN_STANDINGS, {"season": prior_season})
@@ -530,26 +552,22 @@ def fetch_prior_mov(prior_season: int) -> dict:
             continue
         stats = {str(st_.get("name")): st_ for st_ in (e.get("stats", []) or [])
                  if st_.get("name") is not None}
-        pf = _float((stats.get("avgPointsFor") or {}).get("value"))
-        pa = _float((stats.get("avgPointsAgainst") or {}).get("value"))
+        val_of = lambda name: _float((stats.get(name) or {}).get("value"))
+        pf, pa = val_of("avgPointsFor"), val_of("avgPointsAgainst")
         if pf is not None and pa is not None:
-            out[tid] = round(pf - pa, 2)
+            out[tid] = {"mov": round(pf - pa, 2), "src": "standings"}
             continue
-        gp = _float((stats.get("gamesPlayed") or {}).get("value")) or (
-            (_float((stats.get("wins") or {}).get("value")) or 0)
-            + (_float((stats.get("losses") or {}).get("value")) or 0))
+        gp = val_of("gamesPlayed") or ((val_of("wins") or 0) + (val_of("losses") or 0))
         for name in ("avgPointDifferential", "differential", "pointDifferential"):
-            st_ = stats.get(name)
-            if not st_ or _float(st_.get("value")) is None:
+            val = val_of(name)
+            if val is None:
                 continue
-            val = _float(st_.get("value"))
-            # A per-game field displays with a decimal ("+5.3"); a season
-            # total displays as an integer ("+451") and must be divided by
-            # games played. Never decide by magnitude.
-            if name == "avgPointDifferential" or "." in str(st_.get("displayValue", "")):
-                out[tid] = round(val, 2)
-            elif gp:
-                out[tid] = round(val / gp, 2)
+            if name == "pointDifferential":          # season total
+                if gp:
+                    out[tid] = {"mov": round(val / gp, 2), "src": "standings"}
+                    break
+                continue
+            out[tid] = {"mov": round(val, 2), "src": "standings"}   # per game
             break
     return out
 
@@ -686,7 +704,9 @@ def prior_weight(n: int) -> float:
 def build_priors(win_totals: dict, prior_mov: dict) -> dict:
     """Per-team prior margin before any games (spec §3.1).
     Primary: (win_total − 41) / 2.7 from the totals file.
-    Fallback: prior-season MOV × PRIOR_REGRESS from ESPN standings.
+    Fallback: prior-season regular-season MOV × PRIOR_REGRESS, derived from
+    game scores (ESPN standings only as a guarded fallback — see
+    fetch_prior_mov, which also returns the source).
     Last resort: 0 (league average), flagged."""
     out = {}
     for tid in NBA_TEAMS:
@@ -696,9 +716,13 @@ def build_priors(win_totals: dict, prior_mov: dict) -> dict:
                         "source": "win total",
                         "detail": f"{wt:.1f}-win total: ({wt:.1f} − {WIN_TOTAL_BASE:g}) / {WIN_TOTAL_PER_PT:g}"}
         elif tid in prior_mov:
-            out[tid] = {"margin": prior_mov[tid] * PRIOR_REGRESS,
+            pm = prior_mov[tid]
+            mov, src = (pm["mov"], pm.get("src", "scores")) if isinstance(pm, dict) else (float(pm), "scores")
+            out[tid] = {"margin": mov * PRIOR_REGRESS,
                         "source": f"prior MOV × {PRIOR_REGRESS:.2f}",
-                        "detail": f"{prior_mov[tid]:+.1f} MOV in {PRIOR_SEASON - 1}-{PRIOR_SEASON % 100:02d} × {PRIOR_REGRESS:.2f}"}
+                        "detail": (f"{mov:+.1f} MOV in {PRIOR_SEASON - 1}-{PRIOR_SEASON % 100:02d} "
+                                   f"({'game scores' if src == 'scores' else 'ESPN standings'}) "
+                                   f"× {PRIOR_REGRESS:.2f}")}
         else:
             out[tid] = {"margin": 0.0, "source": "none",
                         "detail": "no win total and no prior-season MOV → 0"}
@@ -1590,16 +1614,20 @@ with st.sidebar:
                    f"fallback (prior-season MOV × {PRIOR_REGRESS:.2f}). Juan enters "
                    f"the 30 FanDuel win totals before Oct 20.")
     elif n_wt < 30:
+        _fb = [t for t in NBA_TEAMS if priors[t]["source"] != "win total"]
+        _n_scores = sum(1 for t in _fb if (prior_mov.get(t) or {}).get("src") == "scores")
+        _n_stand = sum(1 for t in _fb if (prior_mov.get(t) or {}).get("src") == "standings")
         st.warning(f"⚠️ Win totals for {n_wt}/30 teams; {n_fb} on the "
-                   f"fallback prior (prior-season MOV × {PRIOR_REGRESS:.2f}, "
-                   f"from {PRIOR_SEASON - 1}-{PRIOR_SEASON % 100:02d} game scores).")
+                   f"fallback prior (prior-season MOV × {PRIOR_REGRESS:.2f}: "
+                   f"{_n_scores} from {PRIOR_SEASON - 1}-{PRIOR_SEASON % 100:02d} "
+                   f"game scores, {_n_stand} from ESPN standings).")
     else:
         st.caption("Priors: 30/30 preseason win totals loaded.")
     n_zero = sum(1 for t in NBA_TEAMS if priors[t]["source"] == "none")
     if n_zero:
-        st.caption(f"Fallback prior unavailable for {n_zero} team(s) — ESPN's "
-                   f"prior-season scan and standings both came back empty; "
-                   f"those teams start at 0.")
+        st.caption(f"Fallback prior unavailable for {n_zero} team(s) — neither "
+                   f"the prior-season score scan nor ESPN standings produced a "
+                   f"value; those teams start at 0.")
     st.caption(f"Model **{MODEL_VERSION}** — frozen; no parameter changes "
                f"before the pre-registered look.")
     if STAKE_UNITS <= 0 or SEASON_BUDGET <= 0:
@@ -1913,7 +1941,7 @@ with tab_today:
                 "Position": (f"{pos['market']}: {side_name(g, pos['side'])}"
                              + (f" {fmt_spread(pos['line'])}" if pos["line"] is not None else "")
                              + f" {fmt_price(pos['price'])}") if pos else "—",
-                "Ref": gt["ref"]["ats"]["src"] or gt["ref"]["ml"]["src"] or "none",
+                "Ref": ref_label(gt["ref"]["ats"]["src"] or gt["ref"]["ml"]["src"] or "none"),
                 "FD src": gt["fd"]["source"],
                 "Paper ATS": _pp(pg["ats"], True), "Paper ML": _pp(pg["ml"]),
                 "Model": f"{g['conf_level']} · {g['prob_pick']} {max(g['home_pct'], g['away_pct']):.0f}%",
@@ -2087,7 +2115,7 @@ with tab_today:
                 f"<span style='color:{VERDICT_COLOR[m['verdict']]};font-weight:700;'>"
                 f"{VERDICT_ICON[m['verdict']]} {m['verdict']}</span>"
                 f"<span class='nba-muted'> {side_name(game, m['side'])}{ln} at "
-                f"{fmt_price(sd['price'])} — {m['src']} fair {sd['fair']*100:.1f}% vs "
+                f"{fmt_price(sd['price'])} — {ref_label(m['src'])} fair {sd['fair']*100:.1f}% vs "
                 f"needs {sd['be']*100:.1f}% (edge {sd['edge']*100:+.1f}pp){oth}</span>")
         pos = gt["pos"]
         if pos:
@@ -2138,10 +2166,13 @@ with tab_today:
     c_log1, c_log2, c_log3, c_log4 = st.columns([1, 1, 1, 1.2])
     with c_log1:
         if st.button("Log today's slate to tracker", key=f"{NS}log"):
-            slate_eids = {g["event_id"] for g in slate_results if not g["preseason"]}
             # Supersede: UNGRADED rows from an older model version for games
-            # on today's slate are replaced by the current model's read.
+            # on today's slate that are STILL BIDDABLE are replaced by the
+            # current model's read. A finished game is skipped below as
+            # look-ahead, so its old row must survive for auto-grade.
             # GRADED rows are immutable forever, whatever version wrote them.
+            slate_eids = {g["event_id"] for g in slate_results
+                          if not g["preseason"] and not g["completed"]}
             before = len(log)
             log[:] = [r for r in log if not (
                 r.get("version") != MODEL_VERSION and not r.get("graded_at")

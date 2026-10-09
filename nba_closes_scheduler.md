@@ -3,7 +3,7 @@
 ## Why
 
 GitHub's `schedule` trigger is not a 30-minute cron for this repo. Between Sep 27 and
-Oct 9, 2026 the NBA workflow (`17,47` at 16 hours a day = 26 scheduled runs) fired **2–4
+Oct 9, 2026 the NBA workflow (`17,47` across 13 UTC hours = 26 scheduled runs) fired **2–4
 times a day**, and the MLB workflow (`0,30`) showed the same pattern. `scripts/
 snapshot_closes_nba.py` only spends a credit when a game tips within 35 minutes, so with
 runs hours apart most tips are never inside a window and no close is captured.
@@ -17,6 +17,12 @@ workflow's `workflow_dispatch` endpoint every 30 minutes. The script's logic is 
 
 ## Setup (cron-job.org free tier, or any scheduler that can POST with headers)
 
+0. **Prerequisite: this branch must be merged to `main` first.** A dispatch on
+   `ref: main` runs `main`'s copy of the workflow file, which checks out `data` as the write
+   target and fetches `scripts/snapshot_closes_nba.py` and `nba_teams.py` from `origin/main`.
+   Until the merge, a dispatch runs the OLD yml and the OLD script (regular key only, no
+   `mkdir -p`). The schedule fallback also only fires from `main`. Never test the cadence by
+   dispatching another ref: that runs that ref's yml with `main`'s script.
 1. **Token.** GitHub → Settings → Developer settings → Fine-grained personal access
    tokens → Generate. Repository access: **only** `etheriousleo/MLB-Prediction-Model`.
    Permissions: **Actions: Read and write** (Metadata: read is added automatically).
@@ -39,13 +45,18 @@ workflow's `workflow_dispatch` endpoint every 30 minutes. The script's logic is 
    runs every 30 minutes. On the `data` branch, `odds_closes/nba/<ET date>.json` fills
    with quotes whose `quoted_at` is within 35 minutes of each game's tip, and
    `odds_closes/nba/_credits.json` tracks the remaining credits.
-4. **MLB (optional, zero code change).** A second job with the same headers and body
-   against `.../actions/workflows/odds_close_snapshot.yml/dispatches` at minutes 3 and 33
-   gives the MLB closes the same real cadence. No MLB file is touched by this.
+4. **MLB — not yet.** `scripts/snapshot_closes.py` spends 1 credit on EVERY run with no
+   tip-window gate, so a 30-minute cadence would cost ~34 credits a day (~1,000 a month) on
+   the key shared with the NBA cron and both apps' prefill. Give the MLB script the same
+   window gate first (an MLB change, decided separately); until then leave the MLB workflow
+   on GitHub's schedule.
 
 GitHub's own `schedule` stays in the workflow as a free fallback. Overlapping runs are
-serialized by the workflow's `concurrency` group, and the script never spends twice on a
-slot whose close is already on file.
+serialized by the workflow's `concurrency` group (GitHub keeps one run pending per group
+and shows an older pending duplicate as "Cancelled" — that is the dedup working, not a
+failure), and the script never spends twice on a slot whose close is already on file.
+A non-200 from The Odds API fails the run (red in the Actions tab) except an unknown
+preseason sport key, which is a quiet no-op.
 
 ## Preseason
 

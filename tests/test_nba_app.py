@@ -127,12 +127,17 @@ HISTORY, TRUE_STRENGTH = build_history()
 
 
 def build_prior_history():
-    """Four regular-season nights in Nov 2025 (ESPN season 2026): every
-    team plays four games with deterministic margins, so the prior-season
-    MOV derived from scores is known exactly."""
+    """72 regular-season nights (Nov 1, 2025 → Jan 11, 2026; ESPN season
+    2026): every team plays every night, so each has 72 games — above the
+    MIN_PRIOR_GAMES trust floor — with deterministic margins. Plus four
+    absurd 150-50 games that build_gamelogs must EXCLUDE from the prior: a
+    preseason game, the 2025 Cup final on a neutral floor with NO note
+    headline (only the per-season date catches it), a play-in and a playoff
+    game."""
     events, eid = [], 401700000
-    for d in range(4):
-        order = TEAM_IDS[d:] + TEAM_IDS[:d]
+    day0 = datetime.date(2025, 11, 1)
+    for d in range(72):
+        order = TEAM_IDS[d % 30:] + TEAM_IDS[:d % 30]
         for i in range(0, 30, 2):
             h, a = order[i], order[i + 1]
             margin = round(TRUE_STRENGTH[h] - TRUE_STRENGTH[a] + 2.5)
@@ -140,26 +145,42 @@ def build_prior_history():
             if hs == as_:
                 hs += 1
             eid += 1
-            tip = datetime.datetime(2025, 11, 3 + d, 19, 0, tzinfo=ET)
-            ev = espn_event(eid, h, a, _iso(tip), "STATUS_FINAL", "post", True, 4,
-                            2, hs=hs, as_=as_, detail="Final")
+            day = day0 + datetime.timedelta(days=d)
+            tip = datetime.datetime(day.year, day.month, day.day, 19, 0, tzinfo=ET)
+            ev = espn_event(eid, h, a, _iso(tip), "STATUS_FINAL", "post", True, 4, 2,
+                            hs=hs, as_=as_, detail="Final")
             ev["season"]["year"] = 2026
             events.append(ev)
-    return events
+    excluded = set()
+
+    def absurd(eid_, dt, stype, **kw):
+        ev = espn_event(eid_, "1", "2", _iso(dt), "STATUS_FINAL", "post", True, 4, stype,
+                        hs=150, as_=50, detail="Final", **kw)
+        ev["season"]["year"] = 2026
+        events.append(ev)
+        excluded.add(str(eid_))
+    absurd(401790001, datetime.datetime(2025, 10, 10, 19, tzinfo=ET), 1)                  # preseason
+    absurd(401790002, datetime.datetime(2025, 12, 16, 20, 30, tzinfo=ET), 2, neutral=True)  # Cup final, no note
+    absurd(401790003, datetime.datetime(2026, 4, 14, 19, tzinfo=ET), 5)                   # play-in
+    absurd(401790004, datetime.datetime(2026, 4, 20, 19, tzinfo=ET), 3)                   # playoffs
+    return events, excluded
 
 
-PRIOR_HISTORY = build_prior_history()
+PRIOR_HISTORY, PRIOR_EXCLUDED = build_prior_history()
 
 
 def expected_prior_mov(tid):
     tot, n = 0, 0
     for ev in PRIOR_HISTORY:
+        if ev["id"] in PRIOR_EXCLUDED:
+            continue
         comps = {c["homeAway"]: c for c in ev["competitions"][0]["competitors"]}
         if comps["home"]["team"]["id"] == tid:
             tot += int(comps["home"]["score"]) - int(comps["away"]["score"]); n += 1
         elif comps["away"]["team"]["id"] == tid:
             tot += int(comps["away"]["score"]) - int(comps["home"]["score"]); n += 1
     return round(tot / n, 2)
+
 
 # Today's slate (Saturday Nov 21) — the §8.3 cases. Tips in UTC.
 SLATE = [
@@ -321,7 +342,8 @@ class Router:
                 feed = [odds_event(g, default_books(g["home"], g["away"]))
                         for g in PRESEASON_SLATE]
             else:
-                feed = [feed_for(g) for g in SLATE + SUNDAY_SLATE]
+                feed = [feed_for(g) for g in SLATE + SUNDAY_SLATE
+                        if g.get("season_type", 2) != 1]
             return FakeResp([f for f in feed if f], headers={"x-requests-remaining": "417"})
         if "/standings" in url:
             entries = [{"team": {"id": t, "displayName": team_name(t)},
@@ -445,7 +467,7 @@ def test_form_and_prior_weights(app_dir, monkeypatch):
     assert abs(c["prior_weight"](6) - 0.6) < 1e-12
     assert c["prior_weight"](15) == 0.0 and c["prior_weight"](40) == 0.0
     # prior map: 55-win team → +5.19 pts
-    pri = c["build_priors"]({"2": 55.0}, {"30": -8.0})
+    pri = c["build_priors"]({"2": 55.0}, {"30": {"mov": -8.0, "src": "scores"}})
     assert abs(pri["2"]["margin"] - (55 - 41) / 2.7) < 1e-9
     assert abs(pri["30"]["margin"] - (-8.0 * 0.6)) < 1e-9 and pri["30"]["source"] != "win total"
     assert pri["1"]["margin"] == 0.0
@@ -599,7 +621,8 @@ def test_saturday_slate_gates_and_log(app_dir, router, monkeypatch):
     text = all_text(at)
     assert "Win totals for 28/30" in text                    # 29 null, 30 missing → fallback
     assert "417 credits remaining" in text                    # burn is visible
-    assert "9/10 games priced" in text                        # G6 postponed excluded; G8 live blank
+    assert "8/10 games priced" in text    # G6 postponed excluded; G8 live and G7 preseason blank
+    assert "Preseason — price it only to shake down the gate" in text   # G7, unpriced
     # Prefill from the feed (session state set before the widgets)
     assert at.session_state[f"nba1_sp_{EIDS['1']}"] == -4.5
     assert at.session_state[f"nba1_mlh_{EIDS['1']}"] == -200
@@ -873,8 +896,13 @@ def test_preseason_first_run(app_dir, router, monkeypatch):
     text = all_text(at)
     assert "No 2026-27 regular-season games completed yet" in text
     assert "preseason finals (back-to-back detection only)" in text
-    assert "Win totals for 0/30 teams; 30 on the fallback prior" in text
-    assert "from 2025-26 game scores" in text
+    assert ("Win totals for 0/30 teams; 30 on the fallback prior (prior-season MOV × 0.60: "
+            "30 from 2025-26 game scores, 0 from ESPN standings)") in text
+    # Scan statistics: Oct 5-7 preseason (12 finals) + the three Oct 9 games
+    assert "Scan since Oct 1: 15 events, 12 preseason finals" in text
+    assert "0 regular-season finals" in text
+    style = next(m.value for m in at.markdown if "<style>" in m.value)
+    assert "var(--" not in style and "currentColor" in style
     assert "Odds feed: configured" in text
     # Preseason slate → the preseason sport key, every game priced, burn visible
     assert "Odds feed (basketball_nba_preseason): 3/3 games priced" in text
@@ -882,15 +910,26 @@ def test_preseason_first_run(app_dir, router, monkeypatch):
     assert at.session_state["nba1_sp_401850001"] == -4.5
     # Cards: Macau 8 am tip on a neutral floor; bold renders; line from the pick
     assert "Fri 8:00 AM ET" in text and "Venetian Arena" in text
-    assert "**" not in "".join(m.value for m in at.markdown if "nba-card" in m.value)
+    assert "**" not in "".join(m.value for m in at.markdown if 'class="nba-card"' in m.value)
     assert "<b>100% preseason prior</b>" in text
     assert "Model line (pick)" in text and "100% prior · prior MOV × 0.60" in text
-    assert "MOV in 2025-26 × 0.60" in text and "no regular-season games yet" in text
+    assert "MOV in 2025-26 (game scores) × 0.60" in text and "no regular-season games yet" in text
+    cards = [m.value for m in at.markdown if 'class="nba-card"' in m.value]
+    assert len(cards) == 3 and all("((" not in c_ and "← " in c_ for c_ in cards)
+    # Prior line reads "Prior −3.3 ← −5.5 MOV in 2025-26 (game scores) × 0.60" with
+    # the derivation visible, and the rating's source is in ONE pair of parens.
+    import re as _re
+    m6 = next(c_ for c_ in cards if "DAL strength" in c_)
+    assert _re.search(r"Prior [+-]\d+\.\d <span class=\"nba-dim\">← [+-]\d+\.\d MOV in 2025-26 \(game scores\) × 0\.60", m6)
+    assert "(100% prior · prior MOV × 0.60)" in m6
     assert "Preseason — price it only to shake down the gate" not in text  # priced → gated
     # Priors are the score-derived prior-season MOV × 0.60, never a standings guess
     core = load_core(app_dir)
     pm = core["fetch_prior_mov"](2026)
-    assert len(pm) == 30 and pm["6"] == expected_prior_mov("6")
+    assert len(pm) == 30 and pm["6"] == {"mov": expected_prior_mov("6"), "src": "scores"}
+    # and the card's prior is exactly that MOV × 0.60
+    dal = next(c_ for c_ in cards if "DAL strength" in c_)
+    assert f"Prior {expected_prior_mov('6') * 0.6:+.1f} " in dal
     # Nothing is loggable: the click says so and writes no log
     click(at, "nba1_log")
     assert "Nothing to log — all 3 game(s) today are preseason" in all_text(at)
@@ -910,11 +949,23 @@ def test_prior_mov_from_scores_then_guarded_standings(app_dir, router, monkeypat
     monkeypatch.setenv("NBA_APP_CLOCK", CLOCK_SAT)
     c = load_core(app_dir)
     pm = c["fetch_prior_mov"](2026)
-    assert len(pm) == 30
-    for t in ("1", "13", "30"):
-        assert pm[t] == expected_prior_mov(t)
-    # No prior-season games anywhere → standings fallback, which must never
-    # mistake a small season total for a per-game number.
+    assert len(pm) == 30 and all(v["src"] == "scores" for v in pm.values())
+    # Teams 1 and 2 played the four absurd games (preseason, Cup final with
+    # no note, play-in, playoffs): all four must be excluded from the prior.
+    for t in ("1", "2", "13", "30"):
+        assert pm[t]["mov"] == expected_prior_mov(t)
+    assert abs(pm["1"]["mov"]) < 30                               # 150-50 games never counted
+    assert not any("/standings" in u for u, _ in router.calls)     # scan sufficed
+    # Trust floor: a scan with too few games per team is not a season →
+    # standings fill the gaps (here: every team).
+    c["MIN_PRIOR_GAMES"] = 1000
+    c["fetch_prior_mov"].clear(); c["fetch_season_events"].clear()
+    pm_floor = c["fetch_prior_mov"](2026)
+    assert len(pm_floor) == 30 and all(v["src"] == "standings" for v in pm_floor.values())
+    assert any("/standings" in u for u, _ in router.calls)
+    c["MIN_PRIOR_GAMES"] = 70
+    # No prior-season games anywhere → standings fallback, decided by stat
+    # NAME: never by magnitude, never by display formatting.
     def standings_only(url, params=None, timeout=None, **kw):
         if "/standings" in url:
             return FakeResp({"children": [{"standings": {"entries": [
@@ -922,22 +973,26 @@ def test_prior_mov_from_scores_then_guarded_standings(app_dir, router, monkeypat
                     {"name": "pointDifferential", "value": -25.0, "displayValue": "-25"},
                     {"name": "gamesPlayed", "value": 82}]},
                 {"team": {"id": "2"}, "stats": [
-                    {"name": "differential", "value": 5.3, "displayValue": "+5.3"}]},
+                    {"name": "differential", "value": 5.0, "displayValue": "+5"}]},
                 {"team": {"id": "3"}, "stats": [
                     {"name": "avgPointsFor", "value": 110.2},
                     {"name": "avgPointsAgainst", "value": 115.7}]},
                 {"team": {"id": "4"}, "stats": [
                     {"name": "pointDifferential", "value": 410.0, "displayValue": "+410"},
                     {"name": "wins", "value": 50}, {"name": "losses", "value": 32}]},
+                {"team": {"id": "5"}, "stats": [
+                    {"name": "pointDifferential", "value": 100.0}]},          # total, no games → skip
+                {"team": {"id": "6"}, "stats": [
+                    {"name": "differential", "value": 3.7}]},                  # per game, no display
             ]}}]})
         return FakeResp({"events": []})
     monkeypatch.setattr("requests.get", standings_only)
-    c["fetch_prior_mov"].clear()
-    c["fetch_season_events"].clear()      # the inner scan is cached too
+    c["fetch_prior_mov"].clear(); c["fetch_season_events"].clear()
     pm2 = c["fetch_prior_mov"](2026)
-    assert pm2["1"] == pytest.approx(-25 / 82, abs=0.01)     # total ÷ games, not −25
-    assert pm2["2"] == 5.3 and pm2["3"] == pytest.approx(-5.5) and pm2["4"] == 5.0
-    assert "5" not in pm2
+    assert pm2["1"] == {"mov": pytest.approx(-25 / 82, abs=0.01), "src": "standings"}
+    assert pm2["2"]["mov"] == 5.0 and pm2["6"]["mov"] == 3.7
+    assert pm2["3"]["mov"] == pytest.approx(-5.5) and pm2["4"]["mov"] == 5.0
+    assert "5" not in pm2 and "7" not in pm2
 
 
 def test_cron_preseason_day_uses_preseason_key(tmp_path, monkeypatch, router):
@@ -968,3 +1023,106 @@ def test_cron_logs_and_skips_on_4xx(tmp_path, monkeypatch, router):
     assert cron.main() == 0
     assert not (tmp_path / "odds_closes/nba" / f"{PRE}.json").exists()
     assert not (tmp_path / "odds_closes/nba/_credits.json").exists()
+
+
+def test_cron_unknown_preseason_key_is_logged_and_quiet(tmp_path, monkeypatch, router, capsys):
+    import snapshot_closes_nba as cron
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("ODDS_API_KEY", "k")
+    monkeypatch.setenv("NBA_APP_CLOCK", "2026-10-09T19:47:00-04:00")
+    calls = []
+    def bad_key(url, params=None, timeout=None, **kw):
+        if "the-odds-api" in url:
+            calls.append(url)
+            return FakeResp({"message": "Unknown sport"}, status=404)
+        return router(url, params=params, timeout=timeout, **kw)
+    monkeypatch.setattr("requests.get", bad_key)
+    assert cron.main() == 0
+    assert len(calls) == 1 and "basketball_nba_preseason" in calls[0]
+    assert "Odds API 404 for basketball_nba_preseason" in capsys.readouterr().out
+
+
+def test_cron_bad_key_fails_the_run(tmp_path, monkeypatch, router):
+    """A 401 (expired / over-quota key) must go RED in the Actions tab, not
+    produce 34 green no-op runs a day with nothing captured."""
+    import snapshot_closes_nba as cron
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("ODDS_API_KEY", "k")
+    monkeypatch.setenv("NBA_APP_CLOCK", "2026-11-21T18:47:00-05:00")   # regular-season slate
+    def unauthorized(url, params=None, timeout=None, **kw):
+        if "the-odds-api" in url:
+            return FakeResp({"message": "Unauthorized"}, status=401)
+        return router(url, params=params, timeout=timeout, **kw)
+    monkeypatch.setattr("requests.get", unauthorized)
+    assert cron.main() == 1
+    assert not (tmp_path / "odds_closes/nba" / f"{SAT}.json").exists()
+    assert not (tmp_path / "odds_closes/nba/_credits.json").exists()
+    # A 404 on the REGULAR key is also a failure (the key is verified).
+    def unknown(url, params=None, timeout=None, **kw):
+        if "the-odds-api" in url:
+            return FakeResp({"message": "Unknown sport"}, status=404)
+        return router(url, params=params, timeout=timeout, **kw)
+    monkeypatch.setattr("requests.get", unknown)
+    assert cron.main() == 1
+
+
+def test_superseded_row_for_a_finished_game_survives(app_dir, router, monkeypatch):
+    at = run_app(app_dir, CLOCK_SAT, monkeypatch)
+    click(at, "nba1_log")
+    log = read_log(app_dir)
+    g1 = next(r for r in log if r["espn_event_id"] == EIDS["1"])
+    g1["version"] = "nba-v0.9"
+    (app_dir / "nba_pick_log.json").write_text(json.dumps(log))
+    # 10 pm ET: the 7 pm game is final → it is look-ahead for logging, so
+    # its old-version ungraded row must be left alone for auto-grade.
+    at = run_app(app_dir, "2026-11-21T22:00:00-05:00", monkeypatch)
+    click(at, "nba1_log")
+    log2 = read_log(app_dir)
+    assert any(r["espn_event_id"] == EIDS["1"] and r["version"] == "nba-v0.9" for r in log2)
+    assert len(log2) == 10 and "Replaced" not in all_text(at)
+    click(at, "nba1_grade")
+    g1b = next(r for r in read_log(app_dir) if r["espn_event_id"] == EIDS["1"])
+    assert g1b["graded_at"] and g1b["version"] == "nba-v0.9"
+
+
+def test_model_line_is_quoted_from_the_pick_side(app_dir, router, monkeypatch):
+    import re as _re
+    at = run_app(app_dir, CLOCK_SAT, monkeypatch)
+    cards = [m.value for m in at.markdown if 'class="nba-card"' in m.value]
+    assert len(cards) == 11
+    seen_away = seen_home = 0
+    for c_ in cards:
+        away, home = _re.search(r"font-weight:700;\">(.+?) <span class=\"nba-dim\" style=\"font-size:13px;font-weight:400;\">\(.*?\)</span> <span class=\"nba-dim\" style=\"margin:0 6px;\">@</span> (.+?) <span", c_).groups()
+        pick, line = _re.search(r"Model line \(pick\)</div><div [^>]*>(.+?) (PK|[+-][0-9.]+)<br>", c_).groups()
+        M = float(_re.search(r"Proj home margin ([+-][0-9.]+)", c_).group(1))
+        snap = round(M * 2) / 2
+        expect = "PK" if abs(snap) < 0.25 else f"{-abs(snap):+g}"
+        assert pick in (home, away) and line == expect, (pick, line, expect, M)
+        assert (pick == home) == (M >= 0)
+        seen_away += pick == away
+        seen_home += pick == home
+    assert seen_away and seen_home                         # both branches exercised
+
+
+def test_price_gate_error_and_empty_feed_captions(app_dir, router, monkeypatch):
+    write_null_totals(app_dir)
+    real = router
+    def api_401(url, params=None, timeout=None, **kw):
+        if "the-odds-api" in url:
+            return FakeResp({"message": "Unauthorized"}, status=401,
+                            headers={"x-requests-remaining": "0"})
+        return real(url, params=params, timeout=timeout, **kw)
+    monkeypatch.setattr("requests.get", api_401)
+    at = run_app(app_dir, CLOCK_PRE, monkeypatch)
+    text = all_text(at)
+    assert "Odds feed (basketball_nba_preseason): odds API 401" in text
+    assert "paper gate only" in text and "0 credits remaining this month" in text
+    def api_empty(url, params=None, timeout=None, **kw):
+        if "the-odds-api" in url:
+            return FakeResp([], headers={"x-requests-remaining": "399"})
+        return real(url, params=params, timeout=timeout, **kw)
+    monkeypatch.setattr("requests.get", api_empty)
+    at = run_app(app_dir, CLOCK_PRE, monkeypatch)
+    text = all_text(at)
+    assert ("Odds feed (basketball_nba_preseason) returned no events (preseason slate — "
+            "pulled the preseason sport key, which listed nothing). 399 credits remaining") in text

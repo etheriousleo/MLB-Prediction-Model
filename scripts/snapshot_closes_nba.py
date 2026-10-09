@@ -224,8 +224,12 @@ def main() -> int:
                      timeout=20)
     if r.status_code != 200:
         print(f"Odds API {r.status_code} for {sport}: {str(r.text)[:200]} — "
-              f"no snapshot written (a 4xx is not charged)")
-        return 0
+              f"no snapshot written (a non-200 is not charged)")
+        # 404/422 on the PRESEASON key = the unverified sport key: a quiet
+        # no-op. Anything else (401 bad or over-quota key, 429, 5xx) fails
+        # the run so the Actions tab goes red instead of 34 green no-ops a
+        # day with nothing captured.
+        return 0 if (r.status_code in (404, 422) and sport == ODDS_SPORT_PRESEASON) else 1
     rem = r.headers.get("x-requests-remaining")
     print(f"credits remaining: {rem}")
     os.makedirs(CLOSES_DIR, exist_ok=True)

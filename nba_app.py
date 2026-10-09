@@ -62,6 +62,20 @@ st.markdown("""
     .stat-better { color: #00c07a; font-weight: 600; }
     .stat-worse  { color: #ff5252; }
     .confidence-reason { font-size: 0.85rem; line-height: 1.6; color: #ccc; }
+    /* Theme-aware card palette: the suite's cards were designed on the dark
+       theme; fixed grays were the faintest text on a light theme. Streamlit
+       exposes the active theme as CSS variables, so everything neutral
+       derives from --text-color / --secondary-background-color. */
+    .nba-card { background: var(--secondary-background-color); border-radius: 12px;
+                padding: 18px 22px; margin-bottom: 16px; color: var(--text-color); }
+    .nba-label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+                 color: var(--text-color); opacity: .55; margin-bottom: 4px; }
+    .nba-muted { color: var(--text-color); opacity: .72; }
+    .nba-dim   { color: var(--text-color); opacity: .5; }
+    .nba-strong { color: var(--text-color); font-weight: 700; }
+    .nba-pick  { color: #00c07a; font-weight: 800; }
+    .nba-rule  { border-top: 1px solid color-mix(in srgb, var(--text-color) 12%, transparent);
+                 padding-top: 10px; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -113,9 +127,7 @@ def parse_utc(iso: str) -> datetime.datetime | None:
 _now = now_et()
 SEASON = _now.year + 1 if _now.month >= 8 else _now.year
 PRIOR_SEASON = SEASON - 1
-SEASON_START_ET = datetime.date(SEASON - 1, 10, 1)   # preseason opens early Oct
-REG_SEASON_OPENS = datetime.date(2026, 10, 20)        # market gate live from here
-ALL_STAR_BREAK = datetime.date(2027, 2, 19)           # pre-registered look, latest
+SEASON_START_ET = datetime.date(SEASON - 1, 10, 1)   # preseason opens early Oct; the season scan starts here
 
 # ── MODEL FREEZE — nba-v1.0 ────────────────────────────────────────────────────
 # Frozen 2026-09-27 (tag nba-v1.0-frozen-<date> before opening night).
@@ -176,8 +188,27 @@ EVAL_LOOK_DATE = "2027-02-19"   # All-Star break
 #     reference = "pinnacle"    # sharp reference; consensus of others if absent
 # One pull = markets × 1 = 2 credits (h2h + spreads, bookmakers param set).
 # Cached by ET date + hour → 30–60 credits/month from the app.
-ODDS_API     = "https://api.the-odds-api.com/v4/sports/basketball_nba/odds"
+ODDS_SPORT   = "basketball_nba"
+# The Odds API lists NBA preseason under its own sport key. NOT verified
+# against the live API from the build container (egress blocked); the
+# evidence is three preseason days (Oct 4-6) on which the regular-season
+# key returned no events while ESPN had games inside the cron's window.
+# Used only when EVERY game on the slate is preseason, so the shakedown can
+# exercise prefill, closes and CLV. A wrong key costs 0 credits (4xx) and
+# the feed caption shows the error verbatim.
+ODDS_SPORT_PRESEASON = "basketball_nba_preseason"
+ODDS_API_FMT = "https://api.the-odds-api.com/v4/sports/{sport}/odds"
 ODDS_MARKETS = "h2h,spreads"
+BOOK_LABELS  = {"fanduel": "FanDuel", "pinnacle": "Pinnacle", "draftkings": "DraftKings",
+                "betmgm": "BetMGM", "caesars": "Caesars", "betrivers": "BetRivers"}
+
+
+def odds_url(sport: str) -> str:
+    return ODDS_API_FMT.format(sport=sport)
+
+
+def book_label(key: str) -> str:
+    return BOOK_LABELS.get(str(key).lower(), str(key).title())
 # Consensus books beside Pinnacle — spec §10 suggests DK / BetMGM / Caesars;
 # Juan confirms. Every book here costs nothing extra (cost is per market).
 ODDS_BOOKS   = "fanduel,pinnacle,draftkings,betmgm,caesars"
@@ -275,6 +306,12 @@ def is_price(x) -> bool:
         return x is not None and abs(float(x)) >= 100
     except (TypeError, ValueError):
         return False
+
+
+def md_bold(text: str) -> str:
+    """Markdown emphasis is not parsed inside a raw HTML block (the cards),
+    so **x** becomes <b>x</b> before injection."""
+    return re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", str(text))
 
 
 def fmt_spread(x) -> str:
@@ -459,38 +496,61 @@ def fetch_scoreboard(date_iso: str) -> list:
 
 @st.cache_data(show_spinner=False, ttl=86400)
 def fetch_prior_mov(prior_season: int) -> dict:
-    """{team_id: prior-season MOV} from ESPN standings ?season=<prior>.
-    Only needed for the fallback prior (a team missing from the win-totals
-    file). Prefers avgPointsFor − avgPointsAgainst (unambiguously per game);
-    falls back to a differential stat, dividing by games if it's a total."""
+    """{team_id: prior-season regular-season MOV} for the FALLBACK prior.
+    Derived from GAME SCORES — the same monthly scoreboard scan the current
+    season uses (Oct → Jun of the prior season, cached a day), so it depends
+    on nothing this build could not verify. The earlier version read a
+    standings stat and guessed from its magnitude whether it was a season
+    total or a per-game number; a team within ±30 points on the season
+    became a ±30-per-game prior. The standings endpoint is now only a
+    guarded fallback (per-game fields, or a total divided by games)."""
+    out = {}
+    try:
+        end = min(datetime.date(prior_season, 6, 30), now_et().date())
+        season_log, _, _ = build_gamelogs(fetch_season_events(prior_season, end.isoformat()))
+        for tid, games in season_log.items():
+            if games:
+                out[tid] = round(sum(pf - pa for _, pf, pa in games) / len(games), 2)
+    except Exception:
+        out = {}
+    if len(out) >= 25:
+        return out
     try:
         j = _espn_get(ESPN_STANDINGS, {"season": prior_season})
     except Exception:
-        return {}
+        return out
     entries = []
     for grp in j.get("children", []) or []:
         entries += (grp.get("standings") or {}).get("entries", []) or []
     if not entries:
         entries = (j.get("standings") or {}).get("entries", []) or []
-    out = {}
     for e in entries:
         tid = str((e.get("team") or {}).get("id", "") or "")
-        if tid not in NBA_TEAMS:
+        if tid not in NBA_TEAMS or tid in out:
             continue
-        stats = {}
-        for s in e.get("stats", []) or []:
-            if s.get("name") is not None and s.get("value") is not None:
-                stats[s["name"]] = s["value"]
-        pf, pa = _float(stats.get("avgPointsFor")), _float(stats.get("avgPointsAgainst"))
+        stats = {str(st_.get("name")): st_ for st_ in (e.get("stats", []) or [])
+                 if st_.get("name") is not None}
+        pf = _float((stats.get("avgPointsFor") or {}).get("value"))
+        pa = _float((stats.get("avgPointsAgainst") or {}).get("value"))
         if pf is not None and pa is not None:
             out[tid] = round(pf - pa, 2)
             continue
-        diff = _float(stats.get("pointDifferential", stats.get("differential")))
-        if diff is None:
-            continue
-        gp = _float(stats.get("gamesPlayed")) or (
-            (_float(stats.get("wins")) or 0) + (_float(stats.get("losses")) or 0))
-        out[tid] = round(diff / gp if gp and abs(diff) > 30 else diff, 2)
+        gp = _float((stats.get("gamesPlayed") or {}).get("value")) or (
+            (_float((stats.get("wins") or {}).get("value")) or 0)
+            + (_float((stats.get("losses") or {}).get("value")) or 0))
+        for name in ("avgPointDifferential", "differential", "pointDifferential"):
+            st_ = stats.get(name)
+            if not st_ or _float(st_.get("value")) is None:
+                continue
+            val = _float(st_.get("value"))
+            # A per-game field displays with a decimal ("+5.3"); a season
+            # total displays as an integer ("+451") and must be divided by
+            # games played. Never decide by magnitude.
+            if name == "avgPointDifferential" or "." in str(st_.get("displayValue", "")):
+                out[tid] = round(val, 2)
+            elif gp:
+                out[tid] = round(val / gp, 2)
+            break
     return out
 
 
@@ -633,14 +693,15 @@ def build_priors(win_totals: dict, prior_mov: dict) -> dict:
         if tid in win_totals:
             wt = win_totals[tid]
             out[tid] = {"margin": (wt - WIN_TOTAL_BASE) / WIN_TOTAL_PER_PT,
-                        "source": "win total", "detail": f"{wt:.1f} wins"}
+                        "source": "win total",
+                        "detail": f"{wt:.1f}-win total: ({wt:.1f} − {WIN_TOTAL_BASE:g}) / {WIN_TOTAL_PER_PT:g}"}
         elif tid in prior_mov:
             out[tid] = {"margin": prior_mov[tid] * PRIOR_REGRESS,
-                        "source": "prior MOV × 0.60",
-                        "detail": f"{prior_mov[tid]:+.1f} MOV in {PRIOR_SEASON - 1}-{PRIOR_SEASON % 100:02d}"}
+                        "source": f"prior MOV × {PRIOR_REGRESS:.2f}",
+                        "detail": f"{prior_mov[tid]:+.1f} MOV in {PRIOR_SEASON - 1}-{PRIOR_SEASON % 100:02d} × {PRIOR_REGRESS:.2f}"}
         else:
             out[tid] = {"margin": 0.0, "source": "none",
-                        "detail": "no win total, no prior-season MOV → 0"}
+                        "detail": "no win total and no prior-season MOV → 0"}
     return out
 
 
@@ -969,12 +1030,13 @@ def parse_odds_event(ev: dict) -> dict | None:
 
 
 @st.cache_data(show_spinner=False, ttl=3600)
-def fetch_market_odds(api_key: str, cache_key: str) -> tuple:
+def fetch_market_odds(api_key: str, cache_key: str, sport: str = ODDS_SPORT) -> tuple:
     """Current h2h + spreads from the books in ODDS_BOOKS — ONE pull, 2
     credits. cache_key = ET date + hour (spec §5), so at most one pull per
-    hour of use. Returns (events, remaining_credits, error)."""
+    hour of use. sport = the regular-season key, or the preseason key when
+    the whole slate is preseason. Returns (events, remaining_credits, error)."""
     try:
-        r = requests.get(ODDS_API, params={
+        r = requests.get(odds_url(sport), params={
             "apiKey": api_key, "markets": ODDS_MARKETS, "oddsFormat": "american",
             "bookmakers": ODDS_BOOKS}, timeout=20)
         remaining = r.headers.get("x-requests-remaining") if hasattr(r, "headers") else None
@@ -1467,12 +1529,20 @@ with st.sidebar:
                f"refreshes every 30 min")
     st.markdown("---")
     st.markdown("##### What decides a bet")
-    st.caption(f"**Market gate only**: FanDuel vs {_odds_cfg()['ref'] if _odds_cfg() else 'Pinnacle'} "
+    _ocfg_sb = _odds_cfg()
+    _book_sb = book_label((_ocfg_sb or {}).get("book", "fanduel"))
+    _ref_sb = book_label((_ocfg_sb or {}).get("ref", "pinnacle"))
+    st.caption(f"**Market gate only**: {_book_sb} vs {_ref_sb} "
                f"(consensus fallback), spread and ML, GOOD at ≥ {MARKET_EDGE_PP}pp. "
                f"The model is context; its picks are **paper** until the "
                f"pre-registered look ({EVAL_LOOK_N} counted picks per bucket "
                f"or {EVAL_LOOK_DATE}, whichever first). No sliders — the "
                f"thresholds live in code, by design.")
+    if _ocfg_sb:
+        st.caption("📡 Odds feed: configured.")
+    else:
+        st.warning("📡 Odds feed NOT configured — no [odds] block in this app's "
+                   "Secrets. The market gate cannot run until it is added.")
     st.markdown("---")
     with st.spinner("Loading season results..."):
         try:
@@ -1488,31 +1558,48 @@ with st.sidebar:
     strengths = team_strengths(season_log, priors)
 
     n_games = sum(len(v) for v in season_log.values()) // 2
+    n_pre_finals = sum(1 for g in season_events
+                       if g["completed"] and g["preseason"] and not g["postponed"])
+    _scan_from = f"{SEASON_START_ET:%b} {SEASON_START_ET.day}"
+    scan_note = (f"Scan since {_scan_from}: {len(season_events)} events, "
+                 f"{n_pre_finals} preseason finals (back-to-back detection only), "
+                 f"{n_games} regular-season finals.")
     if season_err:
         st.error(f"ESPN season pull failed: {season_err}")
+    elif not season_events:
+        # Distinguish "nothing has been played" from "the scan came back
+        # empty": with zero events the back-to-back check is blind too.
+        st.warning(f"⚠️ ESPN season scan returned NO events since "
+                   f"{_scan_from} — not even preseason. Refresh; "
+                   f"if it persists, ESPN's range query is failing and the "
+                   f"back-to-back detection is blind.")
     elif n_games == 0:
         st.info(f"📊 No {SEASON - 1}-{SEASON % 100:02d} regular-season games "
                 f"completed yet — running fully on the priors. That is the "
-                f"designed opening-night behavior, not an error.")
+                f"designed opening-night behavior, not an error. {scan_note}")
     else:
         gp = [strengths[t]["n"] for t in NBA_TEAMS]
         st.success(f"✅ {n_games} regular-season games · avg {np.mean(gp):.1f} "
                    f"per team · prior weight avg "
                    f"{np.mean([strengths[t]['w_prior'] for t in NBA_TEAMS]):.0%}")
+        st.caption(scan_note)
     n_wt = len(win_totals)
     n_fb = sum(1 for t in NBA_TEAMS if priors[t]["source"] != "win total")
     if wt_status == "missing":
         st.warning(f"⚠️ {WIN_TOTALS_FILE} not found — every prior is the "
-                   f"fallback (prior-season MOV × {PRIOR_REGRESS}). Juan enters "
+                   f"fallback (prior-season MOV × {PRIOR_REGRESS:.2f}). Juan enters "
                    f"the 30 FanDuel win totals before Oct 20.")
     elif n_wt < 30:
         st.warning(f"⚠️ Win totals for {n_wt}/30 teams; {n_fb} on the "
-                   f"fallback prior (prior-season MOV × {PRIOR_REGRESS}).")
+                   f"fallback prior (prior-season MOV × {PRIOR_REGRESS:.2f}, "
+                   f"from {PRIOR_SEASON - 1}-{PRIOR_SEASON % 100:02d} game scores).")
     else:
         st.caption("Priors: 30/30 preseason win totals loaded.")
-    if n_fb and not prior_mov and wt_status != "missing":
-        st.caption("Fallback prior unavailable (ESPN standings) — those "
-                   "teams start at 0.")
+    n_zero = sum(1 for t in NBA_TEAMS if priors[t]["source"] == "none")
+    if n_zero:
+        st.caption(f"Fallback prior unavailable for {n_zero} team(s) — ESPN's "
+                   f"prior-season scan and standings both came back empty; "
+                   f"those teams start at 0.")
     st.caption(f"Model **{MODEL_VERSION}** — frozen; no parameter changes "
                f"before the pre-registered look.")
     if STAKE_UNITS <= 0 or SEASON_BUDGET <= 0:
@@ -1638,14 +1725,18 @@ with tab_today:
     live_eids = set()
     ocfg = _odds_cfg()
     credits_left = None
+    all_preseason = bool(upcoming) and all(g["preseason"] for g in upcoming)
+    odds_sport = ODDS_SPORT_PRESEASON if all_preseason else ODDS_SPORT
     if upcoming:
         st.subheader("💰 Price gate")
         if ocfg:
             events, credits_left, oerr = fetch_market_odds(
-                ocfg["key"], today_et("%Y-%m-%d-%H"))
+                ocfg["key"], today_et("%Y-%m-%d-%H"), odds_sport)
+            _credits_txt = (f"{credits_left} credits remaining this month"
+                            if credits_left is not None else "credits remaining: unknown")
             if oerr:
-                st.error(f"Odds feed: {oerr} — manual FanDuel entry only "
-                         f"(no reference → paper gate only).")
+                st.error(f"Odds feed ({odds_sport}): {oerr} — manual FanDuel entry "
+                         f"only (no reference → paper gate only). {_credits_txt}.")
             elif events:
                 filled = 0
                 for g in upcoming:
@@ -1677,15 +1768,17 @@ with tab_today:
                         st.session_state[f"{NS}feedval_{eid}"] = vals
                     if any(v for v in vals.values()):
                         filled += 1
-                st.caption(f"📡 Odds feed: {filled}/{len(upcoming)} games priced from "
-                           f"{ocfg['book']}; reference = {ocfg['ref']} (consensus "
-                           f"fallback). Pre-game prices only — games underway are "
-                           f"left blank. Cached this hour · "
-                           f"{credits_left if credits_left is not None else '?'} "
-                           f"credits remaining this month.")
+                st.caption(f"📡 Odds feed ({odds_sport}): {filled}/{len(upcoming)} games "
+                           f"priced from {book_label(ocfg['book'])}; reference = "
+                           f"{book_label(ocfg['ref'])} (consensus fallback). Pre-game "
+                           f"prices only — games underway are left blank. Cached this "
+                           f"hour · {_credits_txt}.")
             else:
-                st.caption("📡 Odds feed returned no NBA events (off day, or "
-                           "games already started).")
+                _why = ("preseason slate — pulled the preseason sport key, which "
+                        "listed nothing" if all_preseason
+                        else "off day, or every game already started")
+                st.caption(f"📡 Odds feed ({odds_sport}) returned no events "
+                           f"({_why}). {_credits_txt}.")
         else:
             st.warning("📡 No odds feed configured — manual FanDuel entry only "
                        "and NO market gate (it needs the reference from the "
@@ -1711,8 +1804,8 @@ with tab_today:
                 with fc0:
                     st.markdown(
                         f"<div style='padding-top:8px;font-size:13px;'>"
-                        f"{matchup_key(g)} <span style='color:#888;'>· "
-                        f"{g['tip_label']}</span><br><span style='color:#888;'>"
+                        f"{matchup_key(g)} <span class='nba-muted'>· "
+                        f"{g['tip_label']}</span><br><span class='nba-muted'>"
                         f"model: <b>{g['home']} {fmt_spread(g['model_line_home'])}</b> "
                         f"({g['home_pct']:.1f}% home)"
                         f"{' · PRESEASON' if g['preseason'] else ''}</span></div>",
@@ -1828,7 +1921,7 @@ with tab_today:
             })
         if board:
             st.markdown(
-                "<div style='font-size:12px;color:#aaa;margin-bottom:6px;'>"
+                "<div class='nba-muted' style='font-size:12px;margin-bottom:6px;'>"
                 "<b>How the gate decides:</b> a good bet is a price better than "
                 "the true chance. The one estimate of that chance the suite's "
                 "data supports is the sharp market's — so the market gate asks "
@@ -1894,70 +1987,72 @@ with tab_today:
         elif game["away_b2b"]:
             tags.append(f"😴 {game['away_abbr']} on a back-to-back (−{B2B_PENALTY})")
         tag_html = "".join(
-            f"<span style='font-size:11px;color:#aaa;margin-left:6px;'>{t}</span>"
+            f"<span class='nba-muted' style='font-size:11px;margin-left:6px;'>{t}</span>"
             for t in tags)
         sh, sa = game["sh"], game["sa"]
+        # Markdown emphasis is NOT parsed inside a raw HTML block, so the
+        # **bold** in the reason strings is converted to <b> here.
         reasons_html = "".join(
-            f"<div style='margin:2px 0;font-size:12px;color:#aaa;'>&bull; {r}</div>"
+            f"<div class='nba-muted' style='margin:2px 0;font-size:12px;'>&bull; "
+            f"{md_bold(r)}</div>"
             for r in game["conf_reasons"])
-        home_prob_color = "#00c07a" if game["pick_side"] == "home" else "#aaa"
-        home_prob_weight = "800" if game["pick_side"] == "home" else "400"
-        away_prob_color = "#00c07a" if game["pick_side"] == "away" else "#aaa"
-        away_prob_weight = "800" if game["pick_side"] == "away" else "400"
+        home_prob_cls = "nba-pick" if game["pick_side"] == "home" else "nba-muted"
+        away_prob_cls = "nba-pick" if game["pick_side"] == "away" else "nba-muted"
+        # Model line quoted from the PICK's side (the price form keeps the
+        # home convention for entry): a home-side line painted in the pick's
+        # color read as the opposite pick.
+        line_pick = (game["model_line_home"] if game["pick_side"] == "home"
+                     else -game["model_line_home"])
 
         def _src(s):
             if s["w_prior"] >= 0.99:
-                return f"100% prior ({s['prior_src']})"
+                return f"100% prior · {s['prior_src']}"
             if s["w_prior"] > 0:
-                return f"{s['w_prior']:.0%} prior / {1 - s['w_prior']:.0%} season"
-            return f"season (form {s['w_form']:.0%})"
+                return f"{s['w_prior']:.0%} prior · {1 - s['w_prior']:.0%} season"
+            if s["w_form"] == 0:
+                return "season · form weight 0% until 50 games"
+            return f"season · form {s['w_form']:.0%}"
+
+        def _strength_block(abbr, s):
+            return (
+                f'<div><div class="nba-label">{abbr} strength (pts)</div>'
+                f'<div class="nba-muted" style="font-size:11px;">'
+                f'Rating: <span class="nba-strong">{s["strength"]:+.1f}</span> '
+                f'<span class="nba-dim">({_src(s)})</span><br>'
+                f'Prior {s["prior"]:+.1f} <span class="nba-dim">← {s["prior_detail"]}</span><br>'
+                + (f'Season adj {s["season_adj"]:+.1f} (raw {s["raw_mpg"]:+.1f}, n={s["n"]}) · '
+                   f'form {s["form_adj"]:+.1f}' if s["n"] else
+                   '<span class="nba-dim">no regular-season games yet</span>')
+                + '</div></div>')
 
         card_html = (
-            f'<div style="background:rgba(255,255,255,0.03);border:1px solid {color}33;'
-            f'border-left:4px solid {color};border-radius:12px;padding:18px 22px;margin-bottom:16px;">'
+            f'<div class="nba-card" style="border:1px solid {color}33;'
+            f'border-left:4px solid {color};">'
             f'<div style="display:flex;align-items:center;justify-content:space-between;'
             f'flex-wrap:wrap;gap:8px;margin-bottom:14px;">'
             f'<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">'
             f'<span style="font-size:17px;font-weight:700;">'
-            f'{game["away"]} <span style="color:#555;font-size:13px;font-weight:400;">({game["rec_a"]})</span>'
-            f' <span style="color:#555;margin:0 6px;">@</span> '
-            f'{game["home"]} <span style="color:#555;font-size:13px;font-weight:400;">({game["rec_h"]})</span>'
+            f'{game["away"]} <span class="nba-dim" style="font-size:13px;font-weight:400;">({game["rec_a"]})</span>'
+            f' <span class="nba-dim" style="margin:0 6px;">@</span> '
+            f'{game["home"]} <span class="nba-dim" style="font-size:13px;font-weight:400;">({game["rec_h"]})</span>'
             f'</span> {status_badge}{tag_html}</div>'
             f'<span style="font-size:13px;font-weight:700;color:{color};">'
             f'{game["conf_emoji"]} {game["conf_level"]} confidence</span></div>'
             f'<div style="display:grid;grid-template-columns:1fr 1fr 1.4fr 1.4fr;gap:16px;margin-bottom:14px;">'
-            f'<div><div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;'
-            f'color:#666;margin-bottom:4px;">Win probability</div>'
+            f'<div><div class="nba-label">Win probability</div>'
             f'<div style="font-size:14px;">'
-            f'<span style="color:{home_prob_color};font-weight:{home_prob_weight};">'
-            f'{game["home"]} {game["home_pct"]}%</span><br>'
-            f'<span style="color:{away_prob_color};font-weight:{away_prob_weight};">'
-            f'{game["away"]} {game["away_pct"]}%</span></div></div>'
-            f'<div><div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;'
-            f'color:#666;margin-bottom:4px;">Model line</div>'
+            f'<span class="{home_prob_cls}">{game["home"]} {game["home_pct"]}%</span><br>'
+            f'<span class="{away_prob_cls}">{game["away"]} {game["away_pct"]}%</span></div></div>'
+            f'<div><div class="nba-label">Model line (pick)</div>'
             f'<div style="font-size:14px;font-weight:700;color:{color};">'
-            f'{game["home"]} {fmt_spread(game["model_line_home"])}'
-            f'<br><span style="font-size:11px;font-weight:400;color:#888;">'
-            f'Proj margin {game["pred_margin"]:+.1f} · HFA {game["hfa"]:+g} · '
+            f'{game["prob_pick"]} {fmt_spread(line_pick)}'
+            f'<br><span class="nba-muted" style="font-size:11px;font-weight:400;">'
+            f'Proj home margin {game["pred_margin"]:+.1f} · HFA {game["hfa"]:+g} · '
             f'rest {game["rest"]:+g}</span></div></div>'
-            f'<div><div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;'
-            f'color:#666;margin-bottom:4px;">{game["home_abbr"]} strength (pts)</div>'
-            f'<div style="font-size:11px;color:#aaa;">'
-            f'Rating: <span style="color:#ccc;font-weight:700;">{sh["strength"]:+.1f}</span> '
-            f'<span style="color:#666;">({_src(sh)})</span><br>'
-            f'Prior {sh["prior"]:+.1f} <span style="color:#666;">{sh["prior_detail"]}</span><br>'
-            f'Season adj {sh["season_adj"]:+.1f} (raw {sh["raw_mpg"]:+.1f}, n={sh["n"]}) · '
-            f'form {sh["form_adj"]:+.1f}</div></div>'
-            f'<div><div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;'
-            f'color:#666;margin-bottom:4px;">{game["away_abbr"]} strength (pts)</div>'
-            f'<div style="font-size:11px;color:#aaa;">'
-            f'Rating: <span style="color:#ccc;font-weight:700;">{sa["strength"]:+.1f}</span> '
-            f'<span style="color:#666;">({_src(sa)})</span><br>'
-            f'Prior {sa["prior"]:+.1f} <span style="color:#666;">{sa["prior_detail"]}</span><br>'
-            f'Season adj {sa["season_adj"]:+.1f} (raw {sa["raw_mpg"]:+.1f}, n={sa["n"]}) · '
-            f'form {sa["form_adj"]:+.1f}</div></div></div>'
-            f'<div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:10px;">'
-            f'{reasons_html}</div></div>'
+            + _strength_block(game["home_abbr"], sh)
+            + _strength_block(game["away_abbr"], sa)
+            + '</div>'
+            f'<div class="nba-rule">{reasons_html}</div></div>'
         )
         st.markdown(card_html, unsafe_allow_html=True)
 
@@ -1966,19 +2061,21 @@ with tab_today:
             continue
         gt = gate.get(eid)
         if eid in live_eids or game["state"] == "in":
-            st.markdown("<div style='font-size:11px;color:#c77;margin:-6px 0 14px 2px;'>"
+            st.markdown("<div style='font-size:11px;color:#ff5252;opacity:.8;margin:-6px 0 14px 2px;'>"
                         "🔴 Game underway — no pre-game price; not gated</div>",
                         unsafe_allow_html=True)
             continue
         if not gt or gt["fd"]["source"] == "none":
-            st.markdown("<div style='font-size:11px;color:#555;margin:-6px 0 14px 2px;'>"
-                        "No FanDuel price — add it in the price panel above</div>",
-                        unsafe_allow_html=True)
+            _np = ("Preseason — price it only to shake down the gate; nothing is "
+                   "logged" if game["preseason"]
+                   else "No FanDuel price — add it in the price panel above")
+            st.markdown(f"<div class='nba-dim' style='font-size:11px;margin:-6px 0 14px 2px;'>"
+                        f"{_np}</div>", unsafe_allow_html=True)
             continue
         lines = []
         for label, m in (("ATS", gt["mg"]["ats"]), ("ML", gt["mg"]["ml"])):
             if not m:
-                lines.append(f"<span style='color:#888;'>{label}&nbsp; no reference "
+                lines.append(f"<span class='nba-muted'>{label}&nbsp; no reference "
                              f"in the feed — market gate can't run</span>")
                 continue
             sd = m["sides"][m["side"]]
@@ -1986,10 +2083,10 @@ with tab_today:
             other = m["sides"].get("away" if m["side"] == "home" else "home")
             oth = (f" · other side {other['edge']*100:+.1f}pp" if other else "")
             lines.append(
-                f"<span style='color:#888;'>{label}&nbsp;</span>"
+                f"<span class='nba-muted'>{label}&nbsp;</span>"
                 f"<span style='color:{VERDICT_COLOR[m['verdict']]};font-weight:700;'>"
                 f"{VERDICT_ICON[m['verdict']]} {m['verdict']}</span>"
-                f"<span style='color:#888;'> {side_name(game, m['side'])}{ln} at "
+                f"<span class='nba-muted'> {side_name(game, m['side'])}{ln} at "
                 f"{fmt_price(sd['price'])} — {m['src']} fair {sd['fair']*100:.1f}% vs "
                 f"needs {sd['be']*100:.1f}% (edge {sd['edge']*100:+.1f}pp){oth}</span>")
         pos = gt["pos"]
@@ -1998,7 +2095,7 @@ with tab_today:
             lines.append(f"<span style='color:#00c07a;font-weight:700;'>POSITION: "
                          f"{pos['market']} {side_name(game, pos['side'])}{ln} "
                          f"{fmt_price(pos['price'])}</span>"
-                         + (f"<span style='color:#888;'> — {pos['note']}</span>"
+                         + (f"<span class='nba-muted'> — {pos['note']}</span>"
                             if pos["note"] else ""))
         for label, p, spread in (("Paper ATS", gt["pg"]["ats"], True),
                                  ("Paper ML", gt["pg"]["ml"], False)):
@@ -2006,10 +2103,10 @@ with tab_today:
                 continue
             ln = f" {fmt_spread(p['line'])}" if spread else ""
             lines.append(
-                f"<span style='color:#888;'>{label}&nbsp;</span>"
+                f"<span class='nba-muted'>{label}&nbsp;</span>"
                 f"<span style='color:{VERDICT_COLOR[p['verdict']]};'>"
                 f"{VERDICT_ICON[p['verdict']]} {p['verdict']}</span>"
-                f"<span style='color:#888;'> {side_name(game, p['side'])}{ln} at "
+                f"<span class='nba-muted'> {side_name(game, p['side'])}{ln} at "
                 f"{fmt_price(p['price'])} — model {p['p']*100:.1f}% vs needs "
                 f"{p['be']*100:.1f}% (cushion {p['cushion']*100:+.1f}pp) · "
                 f"<i>paper, never bet</i></span>")
@@ -2076,14 +2173,20 @@ with tab_today:
                 row["postponed"] = bool(g["postponed"])
                 log.append(row)
                 added += 1
-            save_pick_log(log)
-            msg = (f"Logged {added} new game(s)." if added
-                   else "Today's slate is already logged — prices applied "
-                        "above sync into it automatically.")
+            if added or replaced:
+                save_pick_log(log)
+            if added:
+                msg = f"Logged {added} new game(s)."
+            elif skipped_pre and skipped_pre == len(slate_results):
+                msg = (f"Nothing to log — all {skipped_pre} game(s) today are "
+                       f"preseason (shakedown only).")
+            else:
+                msg = ("Today's slate is already logged — prices applied above "
+                       "sync into it automatically.")
             if replaced:
                 msg += (f" Replaced {replaced} ungraded row(s) from a superseded "
                         f"model version.")
-            if skipped_pre:
+            if skipped_pre and skipped_pre != len(slate_results):
                 msg += f" Skipped {skipped_pre} preseason game(s) (shakedown only)."
             if skipped_final:
                 msg += (f" Skipped {skipped_final} already-final game(s) — "

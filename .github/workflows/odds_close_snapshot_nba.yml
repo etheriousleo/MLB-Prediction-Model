@@ -1,19 +1,31 @@
 name: Snapshot NBA closing lines
 
+# Cadence: GitHub's `schedule` trigger fired this repo's crons only 2–4
+# times a DAY between Sep 27 and Oct 9, 2026 (NBA and MLB alike), so the
+# real 30-minute cadence comes from an EXTERNAL scheduler that POSTs to
+# this workflow's workflow_dispatch endpoint at :17 and :47 Eastern —
+# setup in nba_closes_scheduler.md. The schedule below stays as a free
+# fallback. Neither trigger decides whether to spend a credit: the script
+# exits free unless a game tips within 35 minutes on the ET clock and that
+# slot's close isn't on file yet (scripts/snapshot_closes_nba.py), so
+# overlapping triggers never double-spend.
 on:
   schedule:
-    # Every 30 min at :17 and :47 — off-peak minutes (Actions delays runs
-    # most at :00/:30). The UTC window 16:17 → 04:47 covers 12:30 pm–11:00
-    # pm ET under BOTH EDT (UTC−4) and EST (UTC−5; DST ends 2026-11-01).
-    # The cron string never decides whether to spend a credit: the script
-    # exits free unless a game tips within 35 minutes on the ET clock and
-    # that slot's close isn't on file yet (scripts/snapshot_closes_nba.py).
-    - cron: "17,47 16-23 * * *"
+    # Fallback only. :17/:47 UTC from 11:17 to 04:47 covers 7:17 am–11:47
+    # pm ET under EDT and EST (DST ends 2026-11-01) — wide enough for the
+    # Macau/European morning tips and a noon ET tip; no-op runs are free.
+    - cron: "17,47 11-23 * * *"
     - cron: "17,47 0-4 * * *"
   workflow_dispatch:
 
 permissions:
   contents: write
+
+# A dispatched run arriving while a scheduled one is still pushing waits
+# its turn instead of racing it on the data branch.
+concurrency:
+  group: nba-closes
+  cancel-in-progress: false
 
 jobs:
   snapshot:
@@ -40,14 +52,17 @@ jobs:
         run: |
           git config user.name "odds-bot"
           git config user.email "odds-bot@users.noreply.github.com"
+          # `git add` on a path that does not exist yet is fatal (exit 128) —
+          # it failed every run until the script first created the directory.
+          mkdir -p odds_closes/nba
           git add odds_closes/nba/
           if git diff --cached --quiet; then
             echo "nothing to commit"
             exit 0
           fi
           git commit -m "nba closes: $(date -u +%FT%TZ)"
-          # The MLB snapshot job writes the same branch at :00/:30; rebase
-          # and retry so two bots never fight over a push.
+          # The MLB snapshot job writes the same branch; rebase and retry so
+          # two bots never fight over a push.
           for i in 1 2 3; do
             git push origin HEAD:data && exit 0
             git pull --rebase origin data || exit 1

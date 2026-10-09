@@ -6,9 +6,13 @@ Sibling of snapshot_closes.py (MLB). A separate script, not a parameter,
 because the credit-saving mechanics below would not leave the MLB path
 byte-identical (spec §5). The MLB script and workflow are untouched.
 
-Run on a schedule (GitHub Actions, every 30 min at :17 and :47 across a
-UTC window wide enough for 12:30 pm–11:00 pm ET in both EDT and EST). The
-cron string never decides anything: THIS script does, on the ET clock —
+Run every 30 minutes at :17 and :47 Eastern. GitHub's own `schedule`
+trigger delivered only 2–4 runs a day for this repo (measured Sep 27 –
+Oct 9, 2026, for the MLB cron too), so the cadence comes from an EXTERNAL
+scheduler calling the workflow's workflow_dispatch endpoint — see
+nba_closes_scheduler.md. The GitHub schedule stays as a free fallback.
+Whoever fires it, the trigger never decides anything: THIS script does,
+on the ET clock —
 
   1. Pull the ET date's scoreboard from ESPN (free) → distinct tip times.
   2. Call the Odds API ONLY IF some game tips within the next 35 minutes
@@ -42,7 +46,12 @@ for _p in (_HERE, os.path.dirname(_HERE)):
         sys.path.insert(0, _p)
 from nba_teams import team_id_for, team_name  # noqa: E402
 
-ODDS_API     = "https://api.the-odds-api.com/v4/sports/basketball_nba/odds"
+ODDS_SPORT   = "basketball_nba"
+# Preseason lives under its own sport key on The Odds API (unverified
+# offline — see the same comment in nba_app.py). Used only when every game
+# on the ET date is preseason. A wrong key is a 4xx: logged, not charged.
+ODDS_SPORT_PRESEASON = "basketball_nba_preseason"
+ODDS_API_FMT = "https://api.the-odds-api.com/v4/sports/{sport}/odds"
 ODDS_MARKETS = "h2h,spreads"
 ODDS_BOOKS   = "fanduel,pinnacle,draftkings,betmgm,caesars"
 ESPN         = "https://site.api.espn.com/apis/site/v2/sports/basketball/nba"
@@ -89,7 +98,9 @@ def espn_slate(date_iso: str) -> list:
             tip = parse_utc(ev.get("date"))
             if not tip or "home" not in sides or "away" not in sides:
                 continue
+            season_type = int(float((ev.get("season") or {}).get("type") or 2))
             out.append({"event_id": str(ev["id"]),
+                        "preseason": season_type == 1,
                         "home_id": sides["home"], "away_id": sides["away"],
                         "home": team_name(sides["home"]),
                         "away": team_name(sides["away"]),
@@ -204,12 +215,17 @@ def main() -> int:
         print(f"WARNING: only {remaining} credits remaining (< {RESERVE} reserve) "
               f"— skipping close for {[g['event_id'] for g in need]}")
         return 0
+    sport = ODDS_SPORT_PRESEASON if all(g["preseason"] for g in games) else ODDS_SPORT
     print(f"tip within {WINDOW_MIN} min for {len(need)} game(s): "
-          f"{[g['home'] + ' v ' + g['away'] for g in need]} → calling Odds API")
-    r = requests.get(ODDS_API, params={"apiKey": key, "markets": ODDS_MARKETS,
-                                       "oddsFormat": "american",
-                                       "bookmakers": ODDS_BOOKS}, timeout=20)
-    r.raise_for_status()
+          f"{[g['home'] + ' v ' + g['away'] for g in need]} → calling Odds API ({sport})")
+    r = requests.get(ODDS_API_FMT.format(sport=sport),
+                     params={"apiKey": key, "markets": ODDS_MARKETS,
+                             "oddsFormat": "american", "bookmakers": ODDS_BOOKS},
+                     timeout=20)
+    if r.status_code != 200:
+        print(f"Odds API {r.status_code} for {sport}: {str(r.text)[:200]} — "
+              f"no snapshot written (a 4xx is not charged)")
+        return 0
     rem = r.headers.get("x-requests-remaining")
     print(f"credits remaining: {rem}")
     os.makedirs(CLOSES_DIR, exist_ok=True)

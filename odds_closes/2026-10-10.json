@@ -3,23 +3,27 @@
   "home": "Cleveland Guardians",
   "away": "Chicago White Sox",
   "commence": "2026-10-11T00:01:00Z",
-  "quoted_at": "2026-10-10T03:50:20.465792+00:00",
+  "quoted_at": "2026-10-10T19:37:26.785786+00:00",
   "quotes": {
    "fanduel": {
-    "Chicago White Sox": 118,
-    "Cleveland Guardians": -138
+    "Chicago White Sox": 120,
+    "Cleveland Guardians": -142
    },
    "draftkings": {
-    "Chicago White Sox": 114,
-    "Cleveland Guardians": -137
+    "Chicago White Sox": 118,
+    "Cleveland Guardians": -143
    },
    "betrivers": {
-    "Chicago White Sox": 117,
+    "Chicago White Sox": 116,
     "Cleveland Guardians": -139
    },
    "betmgm": {
     "Chicago White Sox": 115,
     "Cleveland Guardians": -135
+   },
+   "pinnacle": {
+    "Chicago White Sox": 127,
+    "Cleveland Guardians": -138
    }
   }
  }

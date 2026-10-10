@@ -12778,5 +12778,23 @@
   "closing": 0,
   "stake": 0,
   "result": ""
+ },
+ {
+  "date": "2026-10-10",
+  "matchup": "Chicago White Sox @ Cleveland Guardians",
+  "pick": "Cleveland Guardians",
+  "prob": 55,
+  "tier": "High",
+  "version": "v4.2-market-gate-2026-09-27",
+  "odds": -142,
+  "edge": -3.7,
+  "mkt_edge": -2.2,
+  "ref_fair": 56.5,
+  "form": 1.5,
+  "game_type": "D",
+  "override": false,
+  "closing": 0,
+  "stake": 0,
+  "result": ""
  }
 ]

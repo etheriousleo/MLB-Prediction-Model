@@ -12796,5 +12796,23 @@
   "mkt_edge": NaN,
   "ref_fair": NaN,
   "override": NaN
+ },
+ {
+  "date": "2026-10-11",
+  "matchup": "Los Angeles Dodgers @ Milwaukee Brewers",
+  "pick": "Milwaukee Brewers",
+  "prob": 52,
+  "tier": "Low",
+  "version": "v4.2-market-gate-2026-09-27",
+  "odds": -112,
+  "edge": -0.8,
+  "mkt_edge": -1.7,
+  "ref_fair": 51.2,
+  "form": -1.7,
+  "game_type": "L",
+  "override": false,
+  "closing": 0,
+  "stake": 0,
+  "result": ""
  }
 ]

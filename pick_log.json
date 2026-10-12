@@ -12814,5 +12814,41 @@
   "closing": -102,
   "stake": 0,
   "result": "W"
+ },
+ {
+  "date": "2026-10-12",
+  "matchup": "Cleveland Guardians @ Tampa Bay Rays",
+  "pick": "Tampa Bay Rays",
+  "prob": 57,
+  "tier": "High",
+  "version": "v4.2-market-gate-2026-09-27",
+  "odds": -164,
+  "edge": -5.1,
+  "mkt_edge": -2.0,
+  "ref_fair": 60.2,
+  "form": 0.0,
+  "game_type": "L",
+  "override": false,
+  "closing": 0,
+  "stake": 0,
+  "result": ""
+ },
+ {
+  "date": "2026-10-12",
+  "matchup": "Los Angeles Dodgers @ Milwaukee Brewers",
+  "pick": "Milwaukee Brewers",
+  "prob": 53,
+  "tier": "Low",
+  "version": "v4.2-market-gate-2026-09-27",
+  "odds": 116,
+  "edge": 6.7,
+  "mkt_edge": -1.9,
+  "ref_fair": 44.4,
+  "form": 0.0,
+  "game_type": "L",
+  "override": false,
+  "closing": 0,
+  "stake": 0,
+  "result": ""
  }
 ]

@@ -3,7 +3,7 @@
   "home": "Tampa Bay Rays",
   "away": "Cleveland Guardians",
   "commence": "2026-10-13T00:00:00Z",
-  "quoted_at": "2026-10-11T23:17:55.078331+00:00",
+  "quoted_at": "2026-10-12T02:31:36.611410+00:00",
   "quotes": {
    "fanduel": {
     "Cleveland Guardians": 138,
@@ -19,11 +19,11 @@
    },
    "pinnacle": {
     "Cleveland Guardians": 145,
-    "Tampa Bay Rays": -161
+    "Tampa Bay Rays": -162
    },
    "betrivers": {
-    "Cleveland Guardians": 133,
-    "Tampa Bay Rays": -159
+    "Cleveland Guardians": 130,
+    "Tampa Bay Rays": -157
    }
   }
  }

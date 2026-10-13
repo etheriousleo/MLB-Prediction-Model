@@ -12850,5 +12850,23 @@
   "closing": 108,
   "stake": 0,
   "result": "W"
+ },
+ {
+  "date": "2026-10-13",
+  "matchup": "Cleveland Guardians @ Tampa Bay Rays",
+  "pick": "Tampa Bay Rays",
+  "prob": 54,
+  "tier": "Conflicted",
+  "version": "v4.2-market-gate-2026-09-27",
+  "odds": -132,
+  "edge": -2.9,
+  "mkt_edge": -0.7,
+  "ref_fair": 56.2,
+  "form": 0.0,
+  "game_type": "L",
+  "override": false,
+  "closing": 0,
+  "stake": 0,
+  "result": ""
  }
 ]

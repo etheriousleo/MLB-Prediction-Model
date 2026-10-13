@@ -1,0 +1,30 @@
+[
+ {
+  "home": "Los Angeles Dodgers",
+  "away": "Milwaukee Brewers",
+  "commence": "2026-10-15T00:00:00Z",
+  "quoted_at": "2026-10-13T03:15:45.407055+00:00",
+  "quotes": {
+   "fanduel": {
+    "Los Angeles Dodgers": -178,
+    "Milwaukee Brewers": 150
+   },
+   "draftkings": {
+    "Los Angeles Dodgers": -166,
+    "Milwaukee Brewers": 137
+   },
+   "betmgm": {
+    "Los Angeles Dodgers": -175,
+    "Milwaukee Brewers": 145
+   },
+   "pinnacle": {
+    "Los Angeles Dodgers": -168,
+    "Milwaukee Brewers": 151
+   },
+   "betrivers": {
+    "Los Angeles Dodgers": -167,
+    "Milwaukee Brewers": 140
+   }
+  }
+ }
+]

@@ -1,0 +1,11 @@
+# Study-only dependencies (NBA_STUDY_SPEC.md §2). Do not merge into the root
+# requirements.txt: Streamlit Cloud installs from that one.
+# Tested 2026-10-13 with Python 3.13: nba_api 1.11.4, pandas 3.0.5, numpy 2.5.3,
+# statsmodels 0.15.0, matplotlib 3.11.2, pyarrow 26.0.0, pytest 9.1.1.
+nba_api>=1.10
+pandas>=2.2
+numpy>=1.26
+statsmodels>=0.14
+matplotlib>=3.8
+pyarrow>=15
+pytest>=8

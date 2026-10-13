@@ -1,0 +1,3 @@
+.venv/
+# pull.py writes to *.tmp and renames; a leftover means an interrupted run.
+*.tmp

@@ -1,0 +1,22 @@
+[
+ {
+  "home": "Cleveland Guardians",
+  "away": "Tampa Bay Rays",
+  "commence": "2026-10-15T22:00:00Z",
+  "quoted_at": "2026-10-14T03:05:58.813797+00:00",
+  "quotes": {
+   "fanduel": {
+    "Cleveland Guardians": -134,
+    "Tampa Bay Rays": 116
+   },
+   "draftkings": {
+    "Cleveland Guardians": -133,
+    "Tampa Bay Rays": 110
+   },
+   "betmgm": {
+    "Cleveland Guardians": -135,
+    "Tampa Bay Rays": 110
+   }
+  }
+ }
+]

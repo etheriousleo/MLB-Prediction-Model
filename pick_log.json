@@ -8,10 +8,10 @@
   "version": "v4.2-market-gate-2026-09-27",
   "odds": 114,
   "edge": 7.3,
-  "result": "",
+  "result": "W",
   "form": 0.0,
   "game_type": "L",
-  "closing": 0.0,
+  "closing": -132,
   "stake": 10.0,
   "mkt_edge": 9.5,
   "ref_fair": 56.2,
@@ -12883,7 +12883,7 @@
   "form": 0.0,
   "game_type": "L",
   "override": true,
-  "closing": 0,
+  "closing": -178,
   "stake": 0,
   "result": ""
  }

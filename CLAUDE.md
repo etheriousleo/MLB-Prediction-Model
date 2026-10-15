@@ -86,3 +86,15 @@ loosen — then do what he decides, on the record.
 - Open items Juan supplies before Oct 20: the 30 win totals in
   `nba_preseason_totals_2026.json`, `STAKE_UNITS` / `SEASON_BUDGET` in code,
   the app's own Streamlit Secrets, and the consensus-book list.
+
+## NBA player production study (2026-10-13)
+- Research only: `research/nba_production_study/`, design contract
+  `NBA_STUDY_SPEC.md`. No odds, no app, no imports from the app files. It
+  lives on a study branch that is never merged to `main`.
+- stats.nba.com returns 403 from the Claude Code sandbox, so `pull.py` runs on
+  Juan's machine. The parquet pulls are committed, so everything after
+  step 1 runs anywhere.
+- 2025-26 is the confirm season. Print nothing for it but row counts and
+  pass/fail until `LOCKED_HYPOTHESES.md` is committed. Honor the spec's STOP
+  points (§11).
+- Before pushing: `cd research/nba_production_study && python -m pytest`.

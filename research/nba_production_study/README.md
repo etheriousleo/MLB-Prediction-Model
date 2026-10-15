@@ -49,7 +49,14 @@ pip install -r requirements.txt
 
 ### 1. Pull and sanity-check (on your machine)
 
+Work on the study branch, never `main`. The study branch is currently
+`claude/fervent-hopper-ziawpi`.
+
 ```bash
+git fetch origin
+git checkout claude/fervent-hopper-ziawpi
+git pull origin claude/fervent-hopper-ziawpi
+cd research/nba_production_study
 python pull.py          # four API calls, a 2 s pause between them, about a minute
 python -m pytest        # test_pull_sanity now runs against the real files
 ```
@@ -76,8 +83,11 @@ Then commit and push the results:
 ```bash
 git add data/raw reports/pull_sanity.md
 git commit -m "nba-study: raw pulls for 2024-25 and 2025-26"
-git push
+git push origin claude/fervent-hopper-ziawpi
 ```
+
+Don't open or merge a pull request for the study branch. Every merge to
+`main` restarts the live apps, and the raw pulls don't belong there.
 
 **STOP.** Report the row counts and the non-playing-player finding (§11.1).
 

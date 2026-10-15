@@ -89,8 +89,10 @@ loosen — then do what he decides, on the record.
 
 ## NBA player production study (2026-10-13)
 - Research only: `research/nba_production_study/`, design contract
-  `NBA_STUDY_SPEC.md`. No odds, no app, no imports from the app files. It
-  lives on a study branch that is never merged to `main`.
+  `NBA_STUDY_SPEC.md`. No odds, no app, no imports from the app files. The
+  step-1 scaffold reached `main` via PR #6 (2026-10-15). Everything after it,
+  including the raw pulls, stays on the study branch and is never merged to
+  `main`.
 - stats.nba.com returns 403 from the Claude Code sandbox, so `pull.py` runs on
   Juan's machine. The parquet pulls are committed, so everything after
   step 1 runs anywhere.

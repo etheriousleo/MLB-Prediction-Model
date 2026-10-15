@@ -3,23 +3,23 @@
   "home": "Cleveland Guardians",
   "away": "Tampa Bay Rays",
   "commence": "2026-10-15T17:00:00Z",
-  "quoted_at": "2026-10-15T02:45:31.386348+00:00",
+  "quoted_at": "2026-10-15T07:55:03.433234+00:00",
   "quotes": {
    "fanduel": {
     "Cleveland Guardians": -130,
     "Tampa Bay Rays": 110
    },
    "betrivers": {
-    "Cleveland Guardians": -134,
-    "Tampa Bay Rays": 112
+    "Cleveland Guardians": -125,
+    "Tampa Bay Rays": 106
    },
    "draftkings": {
-    "Cleveland Guardians": -133,
-    "Tampa Bay Rays": 110
+    "Cleveland Guardians": -134,
+    "Tampa Bay Rays": 111
    },
    "pinnacle": {
-    "Cleveland Guardians": -132,
-    "Tampa Bay Rays": 119
+    "Cleveland Guardians": -123,
+    "Tampa Bay Rays": 111
    },
    "betmgm": {
     "Cleveland Guardians": -135,
@@ -52,6 +52,30 @@
    "betrivers": {
     "Cleveland Guardians": -134,
     "Tampa Bay Rays": 112
+   }
+  }
+ },
+ {
+  "home": "Los Angeles Dodgers",
+  "away": "Milwaukee Brewers",
+  "commence": "2026-10-16T00:00:00Z",
+  "quoted_at": "2026-10-15T07:55:03.433234+00:00",
+  "quotes": {
+   "draftkings": {
+    "Los Angeles Dodgers": -162,
+    "Milwaukee Brewers": 134
+   },
+   "betmgm": {
+    "Los Angeles Dodgers": -165,
+    "Milwaukee Brewers": 135
+   },
+   "fanduel": {
+    "Los Angeles Dodgers": -164,
+    "Milwaukee Brewers": 138
+   },
+   "betrivers": {
+    "Los Angeles Dodgers": -157,
+    "Milwaukee Brewers": 130
    }
   }
  }

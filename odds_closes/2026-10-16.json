@@ -3,7 +3,7 @@
   "home": "Cleveland Guardians",
   "away": "Tampa Bay Rays",
   "commence": "2026-10-16T22:00:00Z",
-  "quoted_at": "2026-10-15T22:45:26.162145+00:00",
+  "quoted_at": "2026-10-16T00:53:20.456130+00:00",
   "quotes": {
    "draftkings": {
     "Cleveland Guardians": -110,
@@ -22,8 +22,8 @@
     "Tampa Bay Rays": -106
    },
    "betrivers": {
-    "Cleveland Guardians": -118,
-    "Tampa Bay Rays": -103
+    "Cleveland Guardians": -112,
+    "Tampa Bay Rays": -107
    }
   }
  }

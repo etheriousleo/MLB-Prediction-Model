@@ -193,7 +193,7 @@ def test_pull_all_pauses_skips_existing_and_refreshes(sandbox):
     assert len(written) == len(config.SEASONS) * len(config.LOG_KINDS) == len(api.calls)
     assert waits == [config.API_PAUSE_SECONDS] * (len(written) - 1)   # between calls only
 
-    manifest = json.loads(config.MANIFEST_PATH.read_text())
+    manifest = json.loads(config.MANIFEST_PATH.read_text(encoding="utf-8"))
     for path in written:
         assert manifest["files"][path.name]["sha256"] == pull.file_sha256(path)
 
@@ -221,7 +221,7 @@ def test_raw_files_match_manifest():
     files = sorted(config.RAW_DIR.glob("*.parquet")) if config.RAW_DIR.exists() else []
     if not files:
         pytest.skip("no raw data committed yet")
-    manifest = json.loads(config.MANIFEST_PATH.read_text())["files"]
+    manifest = json.loads(config.MANIFEST_PATH.read_text(encoding="utf-8"))["files"]
     for path in files:
         assert path.name in manifest, f"{path.name} is not in manifest.json"
         assert pull.file_sha256(path) == manifest[path.name]["sha256"], \

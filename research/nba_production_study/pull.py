@@ -140,7 +140,7 @@ def _nba_api_version() -> str:
 def _record_in_manifest(paths) -> None:
     """Record the files just written. Entries for files not re-pulled are left
     alone, so a hand-edited raw file shows up as a hash mismatch in the tests."""
-    manifest = json.loads(config.MANIFEST_PATH.read_text()) if config.MANIFEST_PATH.exists() else {}
+    manifest = json.loads(config.MANIFEST_PATH.read_text(encoding="utf-8")) if config.MANIFEST_PATH.exists() else {}
     files = manifest.setdefault("files", {})
     for path in paths:
         files[path.name] = {
@@ -151,7 +151,7 @@ def _record_in_manifest(paths) -> None:
         }
     manifest["study_version"] = config.STUDY_VERSION
     manifest["season_type"] = config.SEASON_TYPE
-    config.MANIFEST_PATH.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+    config.MANIFEST_PATH.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
 # ---------------------------------------------------------------------------
@@ -422,7 +422,9 @@ def main(argv=None) -> int:
 
     report = render_report(results)
     config.REPORTS_DIR.mkdir(parents=True, exist_ok=True)
-    config.PULL_REPORT_PATH.write_text(report + "\n")
+    # UTF-8 explicitly: the report has "§", and Windows would otherwise
+    # write it in the locale code page.
+    config.PULL_REPORT_PATH.write_text(report + "\n", encoding="utf-8")
     print()
     print(report)
 

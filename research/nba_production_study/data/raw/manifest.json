@@ -1,0 +1,30 @@
+{
+  "files": {
+    "2024-25_player.parquet": {
+      "nba_api": "1.11.4",
+      "pulled_at_utc": "2026-10-16T22:39:08+00:00",
+      "rows": 26306,
+      "sha256": "5a22f197cf1e0275ca6fab3eb3d6b7807102d5638518c25f410fb984dcc7b097"
+    },
+    "2024-25_team.parquet": {
+      "nba_api": "1.11.4",
+      "pulled_at_utc": "2026-10-16T22:39:08+00:00",
+      "rows": 2460,
+      "sha256": "1b4a5052a887b67a3be8bfab1204886b7abf969fee79d17a5d1252424228005d"
+    },
+    "2025-26_player.parquet": {
+      "nba_api": "1.11.4",
+      "pulled_at_utc": "2026-10-16T22:39:08+00:00",
+      "rows": 26651,
+      "sha256": "eec2c5c566f490bf295f5891f0e6fd3ba5ef06aa2ece773c591c07ad230ece9f"
+    },
+    "2025-26_team.parquet": {
+      "nba_api": "1.11.4",
+      "pulled_at_utc": "2026-10-16T22:39:08+00:00",
+      "rows": 2460,
+      "sha256": "c8e4db7cc976e09ae6b42349a18c2488b36a78d44c39ea993acb7bd076560514"
+    }
+  },
+  "season_type": "Regular Season",
+  "study_version": "nba-study-v1"
+}

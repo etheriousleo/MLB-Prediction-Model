@@ -398,7 +398,8 @@ def provenance() -> dict:
             return "unknown"
     manifest = json.loads(config.MANIFEST_PATH.read_text(encoding="utf-8"))["files"]
     return dict(commit=git("rev-parse", "--short", "HEAD"),
-                dirty=bool(git("status", "--porcelain", "--", ".")),
+                # Code and data only: the reports folder holds this run's own outputs.
+                dirty=bool(git("status", "--porcelain", "--", ".", ":(exclude)reports")),
                 raw={k: v["sha256"][:12] for k, v in manifest.items() if k.startswith(config.SEASON_EXPLORE)},
                 when=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"))
 

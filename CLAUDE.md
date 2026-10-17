@@ -100,3 +100,8 @@ loosen — then do what he decides, on the record.
   pass/fail until `LOCKED_HYPOTHESES.md` is committed. Honor the spec's STOP
   points (§11).
 - Before pushing: `cd research/nba_production_study && python -m pytest`.
+- The lock (`LOCKED_HYPOTHESES.md`, committed) freezes `config.py`, `pull.py`,
+  `features.py` and `analyze.py`: `analyze.py --phase confirm` refuses to run
+  if any of them differs from the lock commit, and refuses if
+  `reports/confirm_2025-26.md` exists. Never edit those files, or delete that
+  report, to get a second look.

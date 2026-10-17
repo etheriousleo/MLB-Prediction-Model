@@ -138,7 +138,7 @@ HYPOTHESIS_TARGETS = {
 CHANNEL_ALPHA = 0.05              # a channel (minutes / rate) counts when its p < this
 
 # --- §7 Lock / §8 Phase B ----------------------------------------------------
-PRACTICAL_FLOOR_SD = 0.05         # PROPOSED; Juan confirms or changes it at the lock
+PRACTICAL_FLOOR_SD = 0.05         # confirmed by Juan at the Phase A review, 2026-10-17
 CONFIRM_ALPHA = 0.05              # one-sided, after Holm across the locked list
 
 # --- Paths -------------------------------------------------------------------
@@ -150,3 +150,8 @@ FIGURES_DIR = REPORTS_DIR / "figures"
 MANIFEST_PATH = RAW_DIR / "manifest.json"
 PULL_REPORT_PATH = REPORTS_DIR / "pull_sanity.md"
 LOCK_PATH = STUDY_DIR / "LOCKED_HYPOTHESES.md"
+LOCK_DRAFT_PATH = STUDY_DIR / "LOCKED_HYPOTHESES_DRAFT.md"
+CONFIRM_REPORT_PATH = REPORTS_DIR / f"confirm_{SEASON_CONFIRM}.md"
+# Phase B refuses to run if any of these differs from its state at the lock
+# commit, so the one look runs exactly the code that was locked.
+LOCKED_CODE_FILES = ("config.py", "pull.py", "features.py", "analyze.py")

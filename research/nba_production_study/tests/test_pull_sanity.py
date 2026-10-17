@@ -113,7 +113,7 @@ def test_listed_neutral_game_that_has_a_home_team_is_caught():
 
 
 def test_neutral_list_covers_only_the_study_seasons():
-    assert set(config.NEUTRAL_SITE_GAMES) == set(config.SEASONS)
+    assert set(config.NEUTRAL_SITE_GAMES) == {*config.SEASONS, config.SEASON_FORWARD}
     for season, games in config.NEUTRAL_SITE_GAMES.items():
         prefix = config.REGULAR_SEASON_GAME_ID_PREFIX + season[2:4]   # "00224" for 2024-25
         assert all(gid.startswith(prefix) and len(gid) == 10 for gid in games), season
@@ -243,7 +243,7 @@ def test_pull_all_pauses_skips_existing_and_refreshes(sandbox):
 
 # --- §9 test_pull_sanity: the committed raw data ------------------------------
 
-@pytest.mark.parametrize("season", config.SEASONS)
+@pytest.mark.parametrize("season", [*config.SEASONS, config.SEASON_FORWARD])
 def test_pull_sanity(season):
     if not all(pull.raw_path(season, kind).exists() for kind in config.LOG_KINDS):
         pytest.skip(f"{season} not pulled yet: run pull.py locally and commit data/raw/")

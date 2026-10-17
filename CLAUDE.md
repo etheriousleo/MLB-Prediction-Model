@@ -111,3 +111,12 @@ loosen — then do what he decides, on the record.
   is below the 0.05 floor. Don't re-argue the floor or re-run on 2025-26. The
   next step, if any, is the spec's v2: a forward check on 2026-27,
   pre-registered before that season's data accumulates (§12).
+- **v2 (set up 2026-10-17):** the 9 confirmed hypotheses, re-tested on
+  2026-27 with v1's model, rule, and code. The lock is
+  `LOCKED_HYPOTHESES_V2.md` (until Juan approves it, it's
+  `LOCKED_HYPOTHESES_V2_DRAFT.md`). From the v2 lock commit until the v2 look,
+  `config.py`, `pull.py`, `features.py` and `analyze.py` are frozen:
+  `--phase forward` refuses to run if any of them differs. `pull.py` refuses
+  to fetch 2026-27 before 2027-04-13. 2026-27's neutral-site games go into
+  `data/neutral_site_games.json` (data, not code) after the pull. Then
+  `analyze.py --phase forward` runs once. The README has the April steps.

@@ -9,6 +9,7 @@ version, not an edit.
 """
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 STUDY_VERSION = "nba-study-v1"
@@ -37,27 +38,10 @@ GAMES_PER_TEAM = 82
 EXPECTED_GAMES = N_TEAMS * GAMES_PER_TEAM // 2   # 1,230
 REGULAR_SEASON_GAME_ID_PREFIX = "002"
 
-# Neutral-site games. stats.nba.com marks both team rows with "@" (no "vs."),
-# so neither team is at home, and the home team's scorekeeper isn't there.
-# The step-1 sanity check found exactly these (2026-10-17); the dates and teams
-# match the published international games and NBA Cup semifinals. The check
-# fails if any other game looks like this, or if a listed one doesn't.
-NEUTRAL_SITE_GAMES = {
-    "2024-25": {
-        "0022400147": "Mexico City, 2024-11-02, MIA-WAS",
-        "0022400621": "Paris, 2025-01-23, IND-SAS",
-        "0022400633": "Paris, 2025-01-25, IND-SAS",
-        "0022401229": "Las Vegas, NBA Cup semifinal, 2024-12-14, ATL-MIL",
-        "0022401230": "Las Vegas, NBA Cup semifinal, 2024-12-14, HOU-OKC",
-    },
-    "2025-26": {
-        "0022500147": "Mexico City, 2025-11-01, DAL-DET",
-        "0022500578": "Berlin, 2026-01-15, MEM-ORL",
-        "0022500602": "London, 2026-01-18, MEM-ORL",
-        "0022501229": "Las Vegas, NBA Cup semifinal, 2025-12-13, NYK-ORL",
-        "0022501230": "Las Vegas, NBA Cup semifinal, 2025-12-13, OKC-SAS",
-    },
-}
+# Neutral-site games (NEUTRAL_SITE_GAMES) are loaded at the bottom of this
+# file from data/neutral_site_games.json. They're schedule data, not code, so
+# a season's list can be filled in after its pull without touching the code
+# a lock has frozen.
 
 # Columns the study reads from each log; the pull fails loudly if any is missing.
 REQUIRED_COLUMNS = {
@@ -155,3 +139,30 @@ CONFIRM_REPORT_PATH = REPORTS_DIR / f"confirm_{SEASON_CONFIRM}.md"
 # Phase B refuses to run if any of these differs from its state at the lock
 # commit, so the one look runs exactly the code that was locked.
 LOCKED_CODE_FILES = ("config.py", "pull.py", "features.py", "analyze.py")
+
+# Neutral-site games. stats.nba.com marks both team rows with "@" (no "vs."),
+# so neither team is at home, and the home team's scorekeeper isn't there.
+# Step 1 found exactly five a season in 2024-25 and 2025-26: the international
+# games and the NBA Cup semifinals. pull.py's check fails if any other game
+# looks like this, or if a listed one doesn't.
+NEUTRAL_SITE_PATH = STUDY_DIR / "data" / "neutral_site_games.json"
+NEUTRAL_SITE_GAMES = {season: games for season, games in
+                      json.loads(NEUTRAL_SITE_PATH.read_text(encoding="utf-8")).items()
+                      if not season.startswith("_")}
+
+# --- v2 (§12): the forward check on 2026-27 ----------------------------------
+# The same locked model and confirmation rule, re-tested on a season whose
+# data didn't exist when the v2 lock was committed (opening night 2026-10-20).
+# The hypotheses are the nine v1 confirmed on 2025-26.
+FORWARD_STUDY_VERSION = "nba-study-v2"
+SEASON_FORWARD = "2026-27"
+# The 2026-27 regular season ends 2027-04-11. pull.py won't fetch it before
+# this date (UTC), so the one look can't be preceded by a mid-season peek.
+FORWARD_PULL_NOT_BEFORE = "2027-04-13"
+FORWARD_LOCK_PATH = STUDY_DIR / "LOCKED_HYPOTHESES_V2.md"
+FORWARD_LOCK_DRAFT_PATH = STUDY_DIR / "LOCKED_HYPOTHESES_V2_DRAFT.md"
+FORWARD_REPORT_PATH = REPORTS_DIR / f"forward_{SEASON_FORWARD}.md"
+
+# Seasons whose outcomes stay unprinted outside their one look: pull.py shows
+# row counts and pass/fail only, and features.build_season needs after_lock.
+SEALED_SEASONS = (SEASON_CONFIRM, SEASON_FORWARD)

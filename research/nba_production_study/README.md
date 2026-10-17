@@ -18,6 +18,39 @@ markdown reports, not an app.
 | 4 | `LOCKED_HYPOTHESES.md` | **Locked** 2026-10-17 at commit `19573ee` (approved by Juan). |
 | 5 | Phase B: confirm 2025-26, once | **Done** 2026-10-17: **9 of 10 confirmed** (`reports/confirm_2025-26.md`). H6 missed the 0.05 SD floor at +0.048. |
 
+## v2: forward check on 2026-27 (spec §12)
+
+v1's 9 confirmed hypotheses, tested again with the same model, rule, floor and
+code on a season that hadn't started when they were locked.
+
+| Step | What | State |
+|---|---|---|
+| 1 | `LOCKED_HYPOTHESES_V2.md` | Draft ready: `LOCKED_HYPOTHESES_V2_DRAFT.md`. **Lock before opening night, 2026-10-20.** |
+| 2 | The season plays out | Nothing to do. `pull.py` refuses to fetch 2026-27 before 2027-04-13. |
+| 3 | Pull 2026-27 (Juan, locally) | On or after 2027-04-13 |
+| 4 | 2026-27 neutral-site games | From the check's output, into `data/neutral_site_games.json` |
+| 5 | `analyze.py --phase forward`, once | Writes `reports/forward_2026-27.md` |
+
+**From the v2 lock commit until the v2 look, don't edit `config.py`,
+`pull.py`, `features.py` or `analyze.py`.** `--phase forward` refuses to run
+if any of them differs from the lock commit. If something truly forces a
+change (for example, the season ends short of 1,230 games), stop before any
+look, document why, and re-lock.
+
+In April 2027, in VS Code's terminal (sync the branch first):
+
+```bash
+cd research/nba_production_study
+py pull.py          # fetches only 2026-27; the v1 files already exist
+py -m pytest
+```
+
+The sanity check will flag 2026-27's neutral-site games (international games
+and the Cup semifinals). That's expected. Commit and push `data/raw` and
+`reports/pull_sanity.md` anyway. Claude then fills in the neutral-site list
+from the check's output, verified against the published schedule, and runs
+`python analyze.py --phase forward`.
+
 ## Ground rules
 
 - **Never merge this branch to `main`.** Commits to `main` reboot the live Streamlit apps.
@@ -155,11 +188,13 @@ lock's commit hash.
 config.py              every constant (seasons, thresholds, floors, shrinkage k)
 pull.py                step 1: LeagueGameLog pulls + section 4 sanity checks
 features.py            step 2: baselines, outcomes, pre-game features (section 5)
-analyze.py             step 3: Phase A (section 6); step 5: Phase B (sections 7-8)
+analyze.py             Phase A (section 6), Phase B (sections 7-8), v2 forward (section 12)
 conftest.py            lets pytest import the study modules from any directory
 tests/                 pytest: test_pull_sanity.py (step 1), test_features.py (step 2),
-                       test_confirm.py (Phase B rule, lock parsing, refusals)
+                       test_confirm.py (Phase B rule, lock parsing, refusals),
+                       test_forward.py (v2 date gate, seal, lock consistency)
 data/raw/              committed parquet pulls + manifest.json (sha256 per file)
+data/neutral_site_games.json   neutral-site games per season (schedule data, not code)
 data/features/         built by features.py; git-ignored
 reports/               pull_sanity.md, step1_findings.md, explore_2024-25.md + figures/,
                        confirm_2025-26.md (the one look; final)

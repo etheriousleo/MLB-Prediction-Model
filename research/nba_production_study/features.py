@@ -363,10 +363,11 @@ def features_path(season: str):
 def build_season(season: str, *, after_lock: bool = False) -> pd.DataFrame:
     """Load a season's raw pulls, re-run the step-1 checks, and build its features.
 
-    The confirm season is sealed until the lock (§2, §7). Only analyze.py
-    --phase confirm passes after_lock=True, once its own lock checks pass."""
-    if season == config.SEASON_CONFIRM and not after_lock:
-        raise PermissionError(f"{season} is the confirm season; it is built only after the lock")
+    The sealed seasons (2025-26, and 2026-27 for v2) are built only for their
+    one look (§2, §7). Only analyze.py --phase confirm / --phase forward pass
+    after_lock=True, once their own lock checks pass."""
+    if season in config.SEALED_SEASONS and not after_lock:
+        raise PermissionError(f"{season} is sealed; it is built only for its one look, after its lock")
     player, team = pull.load_raw(season)
     pull.assert_sane(player, team, season)
     return build_features(player, team, season)

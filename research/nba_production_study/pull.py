@@ -14,8 +14,9 @@ Writes:
   reports/pull_sanity.md                    row counts, check results, DNP finding
 
 Outcome-free by design. Failure messages name IDs, never stat values, and
-the confirm season (2025-26) gets row counts and pass/fail only: nothing
-about its outcomes is printed before the lock (§7).
+the sealed seasons (2025-26, and 2026-27 for v2) get row counts and
+pass/fail only. 2026-27 can't be pulled before its regular season ends
+(config.FORWARD_PULL_NOT_BEFORE).
 """
 from __future__ import annotations
 
@@ -25,7 +26,7 @@ import json
 import sys
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from importlib import metadata
 
 import numpy as np
@@ -90,13 +91,29 @@ def fetch_log(season: str, kind: str, *, call=_league_game_log, sleep=time.sleep
     return df
 
 
-def pull_all(refresh: bool = False, *, call=_league_game_log, sleep=time.sleep) -> list:
+def forward_season_open(today: date | None = None) -> bool:
+    """Whether the v2 forward season may be pulled: only once its regular
+    season is over (config.FORWARD_PULL_NOT_BEFORE, compared in UTC). A
+    mid-season pull would be a look at the data before the one look."""
+    today = today or datetime.now(timezone.utc).date()
+    return today >= date.fromisoformat(config.FORWARD_PULL_NOT_BEFORE)
+
+
+def seasons_to_pull(today: date | None = None) -> tuple:
+    return config.SEASONS + ((config.SEASON_FORWARD,) if forward_season_open(today) else ())
+
+
+def pull_all(refresh: bool = False, *, call=_league_game_log, sleep=time.sleep,
+             today: date | None = None) -> list:
     """Pull every (season, kind) whose file is missing, or all of them with
     refresh=True. Pauses API_PAUSE_SECONDS between consecutive calls. Returns
     the paths written."""
     config.RAW_DIR.mkdir(parents=True, exist_ok=True)
+    if not forward_season_open(today):
+        print(f"  {config.SEASON_FORWARD} (v2) waits: it can't be pulled before "
+              f"{config.FORWARD_PULL_NOT_BEFORE}, after its regular season ends")
     written = []
-    for season in config.SEASONS:
+    for season in seasons_to_pull(today):
         for kind in config.LOG_KINDS:
             path = raw_path(season, kind)
             if path.exists() and not refresh:
@@ -383,8 +400,11 @@ def render_report(results) -> str:
         "",
     ]
     for res in results:
-        confirm = res.season == config.SEASON_CONFIRM
-        role = "confirm: row counts and pass/fail only until the lock" if confirm else "explore"
+        sealed = res.season in config.SEALED_SEASONS
+        role = {config.SEASON_EXPLORE: "explore", config.SEASON_CONFIRM: "confirm",
+                config.SEASON_FORWARD: "v2 forward check"}.get(res.season, "season")
+        if sealed:
+            role += ": row counts and pass/fail only"
         f = res.facts
         out += [
             f"## {res.season} ({role})",
@@ -408,7 +428,7 @@ def render_report(results) -> str:
             f"- Rows with MIN 0: {ev['min_zero_rows']} "
             f"(blank line: {ev['min_zero_blank_rows']}; with stats: {ev['min_zero_with_stats_rows']})",
         ]
-        if not confirm:
+        if not sealed:
             lo, med, hi = ev["rows_per_team_game"]
             plo, pmed, phi = ev["played_rows_per_team_game"]
             out += [
@@ -430,11 +450,11 @@ def main(argv=None) -> int:
     parser.add_argument("--refresh", action="store_true", help="re-pull files that already exist")
     args = parser.parse_args(argv)
 
-    print(f"{config.STUDY_VERSION}: pulling {', '.join(config.SEASONS)} ({config.SEASON_TYPE})")
+    print(f"{config.STUDY_VERSION}: pulling {', '.join(seasons_to_pull())} ({config.SEASON_TYPE})")
     pull_all(refresh=args.refresh)
 
     results = []
-    for season in config.SEASONS:
+    for season in seasons_to_pull():
         player, team = load_raw(season)
         results.append(check_season(player, team, season))
 

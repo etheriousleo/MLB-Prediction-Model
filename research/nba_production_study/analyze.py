@@ -2,7 +2,8 @@
 Phase A of NBA_STUDY_SPEC.md (§6): explore 2024-25.
 
     python analyze.py --phase explore     # reports/explore_2024-25.md + reports/figures/
-    python analyze.py --phase confirm     # Phase B (§8): the one look at 2025-26
+    python analyze.py --phase confirm     # Phase B (§8): the one look at 2025-26 (done)
+    python analyze.py --phase forward     # v2 (§12): the one look at 2026-27, after it ends
 
 The test suite runs first, and no report is written unless every test passes
 (§9). Phase A builds features for 2024-25 only. Phase B reads 2025-26 only
@@ -404,7 +405,9 @@ def provenance(season: str = config.SEASON_EXPLORE) -> dict:
                 # Code and data only: the reports folder holds this run's own outputs.
                 dirty=bool(git("status", "--porcelain", "--", ".", ":(exclude)reports")),
                 raw={k: v["sha256"][:12] for k, v in manifest.items() if k.startswith(season)},
-                when=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"))
+                when=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
+                versions=f"Python {sys.version.split()[0]}, pandas {pd.__version__}, "
+                         f"numpy {np.__version__}, statsmodels {sm.__version__}")
 
 
 def driver_table_md(t: pd.DataFrame) -> list:
@@ -651,8 +654,8 @@ def read_lock(text: str, *, require_locked: bool = True) -> dict:
     return lock
 
 
-def check_lock_matches_code(lock: dict) -> None:
-    """The lock's model and thresholds must be the ones this code runs."""
+def check_lock_matches_code(lock: dict, version: str = config.STUDY_VERSION) -> None:
+    """The lock's model, version and thresholds must be the ones this code runs."""
     m = lock["model"]
     expected = dict(common_drivers=list(config.COMMON_DRIVERS),
                     per_stat_drivers=list(config.PER_STAT_DRIVERS),
@@ -660,8 +663,8 @@ def check_lock_matches_code(lock: dict) -> None:
     for key, value in expected.items():
         if m[key] != value:
             raise LockError(f"lock model.{key} differs from config: {m[key]} vs {value}")
-    if lock["study_version"] != config.STUDY_VERSION:
-        raise LockError(f"lock is for {lock['study_version']}, code is {config.STUDY_VERSION}")
+    if lock["study_version"] != version:
+        raise LockError(f"lock is for {lock['study_version']}, this phase runs {version}")
     if lock["practical_floor_sd"] != config.PRACTICAL_FLOOR_SD or \
             lock["alpha_one_sided"] != config.CONFIRM_ALPHA:
         raise LockError("the lock's floor or alpha differs from config.py")
@@ -728,40 +731,60 @@ def evaluate_locked(units: pd.DataFrame, lock: dict) -> pd.DataFrame:
                              coef=res.params[f], lo=ci.loc[f, 0], hi=ci.loc[f, 1],
                              p_one=float(norm.sf(sign * res.params[f] / res.bse[f])),
                              explore_coef=h["explore_coef"], explore_lo=h["explore_ci"][0],
-                             explore_hi=h["explore_ci"][1]))
+                             explore_hi=h["explore_ci"][1],
+                             confirm_coef=h.get("confirm_coef", np.nan),
+                             confirm_lo=h.get("confirm_ci", [np.nan, np.nan])[0],
+                             confirm_hi=h.get("confirm_ci", [np.nan, np.nan])[1]))
     return decide(pd.DataFrame(rows), lock["alpha_one_sided"], lock["practical_floor_sd"])
 
 
-def write_confirm_report(r: pd.DataFrame, lock: dict, lock_commit: str, prov: dict) -> str:
-    n_ok = int(r["confirmed"].sum())
+# The two locked looks. Each runs once, against its own lock file.
+LOCKED_PHASES = {
+    "confirm": dict(season=config.SEASON_CONFIRM, version=config.STUDY_VERSION,
+                    lock="LOCK_PATH", report="CONFIRM_REPORT_PATH", title="Phase B: confirm",
+                    look="the study's one look", cite="§8"),
+    "forward": dict(season=config.SEASON_FORWARD, version=config.FORWARD_STUDY_VERSION,
+                    lock="FORWARD_LOCK_PATH", report="FORWARD_REPORT_PATH",
+                    title="v2 forward check:", look="v2's one look", cite="§12"),
+}
+
+
+def write_locked_report(r: pd.DataFrame, lock: dict, lock_commit: str, prov: dict,
+                        phase: str = "confirm") -> str:
+    ph = LOCKED_PHASES[phase]
+    season, n_ok = ph["season"], int(r["confirmed"].sum())
+    has_confirm = r["confirm_coef"].notna().any() if "confirm_coef" in r else False
     md = [
-        f"# Phase B: confirm {config.SEASON_CONFIRM}",
+        f"# {ph['title']} {season}",
         "",
-        f"`{config.STUDY_VERSION}`, generated {prov['when']} by `analyze.py --phase confirm` at commit "
-        f"`{prov['commit']}`. Lock: `LOCKED_HYPOTHESES.md` at commit `{lock_commit}`, approved by "
-        f"{lock.get('approved_by', '?')} on {lock.get('approved_on', '?')}. Raw data: "
+        f"`{ph['version']}`, generated {prov['when']} by `analyze.py --phase {phase}` at commit "
+        f"`{prov['commit']}`. Lock: `{getattr(config, ph['lock']).name}` at commit `{lock_commit}`, "
+        f"approved by {lock.get('approved_by', '?')} on {lock.get('approved_on', '?')}. Raw data: "
         + ", ".join(f"`{k}` sha256 `{v}…`" for k, v in prov["raw"].items()) + ". "
-        "All tests passed before this report was written.",
+        f"{prov.get('versions', '')}. All tests passed before this report was written.",
         "",
-        f"This is the study's one look at {config.SEASON_CONFIRM} (§8). Only the locked models ran: "
+        f"This is {ph['look']} at {season} ({ph['cite']}). Only the locked models ran: "
         "no new features, buckets, or exploratory tables.",
         "",
         f"## Result: {n_ok} of {len(r)} hypotheses confirmed",
         "",
         "A hypothesis is confirmed only if all three hold (§7, fixed before Phase A): the "
-        f"{config.SEASON_CONFIRM} effect has the locked sign; its one-sided p in the locked direction "
+        f"{season} effect has the locked sign; its one-sided p in the locked direction "
         f"is below {lock['alpha_one_sided']} after Holm correction across all {len(r)} locked "
         f"hypotheses; and the point estimate is at least {lock['practical_floor_sd']} SD in the "
         "locked direction.",
         "",
-        f"| ID | Stat | Feature | Direction | {config.SEASON_EXPLORE} effect on z [95% CI] | "
-        f"{config.SEASON_CONFIRM} effect on z [95% CI] | One-sided p | Holm p | ≥ floor | Verdict |",
-        "|---|---|---|---|---|---|---|---|---|---|",
     ]
+    prior = [(config.SEASON_EXPLORE, "explore")] + ([(config.SEASON_CONFIRM, "confirm")] if has_confirm else [])
+    head = " | ".join(f"{sn} effect on z [95% CI]" for sn, _ in prior)
+    md += [f"| ID | Stat | Feature | Direction | {head} | {season} effect on z [95% CI] | "
+           "One-sided p | Holm p | ≥ floor | Verdict |",
+           "|---|---|---|---|" + "---|" * len(prior) + "---|---|---|---|---|"]
     for _, h in r.iterrows():
+        cells = " | ".join(f"{h[f'{k}_coef']:+.3f} [{h[f'{k}_lo']:+.3f}, {h[f'{k}_hi']:+.3f}]"
+                           for _, k in prior)
         md.append(
-            f"| {h['id']} | {h['stat']} | `{h['feature']}` | {h['direction']} | "
-            f"{h['explore_coef']:+.3f} [{h['explore_lo']:+.3f}, {h['explore_hi']:+.3f}] | "
+            f"| {h['id']} | {h['stat']} | `{h['feature']}` | {h['direction']} | {cells} | "
             f"{h['coef']:+.3f} [{h['lo']:+.3f}, {h['hi']:+.3f}] | {h['p_one']:.2g} | "
             f"{h['p_holm']:.2g} | {'yes' if h['floor_pass'] else 'no'} | "
             f"{'**confirmed**' if h['confirmed'] else 'not confirmed'} |")
@@ -778,30 +801,44 @@ def write_confirm_report(r: pd.DataFrame, lock: dict, lock_commit: str, prov: di
     return "\n".join(md) + "\n"
 
 
-def confirm() -> int:
-    print(f"{config.STUDY_VERSION} Phase B: {config.SEASON_CONFIRM}")
-    # Every refusal comes before anything reads the confirm season.
-    lock_commit = check_preconditions(config.STUDY_DIR, config.LOCK_PATH,
-                                      config.CONFIRM_REPORT_PATH, config.LOCKED_CODE_FILES)
-    lock = read_lock(config.LOCK_PATH.read_text(encoding="utf-8"))
-    check_lock_matches_code(lock)
-    print(f"  lock: {config.LOCK_PATH.name} at {lock_commit[:7]}, {len(lock['hypotheses'])} hypotheses")
+def write_confirm_report(r, lock, lock_commit, prov) -> str:
+    return write_locked_report(r, lock, lock_commit, prov, "confirm")
+
+
+def run_locked_phase(phase: str) -> int:
+    """One locked look: every refusal first, then the tests, then the season's
+    data, the locked models, and the report, which can be written only once."""
+    ph = LOCKED_PHASES[phase]
+    lock_path, report_path = getattr(config, ph["lock"]), getattr(config, ph["report"])
+    print(f"{ph['version']} {ph['title']} {ph['season']}")
+    lock_commit = check_preconditions(config.STUDY_DIR, lock_path, report_path,
+                                      config.LOCKED_CODE_FILES)
+    lock = read_lock(lock_path.read_text(encoding="utf-8"))
+    check_lock_matches_code(lock, ph["version"])
+    print(f"  lock: {lock_path.name} at {lock_commit[:7]}, {len(lock['hypotheses'])} hypotheses")
     run_tests()
-    units = features.build_season(config.SEASON_CONFIRM, after_lock=True)
+    units = features.build_season(ph["season"], after_lock=True)
     results = evaluate_locked(units, lock)
-    config.CONFIRM_REPORT_PATH.write_text(
-        write_confirm_report(results, lock, lock_commit, provenance(config.SEASON_CONFIRM)),
-        encoding="utf-8")
+    report_path.write_text(write_locked_report(results, lock, lock_commit,
+                                               provenance(ph["season"]), phase), encoding="utf-8")
     print(f"  {int(results['confirmed'].sum())} of {len(results)} confirmed; "
-          f"wrote {config.CONFIRM_REPORT_PATH.relative_to(config.STUDY_DIR)}")
+          f"wrote {report_path.relative_to(config.STUDY_DIR)}")
     return 0
+
+
+def confirm() -> int:
+    return run_locked_phase("confirm")
+
+
+def forward() -> int:
+    return run_locked_phase("forward")
 
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description="NBA production study analysis (spec §6, §8).")
-    parser.add_argument("--phase", choices=("explore", "confirm"), required=True)
+    parser.add_argument("--phase", choices=("explore", "confirm", "forward"), required=True)
     args = parser.parse_args(argv)
-    return confirm() if args.phase == "confirm" else explore()
+    return {"explore": explore, "confirm": confirm, "forward": forward}[args.phase]()
 
 
 if __name__ == "__main__":

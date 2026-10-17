@@ -25,9 +25,9 @@ code on a season that hadn't started when they were locked.
 
 | Step | What | State |
 |---|---|---|
-| 1 | `LOCKED_HYPOTHESES_V2.md` | Draft ready: `LOCKED_HYPOTHESES_V2_DRAFT.md`. **Lock before opening night, 2026-10-20.** |
+| 1 | `LOCKED_HYPOTHESES_V2.md` | **Locked** 2026-10-17 at commit `5c0867b` (approved by Juan), before opening night. |
 | 2 | The season plays out | Nothing to do. `pull.py` refuses to fetch 2026-27 before 2027-04-13. |
-| 3 | Pull 2026-27 (Juan, locally) | On or after 2027-04-13 |
+| 3 | Pull 2026-27 (Juan, locally) | On or after 2027-04-13. A one-time routine (`trig_013P1HpaKyqwaYE1XDezEpZ7`) checks the study's state that morning at 9:00 ET and sends Juan the steps by push and email. |
 | 4 | 2026-27 neutral-site games | From the check's output, into `data/neutral_site_games.json` |
 | 5 | `analyze.py --phase forward`, once | Writes `reports/forward_2026-27.md` |
 

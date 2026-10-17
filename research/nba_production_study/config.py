@@ -96,10 +96,46 @@ EARLY_EXIT_FRAC = 0.5             # early_exit: MIN < 0.5 * base_min
 
 # --- §6 Phase A --------------------------------------------------------------
 N_QUANTILE_BUCKETS = 5
+# Discrete counts get one bucket per value instead of quintiles, with the
+# last value top-coded (3 -> "3+"). 80% of games follow 0 or 1 rest days,
+# so quintiles of days_rest collapse to two buckets.
+DISCRETE_BUCKETS = {"days_rest": (0, 1, 2, 3)}
 CI_LEVEL = 0.95
 BH_FDR = 0.10
 ARENA_SPLIT_EARLY_MONTHS = (10, 11, 12)   # stability check: Oct-Dec ...
 ARENA_SPLIT_LATE_MONTHS = (1, 2, 3, 4)    # ... vs Jan-Apr
+
+# The joint model (§6.3): drivers in every stat's model, plus two per stat
+# ("{s}" -> PTS, REB, AST). season_phase enters as a control (dummies,
+# Oct-Nov as the reference), never as a driver. Arena enters only in the
+# arena test (§6.5). Continuous drivers are standardized within each model's
+# sample; the BINARY_DRIVERS stay 0/1.
+COMMON_DRIVERS = ("is_home", "days_rest", "b2b", "opp_b2b", "three_in_four",
+                  "opp_pace", "opp_drtg", "opp_efg_allowed", "opp_ast_allowed",
+                  "opp_fg_pct", "opp_3pa_rate", "opp_oreb_pct", "opp_dreb_pct",
+                  "net_gap", "abs_net_gap", "last5_min_dev")
+PER_STAT_DRIVERS = ("miss_{s}_share", "last5_dev_{s}")
+BINARY_DRIVERS = ("is_home", "b2b", "opp_b2b", "three_in_four")
+SEASON_PHASE_ORDER = ("Oct-Nov", "Dec", "Jan", "Feb", "Mar", "Apr")
+# Departure from "all features" (§6.3), for Juan's review at the Phase A stop:
+# miss_usage_share correlates with the per-stat shares at r = 0.995 (PTS),
+# 0.94 (AST) and 0.91 (REB) on eligible 2024-25 rows. With both in one model,
+# their separate coefficients mean nothing. So each stat's model carries its
+# own miss_{s}_share, and miss_usage_share is fit as a swap-in variant.
+USAGE_SWAP = ("miss_usage_share", "miss_{s}_share")   # (swap in, swap out)
+
+# The spec's hypothesis targets (§5.3), shown beside each Phase A result.
+HYPOTHESIS_TARGETS = {
+    "is_home": "All", "days_rest": "All", "b2b": "Minutes", "opp_b2b": "All",
+    "three_in_four": "Minutes", "opp_pace": "All", "opp_drtg": "PTS",
+    "opp_efg_allowed": "PTS, AST", "opp_ast_allowed": "AST", "opp_fg_pct": "REB",
+    "opp_3pa_rate": "REB", "opp_oreb_pct": "REB", "opp_dreb_pct": "REB",
+    "miss_usage_share": "PTS, AST", "miss_{s}_share": "Per stat",
+    "net_gap": "Minutes", "abs_net_gap": "Minutes",
+    "last5_dev_{s}": "Mean reversion vs. hot hand", "last5_min_dev": "Minutes",
+    "arena_team_id": "AST, REB (PTS is the control)",
+}
+CHANNEL_ALPHA = 0.05              # a channel (minutes / rate) counts when its p < this
 
 # --- §7 Lock / §8 Phase B ----------------------------------------------------
 PRACTICAL_FLOOR_SD = 0.05         # PROPOSED; Juan confirms or changes it at the lock

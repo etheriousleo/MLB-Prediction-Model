@@ -14,7 +14,7 @@ markdown reports, not an app.
 |---|---|---|
 | 1 | Pull both seasons, sanity checks | **Done** (2026-10-16). Findings: `reports/step1_findings.md`. |
 | 2 | `features.py` + leakage tests | **Done** (2026-10-17). All §9 tests pass on synthetic and real 2024-25 data. |
-| 3 | Phase A: explore 2024-25 | In progress. **Stops for Juan's review.** |
+| 3 | Phase A: explore 2024-25 | **Done** (2026-10-17): `reports/explore_2024-25.md`. **Waiting on Juan's review.** |
 | 4 | `LOCKED_HYPOTHESES.md` | Not started. Juan approves and commits it. |
 | 5 | Phase B: confirm 2025-26, once | Not started |
 
@@ -111,10 +111,18 @@ variant also randomizes the cutoff day's own stats and requires every
 pre-game value on that day to hold. All tests must pass before any report is
 written.
 
-### 3. Phase A (to be built)
+### 3. Phase A
 
-`python analyze.py --phase explore` writes `reports/explore_2024-25.md`.
-**STOP** for Juan's review.
+```bash
+python analyze.py --phase explore   # runs the tests first; ~30 s
+```
+
+It writes `reports/explore_2024-25.md`, with figures in `reports/figures/`. The
+report leads with the lock candidates (drivers that pass Benjamini-Hochberg at
+10% FDR and the proposed 0.05 SD floor), then gives a ranked driver table per
+stat, base rates, the arena test, sensitivity runs, and the one-factor tables.
+Its "Choices made" section lists where the run departs from or fills in the
+spec. **STOP** for Juan's review.
 
 ### 4. The lock
 
@@ -133,9 +141,10 @@ already exists.
 config.py              every constant (seasons, thresholds, floors, shrinkage k)
 pull.py                step 1: LeagueGameLog pulls + section 4 sanity checks
 features.py            step 2: baselines, outcomes, pre-game features (section 5)
+analyze.py             step 3: Phase A (section 6); --phase confirm comes at step 5
 conftest.py            lets pytest import the study modules from any directory
 tests/                 pytest: test_pull_sanity.py (step 1), test_features.py (step 2)
 data/raw/              committed parquet pulls + manifest.json (sha256 per file)
 data/features/         built by features.py; git-ignored
-reports/               pull_sanity.md now; Phase A/B reports later
+reports/               pull_sanity.md, step1_findings.md, explore_2024-25.md + figures/
 ```

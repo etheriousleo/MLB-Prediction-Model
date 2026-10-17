@@ -1,10 +1,10 @@
 # Locked hypotheses, v2: forward check on 2026-27
 
-> **DRAFT for Juan's approval.** `analyze.py --phase forward` can't run on
-> this file: its status is `draft`, and the phase reads only
-> `LOCKED_HYPOTHESES_V2.md`. On approval it is renamed, its status becomes
-> `locked`, and that commit is the v2 lock. It should land before opening
-> night, **2026-10-20**, so the lock predates every game it will be judged on.
+> **LOCKED 2026-10-17, before opening night (2026-10-20).** Juan read the
+> draft and approved it in the Claude Code session; Claude committed it on his
+> instruction. This commit is the v2 lock. Nothing below changes, and
+> `config.py`, `pull.py`, `features.py` and `analyze.py` are frozen at this
+> commit until the v2 look.
 
 Drafted 2026-10-17. v2 is the spec's forward check (§12): v1's confirmed
 hypotheses, tested again on a season that hadn't started when they were
@@ -78,9 +78,9 @@ re-lock, and only then run.
 ```json
 {
   "study_version": "nba-study-v2",
-  "status": "draft",
-  "approved_by": null,
-  "approved_on": null,
+  "status": "locked",
+  "approved_by": "Juan",
+  "approved_on": "2026-10-17",
   "drafted_on": "2026-10-17",
   "season": "2026-27",
   "basis": {

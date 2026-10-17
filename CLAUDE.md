@@ -105,3 +105,9 @@ loosen — then do what he decides, on the record.
   if any of them differs from the lock commit, and refuses if
   `reports/confirm_2025-26.md` exists. Never edit those files, or delete that
   report, to get a second look.
+- **v1 is complete (2026-10-17) and its verdict is BINDING:** 9 of 10 locked
+  hypotheses confirmed on 2025-26 (`reports/confirm_2025-26.md`). H6
+  (`last5_dev_REB`) is not confirmed: it is significant, but at +0.048 SD it
+  is below the 0.05 floor. Don't re-argue the floor or re-run on 2025-26. The
+  next step, if any, is the spec's v2: a forward check on 2026-27,
+  pre-registered before that season's data accumulates (§12).

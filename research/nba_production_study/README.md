@@ -15,8 +15,8 @@ markdown reports, not an app.
 | 1 | Pull both seasons, sanity checks | **Done** (2026-10-16). Findings: `reports/step1_findings.md`. |
 | 2 | `features.py` + leakage tests | **Done** (2026-10-17). All §9 tests pass on synthetic and real 2024-25 data. |
 | 3 | Phase A: explore 2024-25 | **Done** (2026-10-17): `reports/explore_2024-25.md`. Reviewed and approved by Juan. |
-| 4 | `LOCKED_HYPOTHESES.md` | Draft ready: `LOCKED_HYPOTHESES_DRAFT.md`. **Waiting on Juan's approval.** |
-| 5 | Phase B: confirm 2025-26, once | Code ready and tested. Runs right after the lock commit. |
+| 4 | `LOCKED_HYPOTHESES.md` | **Locked** 2026-10-17 at commit `19573ee` (approved by Juan). |
+| 5 | Phase B: confirm 2025-26, once | **Done** 2026-10-17: **9 of 10 confirmed** (`reports/confirm_2025-26.md`). H6 missed the 0.05 SD floor at +0.048. |
 
 ## Ground rules
 
@@ -161,5 +161,6 @@ tests/                 pytest: test_pull_sanity.py (step 1), test_features.py (s
                        test_confirm.py (Phase B rule, lock parsing, refusals)
 data/raw/              committed parquet pulls + manifest.json (sha256 per file)
 data/features/         built by features.py; git-ignored
-reports/               pull_sanity.md, step1_findings.md, explore_2024-25.md + figures/
+reports/               pull_sanity.md, step1_findings.md, explore_2024-25.md + figures/,
+                       confirm_2025-26.md (the one look; final)
 ```

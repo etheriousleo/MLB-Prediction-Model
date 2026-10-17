@@ -1,9 +1,9 @@
 # Locked hypotheses: nba-study-v1
 
-> **DRAFT for Juan's approval.** Phase B can't run on this file: its status is
-> `draft`, and Phase B reads only `LOCKED_HYPOTHESES.md`. On approval it is
-> renamed to `LOCKED_HYPOTHESES.md`, its status becomes `locked`, and that
-> commit is the lock (spec §7).
+> **LOCKED 2026-10-17.** Juan read the draft and approved it in the Claude
+> Code session; Claude committed it on his instruction. This commit is the lock
+> (spec §7). Nothing below changes, and `config.py`, `pull.py`, `features.py`
+> and `analyze.py` are frozen at this commit for Phase B.
 
 Drafted 2026-10-17 from the Phase A report, `reports/explore_2024-25.md`
 (code commit `a450781`).
@@ -101,9 +101,9 @@ each hypothesis as confirmed or not, with the 2025-26 effect and CI beside the
 ```json
 {
   "study_version": "nba-study-v1",
-  "status": "draft",
-  "approved_by": null,
-  "approved_on": null,
+  "status": "locked",
+  "approved_by": "Juan",
+  "approved_on": "2026-10-17",
   "drafted_on": "2026-10-17",
   "explore_report": "reports/explore_2024-25.md",
   "explore_commit": "a450781",

@@ -13,8 +13,8 @@ markdown reports, not an app.
 | Step | What | State |
 |---|---|---|
 | 1 | Pull both seasons, sanity checks | **Done** (2026-10-16). Findings: `reports/step1_findings.md`. |
-| 2 | `features.py` + leakage tests | Waiting on Juan's neutral-site decision (see the findings) |
-| 3 | Phase A: explore 2024-25 | Not started. **Stops for Juan's review.** |
+| 2 | `features.py` + leakage tests | **Done** (2026-10-17). All §9 tests pass on synthetic and real 2024-25 data. |
+| 3 | Phase A: explore 2024-25 | In progress. **Stops for Juan's review.** |
 | 4 | `LOCKED_HYPOTHESES.md` | Not started. Juan approves and commits it. |
 | 5 | Phase B: confirm 2025-26, once | Not started |
 
@@ -91,10 +91,25 @@ Don't open or merge a pull request for the study branch. Every merge to
 
 **STOP.** Report the row counts and the non-playing-player finding (§11.1).
 
-### 2. Features and tests (to be built)
+### 2. Features and tests
 
-`features.py` builds the §5 definitions, and `tests/` gets the §9 leakage tests.
-All tests must pass before any report is written.
+```bash
+python features.py      # writes data/features/2024-25.parquet (not committed; rebuilt on demand)
+python -m pytest
+```
+
+`features.py` builds the §5 definitions for every player-game with MIN > 0,
+and builds the explore season only: it refuses the confirm season until the
+lock. Its docstring lists the choices the spec leaves open. Neutral-site games
+count in every backward-looking calculation but are never analysis rows
+(Juan, 2026-10-17).
+
+The §9 tests in `tests/test_features.py` include the no-look-ahead check: every
+stat after a cutoff date is randomized, and nothing on or before that date may
+move. It runs on a synthetic league and on the real 2024-25 logs. A stricter
+variant also randomizes the cutoff day's own stats and requires every
+pre-game value on that day to hold. All tests must pass before any report is
+written.
 
 ### 3. Phase A (to be built)
 
@@ -117,9 +132,10 @@ already exists.
 ```
 config.py              every constant (seasons, thresholds, floors, shrinkage k)
 pull.py                step 1: LeagueGameLog pulls + section 4 sanity checks
+features.py            step 2: baselines, outcomes, pre-game features (section 5)
 conftest.py            lets pytest import the study modules from any directory
-tests/                 pytest; test_pull_sanity.py covers step 1
+tests/                 pytest: test_pull_sanity.py (step 1), test_features.py (step 2)
 data/raw/              committed parquet pulls + manifest.json (sha256 per file)
-data/features/         step 2
+data/features/         built by features.py; git-ignored
 reports/               pull_sanity.md now; Phase A/B reports later
 ```

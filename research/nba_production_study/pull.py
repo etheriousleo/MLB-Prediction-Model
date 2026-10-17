@@ -221,11 +221,16 @@ def check_season(player: pd.DataFrame, team: pd.DataFrame, season: str = "", *,
                  n_teams: int = config.N_TEAMS,
                  games_per_team: int = config.GAMES_PER_TEAM,
                  expected_games: int = config.EXPECTED_GAMES,
-                 game_id_prefix: str = config.REGULAR_SEASON_GAME_ID_PREFIX) -> SeasonCheck:
+                 game_id_prefix: str = config.REGULAR_SEASON_GAME_ID_PREFIX,
+                 neutral_games=None) -> SeasonCheck:
     """Run every §4 assertion on one season and collect the results (it does
     not raise; see assert_sane). Expects frames from load_raw. The keyword
-    arguments exist only so the tests can use a small synthetic league."""
+    arguments exist only so the tests can use a small synthetic league;
+    neutral_games defaults to config.NEUTRAL_SITE_GAMES for the season."""
     res = SeasonCheck(season)
+    if neutral_games is None:
+        neutral_games = config.NEUTRAL_SITE_GAMES.get(season, {})
+    neutral = set(neutral_games)
     games = team["GAME_ID"].unique()
     res.facts.update(player_rows=len(player), team_rows=len(team), unique_games=len(games))
 
@@ -251,14 +256,27 @@ def check_season(player: pd.DataFrame, team: pd.DataFrame, season: str = "", *,
             "no non-regular-season GAME_IDs" if not stray
             else f"GAME_IDs without the {game_id_prefix} prefix: {_ids(stray)}")
 
-    # Exactly two team rows per game: one home ("vs."), one away ("@").
+    # Exactly two team rows per game: one home ("vs."), one away ("@"). The
+    # spec's rule, amended at step 1: a neutral-site game carries "@" on both
+    # rows, and is allowed only if config.NEUTRAL_SITE_GAMES lists it.
     is_home = team["MATCHUP"].str.contains("vs.", regex=False)
     is_away = team["MATCHUP"].str.contains("@", regex=False)
     per_game = pd.DataFrame({"GAME_ID": team["GAME_ID"], "home": is_home, "away": is_away}) \
         .groupby("GAME_ID").agg(rows=("home", "size"), home=("home", "sum"), away=("away", "sum"))
-    bad = per_game[(per_game["rows"] != 2) | (per_game["home"] != 1) | (per_game["away"] != 1)]
-    res.add("one home + one away row per game", bad.empty,
-            "all games" if bad.empty else f"{len(bad)} games off: {_ids(bad.index)}")
+    two_rows = per_game["rows"] == 2
+    home_away = two_rows & (per_game["home"] == 1) & (per_game["away"] == 1)
+    both_away = two_rows & (per_game["home"] == 0) & (per_game["away"] == 2)
+    listed = per_game.index.isin(sorted(neutral))
+    bad = per_game[~(home_away | (both_away & listed))]
+    missing = sorted(neutral - set(per_game.index[both_away]))
+    if bad.empty and not missing:
+        detail = f"all games ({len(neutral)} listed neutral sites, '@' on both rows)"
+    else:
+        detail = "; ".join(filter(None, [
+            f"{len(bad)} games off: {_ids(bad.index)}" if not bad.empty else "",
+            f"listed as neutral but not '@' on both rows: {_ids(missing)}" if missing else "",
+        ]))
+    res.add("one home + one away row per game", bad.empty and not missing, detail)
 
     # No duplicate rows.
     dup_team = team.duplicated(["GAME_ID", "TEAM_ID"]).sum()

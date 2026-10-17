@@ -12,8 +12,8 @@ markdown reports, not an app.
 
 | Step | What | State |
 |---|---|---|
-| 1 | Pull both seasons, sanity checks | Code ready. **Waiting on a local run of `pull.py`.** |
-| 2 | `features.py` + leakage tests | Not started (after step 1's stop) |
+| 1 | Pull both seasons, sanity checks | **Done** (2026-10-16). Findings: `reports/step1_findings.md`. |
+| 2 | `features.py` + leakage tests | Waiting on Juan's neutral-site decision (see the findings) |
 | 3 | Phase A: explore 2024-25 | Not started. **Stops for Juan's review.** |
 | 4 | `LOCKED_HYPOTHESES.md` | Not started. Juan approves and commits it. |
 | 5 | Phase B: confirm 2025-26, once | Not started |

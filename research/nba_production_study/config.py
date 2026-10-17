@@ -37,6 +37,28 @@ GAMES_PER_TEAM = 82
 EXPECTED_GAMES = N_TEAMS * GAMES_PER_TEAM // 2   # 1,230
 REGULAR_SEASON_GAME_ID_PREFIX = "002"
 
+# Neutral-site games. stats.nba.com marks both team rows with "@" (no "vs."),
+# so neither team is at home, and the home team's scorekeeper isn't there.
+# The step-1 sanity check found exactly these (2026-10-17); the dates and teams
+# match the published international games and NBA Cup semifinals. The check
+# fails if any other game looks like this, or if a listed one doesn't.
+NEUTRAL_SITE_GAMES = {
+    "2024-25": {
+        "0022400147": "Mexico City, 2024-11-02, MIA-WAS",
+        "0022400621": "Paris, 2025-01-23, IND-SAS",
+        "0022400633": "Paris, 2025-01-25, IND-SAS",
+        "0022401229": "Las Vegas, NBA Cup semifinal, 2024-12-14, ATL-MIL",
+        "0022401230": "Las Vegas, NBA Cup semifinal, 2024-12-14, HOU-OKC",
+    },
+    "2025-26": {
+        "0022500147": "Mexico City, 2025-11-01, DAL-DET",
+        "0022500578": "Berlin, 2026-01-15, MEM-ORL",
+        "0022500602": "London, 2026-01-18, MEM-ORL",
+        "0022501229": "Las Vegas, NBA Cup semifinal, 2025-12-13, NYK-ORL",
+        "0022501230": "Las Vegas, NBA Cup semifinal, 2025-12-13, OKC-SAS",
+    },
+}
+
 # Columns the study reads from each log; the pull fails loudly if any is missing.
 REQUIRED_COLUMNS = {
     "player": ("PLAYER_ID", "TEAM_ID", "GAME_ID", "GAME_DATE", "MATCHUP", "MIN",

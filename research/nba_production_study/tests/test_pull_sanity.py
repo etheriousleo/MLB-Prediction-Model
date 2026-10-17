@@ -85,6 +85,40 @@ def test_home_away_structure_is_caught():
     assert failed_checks(player, team) == {"one home + one away row per game"}
 
 
+def neutralize(team, row):
+    """Give one game the neutral-site format: "@" on both team rows."""
+    team.loc[row, "MATCHUP"] = team.loc[row, "MATCHUP"].replace("vs.", "@")
+    return team.loc[row, "GAME_ID"]
+
+
+def test_listed_neutral_site_game_passes():
+    player, team = make_league()
+    gid = neutralize(team, 0)
+    pull.assert_sane(player, team, "synthetic", neutral_games={gid: "Paris"}, **SMALL)
+
+
+def test_unlisted_neutral_site_game_is_caught():
+    player, team = make_league()
+    gid = neutralize(team, 0)
+    res = pull.check_season(player, team, "synthetic", **SMALL)
+    assert [name for name, _ in res.failures] == ["one home + one away row per game"]
+    assert gid in res.failures[0][1]
+
+
+def test_listed_neutral_game_that_has_a_home_team_is_caught():
+    player, team = make_league()
+    res = pull.check_season(player, team, "synthetic",
+                            neutral_games={team.loc[0, "GAME_ID"]: "Paris"}, **SMALL)
+    assert "listed as neutral" in res.failures[0][1]
+
+
+def test_neutral_list_covers_only_the_study_seasons():
+    assert set(config.NEUTRAL_SITE_GAMES) == set(config.SEASONS)
+    for season, games in config.NEUTRAL_SITE_GAMES.items():
+        prefix = config.REGULAR_SEASON_GAME_ID_PREFIX + season[2:4]   # "00224" for 2024-25
+        assert all(gid.startswith(prefix) and len(gid) == 10 for gid in games), season
+
+
 def test_missing_team_row_is_caught():
     player, team = make_league()
     assert {"one home + one away row per game", "teams x games",
@@ -214,7 +248,12 @@ def test_pull_sanity(season):
     if not all(pull.raw_path(season, kind).exists() for kind in config.LOG_KINDS):
         pytest.skip(f"{season} not pulled yet: run pull.py locally and commit data/raw/")
     player, team = pull.load_raw(season)
-    pull.assert_sane(player, team, season)
+    try:
+        pull.assert_sane(player, team, season)
+    except pull.SanityError as err:
+        # Message only (it names IDs, never values). pytest's own traceback
+        # would print the raw logs, and the confirm season is sealed (§4).
+        pytest.fail(str(err), pytrace=False)
 
 
 def test_raw_files_match_manifest():

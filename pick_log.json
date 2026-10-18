@@ -12955,8 +12955,8 @@
   "form": 0.0,
   "game_type": "L",
   "override": false,
-  "closing": 0,
+  "closing": -110,
   "stake": 0,
-  "result": ""
+  "result": "W"
  }
 ]

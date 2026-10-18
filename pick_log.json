@@ -12958,5 +12958,23 @@
   "closing": -110,
   "stake": 0,
   "result": "W"
+ },
+ {
+  "date": "2026-10-18",
+  "matchup": "Tampa Bay Rays @ Cleveland Guardians",
+  "pick": "Tampa Bay Rays",
+  "prob": 51,
+  "tier": "Low",
+  "version": "v4.2-market-gate-2026-09-27",
+  "odds": -132,
+  "edge": -5.9,
+  "mkt_edge": -1.5,
+  "ref_fair": 55.4,
+  "form": 0.0,
+  "game_type": "L",
+  "override": false,
+  "closing": 0,
+  "stake": 0,
+  "result": ""
  }
 ]

@@ -12973,9 +12973,9 @@
   "form": 0.0,
   "game_type": "L",
   "override": false,
-  "closing": 0,
+  "closing": -126,
   "stake": 0,
-  "result": ""
+  "result": "W"
  },
  {
   "date": "2026-10-23",
@@ -12991,7 +12991,7 @@
   "form": 0.0,
   "game_type": "W",
   "override": false,
-  "closing": 0,
+  "closing": -196,
   "stake": 0,
   "result": ""
  }

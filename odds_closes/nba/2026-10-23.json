@@ -1,0 +1,902 @@
+{
+ "401909095": {
+  "away": "New York Knicks",
+  "away_id": "18",
+  "commence": "2026-10-23T23:10:00Z",
+  "home": "Boston Celtics",
+  "home_id": "2",
+  "quoted_at": "2026-10-23T19:34:43.952395+00:00",
+  "quotes": {
+   "betmgm": {
+    "h2h": {
+     "away": 115,
+     "home": -140
+    },
+    "spreads": {
+     "away": [
+      2.5,
+      -105
+     ],
+     "home": [
+      -2.5,
+      -115
+     ]
+    }
+   },
+   "draftkings": {
+    "h2h": {
+     "away": 120,
+     "home": -142
+    },
+    "spreads": {
+     "away": [
+      2.5,
+      -105
+     ],
+     "home": [
+      -2.5,
+      -115
+     ]
+    }
+   },
+   "fanduel": {
+    "h2h": {
+     "away": 114,
+     "home": -134
+    },
+    "spreads": {
+     "away": [
+      2.5,
+      -110
+     ],
+     "home": [
+      -2.5,
+      -110
+     ]
+    }
+   },
+   "pinnacle": {
+    "h2h": {
+     "away": 126,
+     "home": -136
+    },
+    "spreads": {
+     "away": [
+      3.0,
+      -106
+     ],
+     "home": [
+      -3.0,
+      -104
+     ]
+    }
+   }
+  },
+  "tip_espn": "2026-10-23T23:00:00+00:00"
+ },
+ "401909096": {
+  "away": "Houston Rockets",
+  "away_id": "10",
+  "commence": "2026-10-24T01:40:00Z",
+  "home": "San Antonio Spurs",
+  "home_id": "24",
+  "quoted_at": "2026-10-23T19:34:43.952395+00:00",
+  "quotes": {
+   "betmgm": {
+    "h2h": {
+     "away": 165,
+     "home": -200
+    },
+    "spreads": {
+     "away": [
+      5.5,
+      -118
+     ],
+     "home": [
+      -5.5,
+      -102
+     ]
+    }
+   },
+   "draftkings": {
+    "h2h": {
+     "away": 160,
+     "home": -192
+    },
+    "spreads": {
+     "away": [
+      4.5,
+      -105
+     ],
+     "home": [
+      -4.5,
+      -115
+     ]
+    }
+   },
+   "fanduel": {
+    "h2h": {
+     "away": 164,
+     "home": -196
+    },
+    "spreads": {
+     "away": [
+      5.5,
+      -118
+     ],
+     "home": [
+      -5.5,
+      -104
+     ]
+    }
+   },
+   "pinnacle": {
+    "h2h": {
+     "away": 173,
+     "home": -189
+    },
+    "spreads": {
+     "away": [
+      5.0,
+      -104
+     ],
+     "home": [
+      -5.0,
+      -106
+     ]
+    }
+   }
+  },
+  "tip_espn": "2026-10-24T01:30:00+00:00"
+ },
+ "401909843": {
+  "away": "Atlanta Hawks",
+  "away_id": "1",
+  "commence": "2026-10-23T23:10:00Z",
+  "home": "Charlotte Hornets",
+  "home_id": "30",
+  "quoted_at": "2026-10-23T19:34:43.952395+00:00",
+  "quotes": {
+   "betmgm": {
+    "h2h": {
+     "away": -145,
+     "home": 118
+    },
+    "spreads": {
+     "away": [
+      -2.5,
+      -110
+     ],
+     "home": [
+      2.5,
+      -110
+     ]
+    }
+   },
+   "draftkings": {
+    "h2h": {
+     "away": -142,
+     "home": 120
+    },
+    "spreads": {
+     "away": [
+      -2.5,
+      -115
+     ],
+     "home": [
+      2.5,
+      -105
+     ]
+    }
+   },
+   "fanduel": {
+    "h2h": {
+     "away": -134,
+     "home": 114
+    },
+    "spreads": {
+     "away": [
+      -2.5,
+      -110
+     ],
+     "home": [
+      2.5,
+      -110
+     ]
+    }
+   },
+   "pinnacle": {
+    "h2h": {
+     "away": -135,
+     "home": 124
+    },
+    "spreads": {
+     "away": [
+      -3.0,
+      101
+     ],
+     "home": [
+      3.0,
+      -111
+     ]
+    }
+   }
+  },
+  "tip_espn": "2026-10-23T23:00:00+00:00"
+ },
+ "401909844": {
+  "away": "Dallas Mavericks",
+  "away_id": "6",
+  "commence": "2026-10-23T23:10:00Z",
+  "home": "Indiana Pacers",
+  "home_id": "11",
+  "quoted_at": "2026-10-23T19:34:43.952395+00:00",
+  "quotes": {
+   "betmgm": {
+    "h2h": {
+     "away": 220,
+     "home": -275
+    },
+    "spreads": {
+     "away": [
+      7.5,
+      -110
+     ],
+     "home": [
+      -7.5,
+      -110
+     ]
+    }
+   },
+   "draftkings": {
+    "h2h": {
+     "away": 215,
+     "home": -265
+    },
+    "spreads": {
+     "away": [
+      7.5,
+      -110
+     ],
+     "home": [
+      -7.5,
+      -110
+     ]
+    }
+   },
+   "fanduel": {
+    "h2h": {
+     "away": 210,
+     "home": -255
+    },
+    "spreads": {
+     "away": [
+      7.5,
+      -118
+     ],
+     "home": [
+      -7.5,
+      -104
+     ]
+    }
+   },
+   "pinnacle": {
+    "h2h": {
+     "away": 226,
+     "home": -251
+    },
+    "spreads": {
+     "away": [
+      7.5,
+      -108
+     ],
+     "home": [
+      -7.5,
+      -102
+     ]
+    }
+   }
+  },
+  "tip_espn": "2026-10-23T23:00:00+00:00"
+ },
+ "401909845": {
+  "away": "Minnesota Timberwolves",
+  "away_id": "16",
+  "commence": "2026-10-23T23:10:00Z",
+  "home": "Orlando Magic",
+  "home_id": "19",
+  "quoted_at": "2026-10-23T19:34:43.952395+00:00",
+  "quotes": {
+   "betmgm": {
+    "h2h": {
+     "away": -110,
+     "home": -110
+    },
+    "spreads": {
+     "away": [
+      1.5,
+      -118
+     ],
+     "home": [
+      -1.5,
+      -102
+     ]
+    }
+   },
+   "draftkings": {
+    "h2h": {
+     "away": -108,
+     "home": -112
+    },
+    "spreads": {
+     "away": [
+      1.5,
+      -115
+     ],
+     "home": [
+      -1.5,
+      -105
+     ]
+    }
+   },
+   "fanduel": {
+    "h2h": {
+     "away": -102,
+     "home": -116
+    },
+    "spreads": {
+     "away": [
+      1.5,
+      -115
+     ],
+     "home": [
+      -1.5,
+      -105
+     ]
+    }
+   },
+   "pinnacle": {
+    "h2h": {
+     "away": 101,
+     "home": -110
+    },
+    "spreads": {
+     "away": [
+      1.0,
+      -105
+     ],
+     "home": [
+      -1.0,
+      -105
+     ]
+    }
+   }
+  },
+  "tip_espn": "2026-10-23T23:00:00+00:00"
+ },
+ "401909846": {
+  "away": "Toronto Raptors",
+  "away_id": "28",
+  "commence": "2026-10-23T23:10:00Z",
+  "home": "Washington Wizards",
+  "home_id": "27",
+  "quoted_at": "2026-10-23T19:34:43.952395+00:00",
+  "quotes": {
+   "betmgm": {
+    "h2h": {
+     "away": -325,
+     "home": 260
+    },
+    "spreads": {
+     "away": [
+      -8.5,
+      -115
+     ],
+     "home": [
+      8.5,
+      -105
+     ]
+    }
+   },
+   "draftkings": {
+    "h2h": {
+     "away": -340,
+     "home": 270
+    },
+    "spreads": {
+     "away": [
+      -8.5,
+      -115
+     ],
+     "home": [
+      8.5,
+      -105
+     ]
+    }
+   },
+   "fanduel": {
+    "h2h": {
+     "away": -310,
+     "home": 250
+    },
+    "spreads": {
+     "away": [
+      -8.5,
+      -106
+     ],
+     "home": [
+      8.5,
+      -114
+     ]
+    }
+   },
+   "pinnacle": {
+    "h2h": {
+     "away": -320,
+     "home": 282
+    },
+    "spreads": {
+     "away": [
+      -9.0,
+      -103
+     ],
+     "home": [
+      9.0,
+      -107
+     ]
+    }
+   }
+  },
+  "tip_espn": "2026-10-23T23:00:00+00:00"
+ },
+ "401909847": {
+  "away": "Detroit Pistons",
+  "away_id": "8",
+  "commence": "2026-10-24T00:10:00Z",
+  "home": "Miami Heat",
+  "home_id": "14",
+  "quoted_at": "2026-10-23T19:34:43.952395+00:00",
+  "quotes": {
+   "betmgm": {
+    "h2h": {
+     "away": -120,
+     "home": 100
+    },
+    "spreads": {
+     "away": [
+      -1.5,
+      -110
+     ],
+     "home": [
+      1.5,
+      -110
+     ]
+    }
+   },
+   "draftkings": {
+    "h2h": {
+     "away": -125,
+     "home": 105
+    },
+    "spreads": {
+     "away": [
+      -1.5,
+      -110
+     ],
+     "home": [
+      1.5,
+      -110
+     ]
+    }
+   },
+   "fanduel": {
+    "h2h": {
+     "away": -112,
+     "home": -104
+    },
+    "spreads": {
+     "away": [
+      -1.5,
+      -105
+     ],
+     "home": [
+      1.5,
+      -115
+     ]
+    }
+   },
+   "pinnacle": {
+    "h2h": {
+     "away": -120,
+     "home": 110
+    },
+    "spreads": {
+     "away": [
+      -1.5,
+      -110
+     ],
+     "home": [
+      1.5,
+      100
+     ]
+    }
+   }
+  },
+  "tip_espn": "2026-10-24T00:00:00+00:00"
+ },
+ "401909848": {
+  "away": "Chicago Bulls",
+  "away_id": "4",
+  "commence": "2026-10-23T20:10:00Z",
+  "home": "Milwaukee Bucks",
+  "home_id": "15",
+  "quoted_at": "2026-10-23T19:34:43.952395+00:00",
+  "quotes": {
+   "betmgm": {
+    "h2h": {
+     "away": 100,
+     "home": -120
+    },
+    "spreads": {
+     "away": [
+      1.5,
+      -110
+     ],
+     "home": [
+      -1.5,
+      -110
+     ]
+    }
+   },
+   "draftkings": {
+    "h2h": {
+     "away": -102,
+     "home": -118
+    },
+    "spreads": {
+     "away": [
+      1.5,
+      -115
+     ],
+     "home": [
+      -1.5,
+      -105
+     ]
+    }
+   },
+   "fanduel": {
+    "h2h": {
+     "away": 102,
+     "home": -120
+    },
+    "spreads": {
+     "away": [
+      1.5,
+      -110
+     ],
+     "home": [
+      -1.5,
+      -110
+     ]
+    }
+   },
+   "pinnacle": {
+    "h2h": {
+     "away": 108,
+     "home": -116
+    },
+    "spreads": {
+     "away": [
+      1.0,
+      101
+     ],
+     "home": [
+      -1.0,
+      -111
+     ]
+    }
+   }
+  },
+  "tip_espn": "2026-10-23T20:00:00+00:00"
+ },
+ "401909849": {
+  "away": "New Orleans Pelicans",
+  "away_id": "3",
+  "commence": "2026-10-24T01:40:00Z",
+  "home": "Utah Jazz",
+  "home_id": "26",
+  "quoted_at": "2026-10-23T19:34:43.952395+00:00",
+  "quotes": {
+   "betmgm": {
+    "h2h": {
+     "away": 100,
+     "home": -120
+    },
+    "spreads": {
+     "away": [
+      1.5,
+      -118
+     ],
+     "home": [
+      -1.5,
+      -102
+     ]
+    }
+   },
+   "draftkings": {
+    "h2h": {
+     "away": -108,
+     "home": -112
+    },
+    "spreads": {
+     "away": [
+      1.5,
+      -118
+     ],
+     "home": [
+      -1.5,
+      -102
+     ]
+    }
+   },
+   "fanduel": {
+    "h2h": {
+     "away": 100,
+     "home": -118
+    },
+    "spreads": {
+     "away": [
+      1.5,
+      -106
+     ],
+     "home": [
+      -1.5,
+      -114
+     ]
+    }
+   },
+   "pinnacle": {
+    "h2h": {
+     "away": 100,
+     "home": -108
+    },
+    "spreads": {
+     "away": [
+      1.0,
+      -107
+     ],
+     "home": [
+      -1.0,
+      -104
+     ]
+    }
+   }
+  },
+  "tip_espn": "2026-10-24T01:30:00+00:00"
+ },
+ "401909850": {
+  "away": "Memphis Grizzlies",
+  "away_id": "29",
+  "commence": "2026-10-24T02:10:00Z",
+  "home": "Golden State Warriors",
+  "home_id": "9",
+  "quoted_at": "2026-10-23T19:34:43.952395+00:00",
+  "quotes": {
+   "betmgm": {
+    "h2h": {
+     "away": 140,
+     "home": -170
+    },
+    "spreads": {
+     "away": [
+      4.5,
+      -118
+     ],
+     "home": [
+      -4.5,
+      -102
+     ]
+    }
+   },
+   "draftkings": {
+    "h2h": {
+     "away": 136,
+     "home": -162
+    },
+    "spreads": {
+     "away": [
+      4.5,
+      -115
+     ],
+     "home": [
+      -4.5,
+      -105
+     ]
+    }
+   },
+   "fanduel": {
+    "h2h": {
+     "away": 130,
+     "home": -154
+    },
+    "spreads": {
+     "away": [
+      4.5,
+      -122
+     ],
+     "home": [
+      -4.5,
+      100
+     ]
+    }
+   },
+   "pinnacle": {
+    "h2h": {
+     "away": 153,
+     "home": -167
+    },
+    "spreads": {
+     "away": [
+      4.5,
+      -104
+     ],
+     "home": [
+      -4.5,
+      -106
+     ]
+    }
+   }
+  },
+  "tip_espn": "2026-10-24T02:00:00+00:00"
+ },
+ "401909851": {
+  "away": "LA Clippers",
+  "away_id": "12",
+  "commence": "2026-10-24T02:10:00Z",
+  "home": "Los Angeles Lakers",
+  "home_id": "13",
+  "quoted_at": "2026-10-23T19:34:43.952395+00:00",
+  "quotes": {
+   "betmgm": {
+    "h2h": {
+     "away": 290,
+     "home": -375
+    },
+    "spreads": {
+     "away": [
+      8.5,
+      -105
+     ],
+     "home": [
+      -8.5,
+      -115
+     ]
+    }
+   },
+   "draftkings": {
+    "h2h": {
+     "away": 295,
+     "home": -375
+    },
+    "spreads": {
+     "away": [
+      8.5,
+      -108
+     ],
+     "home": [
+      -8.5,
+      -112
+     ]
+    }
+   },
+   "fanduel": {
+    "h2h": {
+     "away": 295,
+     "home": -370
+    },
+    "spreads": {
+     "away": [
+      9.5,
+      -112
+     ],
+     "home": [
+      -9.5,
+      -108
+     ]
+    }
+   },
+   "pinnacle": {
+    "h2h": {
+     "away": 291,
+     "home": -331
+    },
+    "spreads": {
+     "away": [
+      8.5,
+      -103
+     ],
+     "home": [
+      -8.5,
+      -107
+     ]
+    }
+   }
+  },
+  "tip_espn": "2026-10-24T02:00:00+00:00"
+ },
+ "401909852": {
+  "away": "Portland Trail Blazers",
+  "away_id": "22",
+  "commence": "2026-10-24T02:10:00Z",
+  "home": "Sacramento Kings",
+  "home_id": "23",
+  "quoted_at": "2026-10-23T19:34:43.952395+00:00",
+  "quotes": {
+   "betmgm": {
+    "h2h": {
+     "away": -450,
+     "home": 350
+    },
+    "spreads": {
+     "away": [
+      -9.5,
+      -118
+     ],
+     "home": [
+      9.5,
+      -102
+     ]
+    }
+   },
+   "draftkings": {
+    "h2h": {
+     "away": -470,
+     "home": 360
+    },
+    "spreads": {
+     "away": [
+      -10.5,
+      -108
+     ],
+     "home": [
+      10.5,
+      -112
+     ]
+    }
+   },
+   "fanduel": {
+    "h2h": {
+     "away": -405,
+     "home": 320
+    },
+    "spreads": {
+     "away": [
+      -9.5,
+      -110
+     ],
+     "home": [
+      9.5,
+      -110
+     ]
+    }
+   },
+   "pinnacle": {
+    "h2h": {
+     "away": -402,
+     "home": 347
+    },
+    "spreads": {
+     "away": [
+      -10.0,
+      -105
+     ],
+     "home": [
+      10.0,
+      -105
+     ]
+    }
+   }
+  },
+  "tip_espn": "2026-10-24T02:00:00+00:00"
+ }
+}

@@ -1,0 +1,152 @@
+{
+ "401909866": {
+  "away": "Detroit Pistons",
+  "away_id": "8",
+  "commence": "2026-10-25T23:40:00Z",
+  "home": "Philadelphia 76ers",
+  "home_id": "20",
+  "quoted_at": "2026-10-25T23:21:09.695830+00:00",
+  "quotes": {
+   "betmgm": {
+    "h2h": {
+     "away": -130,
+     "home": 105
+    },
+    "spreads": {
+     "away": [
+      -2.5,
+      -102
+     ],
+     "home": [
+      2.5,
+      -118
+     ]
+    }
+   },
+   "draftkings": {
+    "h2h": {
+     "away": -125,
+     "home": 105
+    },
+    "spreads": {
+     "away": [
+      -1.5,
+      -115
+     ],
+     "home": [
+      1.5,
+      -105
+     ]
+    }
+   },
+   "fanduel": {
+    "h2h": {
+     "away": -130,
+     "home": 110
+    },
+    "spreads": {
+     "away": [
+      -1.5,
+      -115
+     ],
+     "home": [
+      1.5,
+      -105
+     ]
+    }
+   },
+   "pinnacle": {
+    "h2h": {
+     "away": -122,
+     "home": 111
+    },
+    "spreads": {
+     "away": [
+      -2.0,
+      -102
+     ],
+     "home": [
+      2.0,
+      -108
+     ]
+    }
+   }
+  },
+  "tip_espn": "2026-10-25T23:30:00+00:00"
+ },
+ "401909867": {
+  "away": "Memphis Grizzlies",
+  "away_id": "29",
+  "commence": "2026-10-26T01:00:00Z",
+  "home": "Sacramento Kings",
+  "home_id": "23",
+  "quoted_at": "2026-10-25T23:21:09.695830+00:00",
+  "quotes": {
+   "betmgm": {
+    "h2h": {
+     "away": -160,
+     "home": 135
+    },
+    "spreads": {
+     "away": [
+      -3.5,
+      -105
+     ],
+     "home": [
+      3.5,
+      -115
+     ]
+    }
+   },
+   "draftkings": {
+    "h2h": {
+     "away": -162,
+     "home": 136
+    },
+    "spreads": {
+     "away": [
+      -3.5,
+      -108
+     ],
+     "home": [
+      3.5,
+      -112
+     ]
+    }
+   },
+   "fanduel": {
+    "h2h": {
+     "away": -156,
+     "home": 132
+    },
+    "spreads": {
+     "away": [
+      -3.5,
+      -110
+     ],
+     "home": [
+      3.5,
+      -110
+     ]
+    }
+   },
+   "pinnacle": {
+    "h2h": {
+     "away": -151,
+     "home": 139
+    },
+    "spreads": {
+     "away": [
+      -3.5,
+      101
+     ],
+     "home": [
+      3.5,
+      -111
+     ]
+    }
+   }
+  },
+  "tip_espn": "2026-10-26T01:00:00+00:00"
+ }
+}

@@ -1,0 +1,30 @@
+[
+ {
+  "home": "Tampa Bay Rays",
+  "away": "Milwaukee Brewers",
+  "commence": "2026-10-27T00:10:00Z",
+  "quoted_at": "2026-10-25T08:01:01.482470+00:00",
+  "quotes": {
+   "fanduel": {
+    "Milwaukee Brewers": 102,
+    "Tampa Bay Rays": -120
+   },
+   "draftkings": {
+    "Milwaukee Brewers": 100,
+    "Tampa Bay Rays": -120
+   },
+   "betrivers": {
+    "Milwaukee Brewers": 100,
+    "Tampa Bay Rays": -120
+   },
+   "betmgm": {
+    "Milwaukee Brewers": 100,
+    "Tampa Bay Rays": -120
+   },
+   "pinnacle": {
+    "Milwaukee Brewers": 103,
+    "Tampa Bay Rays": -114
+   }
+  }
+ }
+]

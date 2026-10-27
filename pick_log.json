@@ -13030,5 +13030,23 @@
   "closing": 102,
   "stake": 0,
   "result": "W"
+ },
+ {
+  "date": "2026-10-27",
+  "matchup": "Milwaukee Brewers @ Tampa Bay Rays",
+  "pick": "Milwaukee Brewers",
+  "prob": 51,
+  "tier": "Low",
+  "version": "v4.2-market-gate-2026-09-27",
+  "odds": -124,
+  "edge": -4.4,
+  "mkt_edge": -3.0,
+  "ref_fair": 52.3,
+  "form": 0.0,
+  "game_type": "W",
+  "override": false,
+  "closing": 0,
+  "stake": 0,
+  "result": ""
  }
 ]

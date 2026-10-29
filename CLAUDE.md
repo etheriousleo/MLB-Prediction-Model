@@ -2,99 +2,63 @@
 
 ## What this is
 Streamlit app (`mlb_app.py`) deployed on Streamlit Cloud from `main`. The
-pick log and daily snapshots live on the `data` branch (`pick_log.json`,
-`snapshots/`), written by the app itself via the GitHub Contents API using
-secrets configured in Streamlit Cloud. Never commit tokens. Never commit
-the log to `main` (commits to `main` reboot the app).
+pick log, daily snapshots and closing-line snapshots live on the `data`
+branch (`pick_log.json`, `snapshots/`, `odds_closes/`), written by the app
+and by the GitHub Actions cron via the GitHub Contents API using secrets in
+Streamlit Cloud and repo Actions secrets. Never commit tokens. Never commit
+data to `main` (commits to `main` reboot the app).
 
-## Current state (2026-09-24)
-- `MODEL_VERSION = v4.1-picker-2026-09-24`.
-- The 2026 season verdict is in `season_verdict_2026.md`. It is BINDING.
-  Do not re-litigate it on 2026 data, and do not fit new parameters to it.
-- `ANCHOR_LAMBDA = 1.0` by OWNER DECISION (2026-09-24), not by evidence:
-  the pre-registered rule returned 0.00. Juan's product spec is model
-  probability → market price → bet/no-bet, and that is the app's job.
-  v4.1's picker runs a CHANGED model (double-count fixed, form 15%, tiers
-  merged) and is unmeasured; its GOOD-pick record accrues in the tracker.
-  The v3 record (49–60, −9.1%/bet) is displayed beside every call. Do not
-  hide it, and do not re-argue λ unless Juan raises it.
-- `GATE_THRESH_PP`, `ANCHOR_LAMBDA`, `PLAYOFF_BUDGET` are deliberately
-  code-only — no UI controls — so in-the-moment eagerness can't loosen
-  them. Any commit that changes one must cite the evidence in its message.
+## Status: 2026 SEASON CLOSED (2026-10-29). NO MLB CHANGES UNTIL THE JANUARY DECISION.
+- `MODEL_VERSION = v4.2-market-gate-2026-09-27`. Final log: 726 rows.
+- Binding records in the repo: `season_verdict_2026.md` (regular season,
+  pre-registered) and `season_verdict_2026_postseason_addendum.md`.
+- Regular-season verdict: the public-stat model carries no information the
+  market lacks (λ*=0; market Brier .2362 vs model .2422; calibrated gate
+  still −8.9%/bet). Postseason addendum: the FanDuel-vs-Pinnacle moneyline
+  gate is structurally inert (0 feed-price fires in 45; median gap −2.1pp =
+  the vig); model picks had a hot 52-game month in outcomes but −0.96pp CLV.
+- The suite runs as data collection only — no wagers; do not nudge toward
+  betting in any app.
+- The MLB closing-line cron is DISABLED for the offseason (it burns Odds API
+  credits shared with the NBA app). Re-enable in late March 2027.
+
+## January decision (with the CFB post-bowls verdict in hand)
+Three possible paths for MLB 2027; choose one, do not blend:
+1. v5 model adding inputs the market prices late — confirmed lineups and
+   bullpen usage from the MLB API — plus the calibration map (Platt slope
+   1.81 fit on 2026, display only), forward-tested from Opening Day.
+2. Market-research tool only: best price across all books the feed pulls
+   vs Pinnacle; no model in the loop.
+3. Shelve MLB; focus on the sports whose markets are softer (CFB verdict).
+Optional offseason analysis: replay of 2026 snapshots with form weight at
+0 / 15 / 35 (double-count fixed) — the only way to settle the form question
+offline. Form diagnostic threshold → 1pp if it stays.
 
 ## Rules that exist because of real bugs
-- All dates go through `now_et()` / `today_et()` (Eastern). Never call
-  `datetime.today()` / `datetime.now()` — Streamlit Cloud runs on UTC, and
-  naive dates once made every evening session log tomorrow's slate.
-- Game identity is `matchup_key(game)`, which suffixes doubleheaders with
-  "(G2)". Never key a widget, dict, or log row on "away @ home" alone —
-  a doubleheader once took down the whole page.
-- Every model change gets a new `MODEL_VERSION` so datasets never mix.
-- Every deploy so far has broken something once. Before pushing:
-  `python -m py_compile mlb_app.py`, then a local `streamlit run`, then
-  check the tracker still loads from the data branch.
+- All dates via `now_et()` / `today_et()`. Never naive `datetime` calls.
+- Game identity is `matchup_key(game)` (doubleheaders get "(G2)").
+- Every external team name passes through `canon_team()` (Athletics rename).
+- Odds feed: exclude started games (live prices); pre-fill never overwrites a
+  user-typed price; a row with an override or a stake is a taken price and is
+  never re-synced.
+- Budget guard is a LOSS LIMIT (limit + settled P/L − at risk), not a cap on
+  stakes. Escape `$` in Streamlit markdown.
+- Closing backfill runs for every row missing a closing, graded or not; never
+  cache an empty snapshot.
+- Before pushing: `python -m py_compile mlb_app.py`, local `streamlit run`,
+  tracker loads from the data branch.
 
 ## Analysis tooling
-- `python log_integrity_check.py pick_log.json` — outcome-free hygiene.
-  Run before any analysis; it prints no win rates by design.
-- `python season_analysis.py pick_log.json` — the pre-registered workup.
-  Criteria are LOCKED. To analyze a new season, copy it, set a new lock
-  date in the header before that season's data is complete, then never
-  edit the criteria again.
-- The method: freeze the model → log every pick forward → one look, on
-  pre-registered criteria, at the end → change one thing → re-version →
-  repeat. Never tune on a partial sample. Never look twice.
-
-## Evidence-gated change queue
-1. Form diagnostic (`form_delta`) ships in v4 → adjudicate Q4 in 2027.
-2. Under-dispersion (calibration slope ≈ 2× too flat) — candidate for a
-   v4.1 with FRESH data; explicitly not fit on 2026.
-3. CLV: log `closing` prices during the playoffs and 2027; the
-   beat-the-close rate is the only path to λ > 0.
-4. Recent-form window length/weight — revisit only after Q4 has data.
+- `log_integrity_check.py pick_log.json` — outcome-free hygiene; run first.
+- `season_analysis.py pick_log.json` — the 2026 pre-registered workup;
+  criteria LOCKED. For 2027, copy it, set a new lock date before the data
+  is complete, never edit the criteria afterward.
+- Method: freeze → log every pick forward → one look on pre-registered
+  criteria → change one thing → re-version → repeat. Never tune on a partial
+  sample. Never look twice. CLV outranks W-L at any sample under thousands.
 
 ## How to work with Juan
-Targeted, justified changes with the reasoning in a code comment at the
-site. Validate methodology before touching parameters. When he asks to
-loosen a constraint mid-slump, remind him he asked for it to be hard to
-loosen — then do what he decides, on the record.
-
-## NBA app (2026-09-27)
-- `nba_app.py` is the fourth sibling; its design contract is `NBA_APP_SPEC.md`
-  (CLAUDE.md wins on process, the spec wins on design). Pre-registered look:
-  `nba_evaluation_plan.md`. Model `nba-v1.0` is FROZEN — no parameter changes
-  before that look.
-- Its data lives beside the MLB data on the `data` branch: `nba_pick_log.json`
-  and `odds_closes/nba/<ET date>.json` (written by
-  `scripts/snapshot_closes_nba.py` via `odds_close_snapshot_nba.yml`, which
-  only spends a credit when a game tips within 35 min). Never touch
-  `mlb_app.py`, `scripts/snapshot_closes.py`, or `odds_close_snapshot.yml`
-  for NBA work.
-- Game identity is the ESPN event ID; every team join is by ESPN team ID via
-  `nba_teams.py`. Widget keys are namespaced `nba1_`.
-- Before pushing: `python -m py_compile nba_app.py`, then
-  `python -m pytest tests/test_nba_app.py` (AppTest harness on a mock ESPN +
-  Odds feed — the only way to exercise the slate without spending credits).
-- GitHub's `schedule` trigger fires this repo's crons only 2–4 times a day
-  (measured Sep 27 – Oct 9, 2026; MLB too). The real 30-minute cadence comes
-  from an external scheduler hitting `workflow_dispatch` — setup and the
-  evidence in `nba_closes_scheduler.md`. A dispatch on `ref: main` runs
-  main's yml and script, so NBA cron changes only take effect once merged.
-  A "close" quoted hours before tip is not a close; check `quoted_at` vs
-  tip before trusting any CLV number. The MLB cron spends a credit on every
-  run (no window gate) — never put it on a 30-minute dispatcher as is.
-- Open items Juan supplies before Oct 20: the 30 win totals in
-  `nba_preseason_totals_2026.json`, `STAKE_UNITS` / `SEASON_BUDGET` in code,
-  the app's own Streamlit Secrets, and the consensus-book list.
-
-## NBA player production study (2026-10-13)
-- Research only: `research/nba_production_study/`, design contract
-  `NBA_STUDY_SPEC.md`. No odds, no app, no imports from the app files. It
-  lives on a study branch that is never merged to `main`.
-- stats.nba.com returns 403 from the Claude Code sandbox, so `pull.py` runs on
-  Juan's machine. The parquet pulls are committed, so everything after
-  step 1 runs anywhere.
-- 2025-26 is the confirm season. Print nothing for it but row counts and
-  pass/fail until `LOCKED_HYPOTHESES.md` is committed. Honor the spec's STOP
-  points (§11).
-- Before pushing: `cd research/nba_production_study && python -m pytest`.
+Targeted, justified changes with the reasoning in a comment at the site.
+Validate methodology before touching parameters. Verdicts bind evidence,
+not product — what the app does with a finding is his decision, recorded in
+code with the evidence beside it.

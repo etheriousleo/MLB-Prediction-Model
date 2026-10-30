@@ -1,0 +1,77 @@
+{
+ "401909895": {
+  "away": "Memphis Grizzlies",
+  "away_id": "29",
+  "commence": "2026-10-30T02:10:00Z",
+  "home": "Portland Trail Blazers",
+  "home_id": "22",
+  "quoted_at": "2026-10-30T01:59:36.783180+00:00",
+  "quotes": {
+   "betmgm": {
+    "h2h": {
+     "away": 240,
+     "home": -300
+    },
+    "spreads": {
+     "away": [
+      7.5,
+      -105
+     ],
+     "home": [
+      -7.5,
+      -115
+     ]
+    }
+   },
+   "draftkings": {
+    "h2h": {
+     "away": 230,
+     "home": -285
+    },
+    "spreads": {
+     "away": [
+      7.5,
+      -110
+     ],
+     "home": [
+      -7.5,
+      -110
+     ]
+    }
+   },
+   "fanduel": {
+    "h2h": {
+     "away": 245,
+     "home": -300
+    },
+    "spreads": {
+     "away": [
+      8.5,
+      -115
+     ],
+     "home": [
+      -8.5,
+      -105
+     ]
+    }
+   },
+   "pinnacle": {
+    "h2h": {
+     "away": 249,
+     "home": -289
+    },
+    "spreads": {
+     "away": [
+      7.5,
+      -102
+     ],
+     "home": [
+      -7.5,
+      -108
+     ]
+    }
+   }
+  },
+  "tip_espn": "2026-10-30T02:00:00+00:00"
+ }
+}

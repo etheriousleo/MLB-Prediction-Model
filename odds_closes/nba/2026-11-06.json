@@ -1,0 +1,142 @@
+{
+ "401909294": {
+  "away": "Portland Trail Blazers",
+  "away_id": "22",
+  "commence": "2026-11-07T03:10:00Z",
+  "home": "Los Angeles Lakers",
+  "home_id": "13",
+  "quoted_at": "2026-11-07T02:54:37.783746+00:00",
+  "quotes": {
+   "betmgm": {
+    "h2h": {
+     "away": 125,
+     "home": -150
+    }
+   },
+   "draftkings": {
+    "h2h": {
+     "away": 130,
+     "home": -154
+    },
+    "spreads": {
+     "away": [
+      3.5,
+      -116
+     ],
+     "home": [
+      -3.5,
+      -104
+     ]
+    }
+   },
+   "fanduel": {
+    "h2h": {
+     "away": 132,
+     "home": -156
+    },
+    "spreads": {
+     "away": [
+      3.5,
+      -112
+     ],
+     "home": [
+      -3.5,
+      -108
+     ]
+    }
+   },
+   "pinnacle": {
+    "h2h": {
+     "away": 131,
+     "home": -145
+    },
+    "spreads": {
+     "away": [
+      3.0,
+      -105
+     ],
+     "home": [
+      -3.0,
+      -105
+     ]
+    }
+   }
+  },
+  "tip_espn": "2026-11-07T03:00:00+00:00"
+ },
+ "401909295": {
+  "away": "San Antonio Spurs",
+  "away_id": "24",
+  "commence": "2026-11-07T03:10:00Z",
+  "home": "Sacramento Kings",
+  "home_id": "23",
+  "quoted_at": "2026-11-07T02:54:37.783746+00:00",
+  "quotes": {
+   "betmgm": {
+    "h2h": {
+     "away": -1600,
+     "home": 875
+    },
+    "spreads": {
+     "away": [
+      -17.5,
+      -110
+     ],
+     "home": [
+      17.5,
+      -110
+     ]
+    }
+   },
+   "draftkings": {
+    "h2h": {
+     "away": -1340,
+     "home": 810
+    },
+    "spreads": {
+     "away": [
+      -17.5,
+      -110
+     ],
+     "home": [
+      17.5,
+      -110
+     ]
+    }
+   },
+   "fanduel": {
+    "h2h": {
+     "away": -1500,
+     "home": 870
+    },
+    "spreads": {
+     "away": [
+      -17.5,
+      -110
+     ],
+     "home": [
+      17.5,
+      -110
+     ]
+    }
+   },
+   "pinnacle": {
+    "h2h": {
+     "away": -1154,
+     "home": 805
+    },
+    "spreads": {
+     "away": [
+      -17.5,
+      -110
+     ],
+     "home": [
+      17.5,
+      -101
+     ]
+    }
+   }
+  },
+  "tip_espn": "2026-11-07T03:00:00+00:00"
+ }
+}

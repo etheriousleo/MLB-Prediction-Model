@@ -1,0 +1,227 @@
+{
+ "401909949": {
+  "away": "Boston Celtics",
+  "away_id": "2",
+  "commence": "2026-11-09T01:10:00Z",
+  "home": "Milwaukee Bucks",
+  "home_id": "15",
+  "quoted_at": "2026-11-09T00:58:58.467839+00:00",
+  "quotes": {
+   "betmgm": {
+    "h2h": {
+     "away": -800,
+     "home": 550
+    },
+    "spreads": {
+     "away": [
+      -13.5,
+      -110
+     ],
+     "home": [
+      13.5,
+      -110
+     ]
+    }
+   },
+   "draftkings": {
+    "h2h": {
+     "away": -790,
+     "home": 552
+    },
+    "spreads": {
+     "away": [
+      -13.5,
+      -112
+     ],
+     "home": [
+      13.5,
+      -108
+     ]
+    }
+   },
+   "fanduel": {
+    "h2h": {
+     "away": -850,
+     "home": 590
+    },
+    "spreads": {
+     "away": [
+      -13.5,
+      -110
+     ],
+     "home": [
+      13.5,
+      -110
+     ]
+    }
+   },
+   "pinnacle": {
+    "h2h": {
+     "away": -752,
+     "home": 570
+    },
+    "spreads": {
+     "away": [
+      -13.5,
+      -105
+     ],
+     "home": [
+      13.5,
+      -105
+     ]
+    }
+   }
+  },
+  "tip_espn": "2026-11-09T01:00:00+00:00"
+ },
+ "401909950": {
+  "away": "New Orleans Pelicans",
+  "away_id": "3",
+  "commence": "2026-11-09T02:10:00Z",
+  "home": "LA Clippers",
+  "home_id": "12",
+  "quoted_at": "2026-11-09T00:58:58.467839+00:00",
+  "quotes": {
+   "betmgm": {
+    "h2h": {
+     "away": -125,
+     "home": 105
+    },
+    "spreads": {
+     "away": [
+      -1.5,
+      -110
+     ],
+     "home": [
+      1.5,
+      -110
+     ]
+    }
+   },
+   "draftkings": {
+    "h2h": {
+     "away": -121,
+     "home": 103
+    },
+    "spreads": {
+     "away": [
+      -1.5,
+      -110
+     ],
+     "home": [
+      1.5,
+      -110
+     ]
+    }
+   },
+   "fanduel": {
+    "h2h": {
+     "away": -120,
+     "home": 102
+    },
+    "spreads": {
+     "away": [
+      -1.5,
+      -110
+     ],
+     "home": [
+      1.5,
+      -110
+     ]
+    }
+   },
+   "pinnacle": {
+    "h2h": {
+     "away": -119,
+     "home": 108
+    },
+    "spreads": {
+     "away": [
+      -1.5,
+      -109
+     ],
+     "home": [
+      1.5,
+      -101
+     ]
+    }
+   }
+  },
+  "tip_espn": "2026-11-09T02:00:00+00:00"
+ },
+ "401909951": {
+  "away": "Miami Heat",
+  "away_id": "14",
+  "commence": "2026-11-09T02:10:00Z",
+  "home": "Sacramento Kings",
+  "home_id": "23",
+  "quoted_at": "2026-11-09T00:58:58.467839+00:00",
+  "quotes": {
+   "betmgm": {
+    "h2h": {
+     "away": -500,
+     "home": 375
+    },
+    "spreads": {
+     "away": [
+      -11.5,
+      -105
+     ],
+     "home": [
+      11.5,
+      -115
+     ]
+    }
+   },
+   "draftkings": {
+    "h2h": {
+     "away": -518,
+     "home": 394
+    },
+    "spreads": {
+     "away": [
+      -11.5,
+      -105
+     ],
+     "home": [
+      11.5,
+      -115
+     ]
+    }
+   },
+   "fanduel": {
+    "h2h": {
+     "away": -520,
+     "home": 400
+    },
+    "spreads": {
+     "away": [
+      -11.5,
+      -105
+     ],
+     "home": [
+      11.5,
+      -115
+     ]
+    }
+   },
+   "pinnacle": {
+    "h2h": {
+     "away": -475,
+     "home": 386
+    },
+    "spreads": {
+     "away": [
+      -11.0,
+      -107
+     ],
+     "home": [
+      11.0,
+      -103
+     ]
+    }
+   }
+  },
+  "tip_espn": "2026-11-09T02:00:00+00:00"
+ }
+}
